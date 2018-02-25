@@ -1,4 +1,4 @@
-import * as Api from '../util/PostsAPI';
+import * as Api from '../../util/PostsAPI';
 
 global.fetch = jest.fn(
   () => Promise.resolve({ json: () => {} })
