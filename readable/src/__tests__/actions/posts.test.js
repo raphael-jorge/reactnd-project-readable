@@ -96,26 +96,26 @@ describe('actions', () => {
     });
 
     it('should create an action to remove a post', () => {
-      const postIdToRemove = 'testId';
+      const postToRemove = { id: 'testId' };
       const expectedAction = {
         type: actions.POSTS_REMOVE,
-        postId: postIdToRemove,
+        post: postToRemove,
       };
 
-      expect(actions.removePost(postIdToRemove)).toEqual(expectedAction);
+      expect(actions.removePost(postToRemove)).toEqual(expectedAction);
     });
 
     it('should create an action to update a post', () => {
-      const postIdToUpdate = 'testId';
+      const postToUpdate = { id: 'testId' };
       const updatedPostData = { title: 'testTitleUpdated', body: 'testBodyUpdated' };
 
       const expectedAction = {
         type: actions.POSTS_UPDATE,
-        postId: postIdToUpdate,
-        postData: updatedPostData,
+        post: postToUpdate,
+        newData: updatedPostData,
       };
 
-      expect(actions.updatePost(postIdToUpdate, updatedPostData)).toEqual(expectedAction);
+      expect(actions.updatePost(postToUpdate, updatedPostData)).toEqual(expectedAction);
     });
   });
 
@@ -175,36 +175,36 @@ describe('actions', () => {
     });
 
     it('should remove a post from the api and dispatch actions on success', () => {
-      const postIdToRemove = 'testId';
+      const postToRemove = { id: 'testId' };
 
       const expectedActions = [
-        { type: actions.POSTS_REMOVE, postId: postIdToRemove },
+        { type: actions.POSTS_REMOVE, post: postToRemove },
       ];
 
       const store = mockStore({});
 
-      return store.dispatch(actions.fetchRemovePost(postIdToRemove)).then(() => {
+      return store.dispatch(actions.fetchRemovePost(postToRemove)).then(() => {
         const dispatchedActions = store.getActions();
         expect(dispatchedActions).toEqual(expectedActions);
-        expect(PostsAPI.del.post).toHaveBeenCalledWith(postIdToRemove);
+        expect(PostsAPI.del.post).toHaveBeenCalledWith(postToRemove.id);
       });
     });
 
     it('should update a post on the api and dispatch actions on success', () => {
-      const postIdToUpdate = 'testId';
+      const postToUpdate = { id: 'testId', title: 'testTitle', body: 'testBody' };
       const updatedPostData = { title: 'updatedTestTitle', body: 'updatedTestBody' };
 
       const expectedActions = [
-        { type: actions.POSTS_UPDATE, postId: postIdToUpdate, postData: updatedPostData },
+        { type: actions.POSTS_UPDATE, post: postToUpdate, newData: updatedPostData },
       ];
 
       const store = mockStore({});
 
-      return store.dispatch(actions.fetchUpdatePost(postIdToUpdate, updatedPostData))
+      return store.dispatch(actions.fetchUpdatePost(postToUpdate, updatedPostData))
         .then(() => {
           const dispatchedActions = store.getActions();
           expect(dispatchedActions).toEqual(expectedActions);
-          expect(PostsAPI.update.post).toHaveBeenCalledWith(postIdToUpdate, updatedPostData);
+          expect(PostsAPI.update.post).toHaveBeenCalledWith(postToUpdate.id, updatedPostData);
         });
     });
   });

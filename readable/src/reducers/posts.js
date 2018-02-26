@@ -7,6 +7,11 @@ import {
   POSTS_SET_LOAD_ERROR,
 } from '../actions/posts';
 
+import {
+  COMMENTS_ADD,
+  COMMENTS_REMOVE,
+} from '../actions/comments';
+
 const initialState = {
   loading: false,
   errorOnLoad: false,
@@ -35,7 +40,7 @@ export default function posts(state = initialState, action) {
 
     case POSTS_REMOVE: {
       const postsIds = Object.keys(state.posts);
-      const idsToKeep = postsIds.filter((id) => id !== action.postId);
+      const idsToKeep = postsIds.filter((id) => id !== action.post.id);
       return {
         ...state,
         posts: idsToKeep.reduce((posts, id) => {
@@ -50,10 +55,10 @@ export default function posts(state = initialState, action) {
         ...state,
         posts: {
           ...state.posts,
-          [action.postId]: {
-            ...state.posts[action.postId],
-            title: action.postData.title,
-            body: action.postData.body,
+          [action.post.id]: {
+            ...state.posts[action.post.id],
+            title: action.newData.title,
+            body: action.newData.body,
           },
         },
       };
@@ -68,6 +73,30 @@ export default function posts(state = initialState, action) {
       return {
         ...state,
         errorOnLoad: action.errorOnLoad,
+      };
+
+    case COMMENTS_ADD:
+      return {
+        ...state,
+        posts: {
+          ...state.posts,
+          [action.comment.parentId]: {
+            ...state.posts[action.comment.parentId],
+            commentCount: state.posts[action.comment.parentId].commentCount + 1,
+          },
+        },
+      };
+
+    case COMMENTS_REMOVE:
+      return {
+        ...state,
+        posts: {
+          ...state.posts,
+          [action.comment.parentId]: {
+            ...state.posts[action.comment.parentId],
+            commentCount: state.posts[action.comment.parentId].commentCount - 1,
+          },
+        },
       };
 
     default:

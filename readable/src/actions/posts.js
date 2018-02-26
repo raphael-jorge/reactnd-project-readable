@@ -19,15 +19,15 @@ export const addPost = (post) => ({
   post,
 });
 
-export const removePost = (postId) => ({
+export const removePost = (post) => ({
   type: POSTS_REMOVE,
-  postId,
+  post,
 });
 
-export const updatePost = (postId, updatedData) => ({
+export const updatePost = (post, updatedData) => ({
   type: POSTS_UPDATE,
-  postId,
-  postData: updatedData,
+  post,
+  newData: updatedData,
 });
 
 export const setLoadingState = (loading) => ({
@@ -64,16 +64,16 @@ export const fetchAddPost = (postData) => ((dispatch) => {
     });
 });
 
-export const fetchRemovePost = (postId) => ((dispatch) => {
-  return PostsAPI.del.post(postId)
+export const fetchRemovePost = (post) => ((dispatch) => {
+  return PostsAPI.del.post(post.id)
     .then(() => {
-      dispatch(removePost(postId));
+      dispatch(removePost(post));
     });
 });
 
-export const fetchUpdatePost = (postId, updatedData) => ((dispatch) => {
-  return PostsAPI.update.post(postId, updatedData)
+export const fetchUpdatePost = (post, updatedData) => ((dispatch) => {
+  return PostsAPI.update.post(post.id, updatedData)
     .then(() => {
-      dispatch(updatePost(postId, updatedData));
+      dispatch(updatePost(post, updatedData));
     });
 });
