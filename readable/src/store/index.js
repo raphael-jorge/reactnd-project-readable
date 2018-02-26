@@ -1,6 +1,6 @@
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
-import categoriesReducer from '../reducers/categories';
+import rootReducer from '../reducers';
 
 const logger = (store) => (next) => (action) => {
   console.group(action.type);
@@ -15,7 +15,7 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 export default function configureStore() {
   return createStore(
-    categoriesReducer,
+    rootReducer,
     composeEnhancers(applyMiddleware(thunk, logger))
   );
 }
