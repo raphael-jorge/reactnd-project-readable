@@ -13,6 +13,25 @@ a {
   color: inherit;
 }
 
+.status-msg {
+  margin: 20px 0;
+  padding: 0;
+  text-align: center;
+  color: #999;
+}
+
+/* Loadings */
+.loading-squares {
+  font-size: 0;
+  width: 100%;
+  height: 60px;
+  background-image: url('./icons/loading-squares.gif');
+  background-size: 100px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+
 /* Posts */
 .post{
   margin: 20px 10px;
