@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router } from 'react-router-dom';
 import createBrowserHistory from 'history/createBrowserHistory';
+import { Provider } from 'react-redux';
 import registerServiceWorker from './registerServiceWorker';
 import App from './components/App';
 import configureStore from './store';
@@ -17,8 +18,10 @@ history.listen((location) => store.dispatch(setRouteState(history.location)));
 store.dispatch(setRouteState(history.location));
 
 ReactDOM.render(
-  <Router history={history}>
-    <App />
-  </Router>,
+  <Provider store={store}>
+    <Router history={history}>
+      <App />
+    </Router>
+  </Provider>,
   document.getElementById('root'));
 registerServiceWorker();

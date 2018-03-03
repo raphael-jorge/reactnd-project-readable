@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Route } from 'react-router-dom';
 import routes from '../routes';
+import ShowPosts from './ShowPosts';
 
 class App extends Component {
   render() {
@@ -8,15 +9,12 @@ class App extends Component {
       <div>
 
         <Route exact path={routes.root} render={() => (
-          <p>Root</p>
-        )}/>
+          <ShowPosts />
+        )} />
 
-        <Route exact path={routes.category} render={({ match }) => {
-          const category = match.params.category;
-          return (
-            <p>{category}</p>
-          );
-        }}/>
+        <Route exact path={routes.category} render={({ match }) => (
+          <ShowPosts />
+        )} />
 
         <Route exact path={routes.post} render={({ match }) => {
           const category = match.params.category;
