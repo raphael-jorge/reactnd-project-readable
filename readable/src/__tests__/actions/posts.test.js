@@ -25,8 +25,8 @@ jest.mock('../../util/PostsAPI', () => {
 });
 
 // Mock createId
-jest.mock('../../util/createId', () => {
-  return () => 'testId';
+jest.mock('../../util/utils', () => {
+  return { createId: () => 'testId' };
 });
 
 // Mock redux store

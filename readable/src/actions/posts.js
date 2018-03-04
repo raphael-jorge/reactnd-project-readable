@@ -1,5 +1,5 @@
 import * as PostsAPI from '../util/PostsAPI';
-import createId from '../util/createId';
+import { createId } from '../util/utils';
 
 export const POSTS_SET = 'POSTS_SET';
 export const POSTS_ADD = 'POSTS_ADD';
