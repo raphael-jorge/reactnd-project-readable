@@ -63,3 +63,49 @@ a {
   letter-spacing: 0.03rem;
   line-height: 1.4rem;
 }
+
+
+/* Comments */
+.comment {
+  position: relative;
+  margin: 15px 10px 15px 40px;
+  padding: 10px 20px;
+  background-color: #f8f8f8;
+  box-shadow: 0 2px 4px #222f5a;
+}
+.comment::before {
+  position: absolute;
+  top: 0;
+  left: -30px;
+  width: 20px;
+  height: 20px;
+  content: "";
+  background-image: url('./icons/quotes-left.svg');
+  background-size: 20px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.comment:not(:last-child)::after {
+  position: absolute;
+  top: 25px;
+  bottom: -10px;
+  left: -22px;
+  width: 0;
+  content: "";
+  border: 2px solid #e822e4;
+  border-radius: 4px;
+  opacity: 0.5;
+}
+.comment-info {
+  margin: 0 0 10px;
+  padding: 0;
+  font-size: 0.9rem;
+  color: #777;
+}
+.comment-body {
+  margin: 0;
+  padding: 0;
+  text-align: justify;
+  letter-spacing: 0.03rem;
+  line-height: 1.2rem;
+}
