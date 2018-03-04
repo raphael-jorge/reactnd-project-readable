@@ -1,17 +1,18 @@
 import * as PostsAPI from '../util/PostsAPI';
+import createId from '../util/createId';
 
 export const POSTS_SET = 'POSTS_SET';
 export const POSTS_ADD = 'POSTS_ADD';
 export const POSTS_REMOVE = 'POSTS_REMOVE';
 export const POSTS_UPDATE = 'POSTS_UPDATE';
 export const POSTS_SET_LOADING_STATE = 'POSTS_SET_LOADING_STATE';
-export const POSTS_SET_LOAD_ERROR = 'POSTS_SET_LOAD_ERROR';
 
 // Action creators
 
-export const setPosts = (posts) => ({
+export const setPosts = ({ posts, operationId }) => ({
   type: POSTS_SET,
   posts,
+  operationId,
 });
 
 export const addPost = (post) => ({
@@ -32,28 +33,37 @@ export const updatePost = (post, updatedData) => ({
 
 export const setLoadingState = (loading) => ({
   type: POSTS_SET_LOADING_STATE,
-  loading,
-});
-
-export const setLoadError = (errorOnLoad) => ({
-  type: POSTS_SET_LOAD_ERROR,
-  errorOnLoad,
+  loading: {
+    ...loading,
+    hasErrored: loading.hasErrored || false,
+  },
 });
 
 // Async action creators
 
 export const fetchPosts = (category) => ((dispatch) => {
-  dispatch(setLoadingState(true));
+  const operationId = createId();
+  dispatch(setLoadingState({
+    id: operationId,
+    isLoading: true,
+  }));
 
   return PostsAPI.get.posts(category)
     .then((posts) => {
-      dispatch(setPosts(posts));
-      dispatch(setLoadingState(false));
-      dispatch(setLoadError(false));
+      dispatch(setPosts({ posts, operationId }));
+      dispatch(setLoadingState({
+        id: operationId,
+        isLoading: false,
+        hasErrored: false,
+      }));
     })
     .catch(() => {
-      dispatch(setLoadingState(false));
-      dispatch(setLoadError(true));
+      dispatch(setPosts({ posts: [], operationId }));
+      dispatch(setLoadingState({
+        id: operationId,
+        isLoading: false,
+        hasErrored: true,
+      }));
     });
 });
 

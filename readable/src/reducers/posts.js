@@ -4,7 +4,6 @@ import {
   POSTS_REMOVE,
   POSTS_UPDATE,
   POSTS_SET_LOADING_STATE,
-  POSTS_SET_LOAD_ERROR,
 } from '../actions/posts';
 
 import {
@@ -13,21 +12,31 @@ import {
 } from '../actions/comments';
 
 const initialState = {
-  loading: false,
-  errorOnLoad: false,
+  loading: {
+    id: null,
+    isLoading: false,
+    hasErrored: false,
+  },
   posts: {},
 };
 
 export default function posts(state = initialState, action) {
   switch (action.type) {
-    case POSTS_SET:
-      return {
-        ...state,
-        posts: action.posts.reduce((posts, post) => {
-          posts[post.id] = post;
-          return posts;
-        }, {}),
-      };
+    case POSTS_SET: {
+      // id corresponde à operação de loading -> atualização posts liberada
+      if (action.operationId === state.loading.id) {
+        return {
+          ...state,
+          posts: action.posts.reduce((posts, post) => {
+            posts[post.id] = post;
+            return posts;
+          }, {}),
+        };
+      } else {
+        // se não corresponder -> o estado fica inalterado
+        return state;
+      }
+    }
 
     case POSTS_ADD:
       return {
@@ -63,17 +72,34 @@ export default function posts(state = initialState, action) {
         },
       };
 
-    case POSTS_SET_LOADING_STATE:
-      return {
-        ...state,
-        loading: action.loading,
-      };
-
-    case POSTS_SET_LOAD_ERROR:
-      return {
-        ...state,
-        errorOnLoad: action.errorOnLoad,
-      };
+    case POSTS_SET_LOADING_STATE: {
+      // Mesmo id de operação -> atualização liberada
+      if (action.loading.id === state.loading.id) {
+        return {
+          ...state,
+          loading: {
+            ...state.loading,
+            isLoading: action.loading.isLoading,
+            hasErrored: action.loading.hasErrored,
+          },
+        };
+      } else {
+        // Se for uma nova operação -> atualização liberada
+        if (action.loading.isLoading) {
+          return {
+            ...state,
+            loading: {
+              id: action.loading.id,
+              isLoading: action.loading.isLoading,
+              hasErrored: action.loading.hasErrored,
+            },
+          };
+        } else {
+          // Se não for -> atualização bloqueada
+          return state;
+        }
+      }
+    }
 
     case COMMENTS_ADD:
       return {

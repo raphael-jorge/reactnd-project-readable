@@ -36,8 +36,8 @@ export const mapStateToProps = ({ posts: postsState }, props) => {
   const posts = postsState.posts;
   const postsIds = Object.keys(posts);
   return {
-    isLoading: postsState.loading,
-    hasErrored: postsState.errorOnLoad,
+    isLoading: postsState.loading.isLoading,
+    hasErrored: postsState.loading.hasErrored,
     posts: postsIds.map((postId) => (posts[postId])),
   };
 };

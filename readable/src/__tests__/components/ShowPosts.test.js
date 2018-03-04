@@ -47,8 +47,11 @@ describe('<ShowPosts />', () => {
 describe('mapStateToProps', () => {
   it('returns the expected props', () => {
     const testPostsState = {
-      loading: true,
-      errorOnLoad: true,
+      loading: {
+        id: 'testId',
+        isLoading: true,
+        hasErrored: true,
+      },
       posts: {
         testId1: { id: 'testId1' },
         testId2: { id: 'testId2' },
@@ -57,8 +60,8 @@ describe('mapStateToProps', () => {
     const testProps = {};
 
     const expectedProps = {
-      isLoading: testPostsState.loading,
-      hasErrored: testPostsState.errorOnLoad,
+      isLoading: testPostsState.loading.isLoading,
+      hasErrored: testPostsState.loading.hasErrored,
       posts: [{ id: 'testId1' }, { id: 'testId2' }],
     };
 

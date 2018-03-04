@@ -6,33 +6,70 @@ describe('reducer', () => {
   describe('posts actions', () => {
     it('should return the initial state', () => {
       const expectedState = {
-        loading: false,
-        errorOnLoad: false,
+        loading: {
+          id: null,
+          isLoading: false,
+          hasErrored: false,
+        },
         posts: {},
       };
 
       expect(reducer(undefined, {})).toEqual(expectedState);
     });
 
-    it('should handle POSTS_SET', () => {
-      const postsToSet = [
-        { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
-        { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
-      ];
+    describe('should handle POSTS_SET', () => {
+      it('updates posts if the operation id matches', () => {
+        const operationId = 'testId';
+        const initialState = {
+          loading: { id: operationId },
+          posts: {},
+        };
 
-      const testAction = {
-        type: postsActions.POSTS_SET,
-        posts: postsToSet,
-      };
+        const postsToSet = [
+          { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
+          { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
+        ];
 
-      const expectedState = {
-        posts: postsToSet.reduce((posts, post) => {
-          posts[post.id] = post;
-          return posts;
-        }, {}),
-      };
+        const testAction = {
+          type: postsActions.POSTS_SET,
+          posts: postsToSet,
+          operationId,
+        };
 
-      expect(reducer({}, testAction)).toEqual(expectedState);
+        const expectedState = {
+          loading: { id: operationId },
+          posts: postsToSet.reduce((posts, post) => {
+            posts[post.id] = post;
+            return posts;
+          }, {}),
+        };
+
+        expect(reducer(initialState, testAction)).toEqual(expectedState);
+      });
+
+      it('does not update posts if operation id does not match', () => {
+        const operationIdState = 'testIdState';
+        const operationIdAction = 'testIdAction';
+        const initialState = {
+          loading: { id: operationIdState },
+          posts: {},
+        };
+
+        const postsToSet = [
+          { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
+          { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
+        ];
+
+        const testAction = {
+          type: postsActions.POSTS_SET,
+          posts: postsToSet,
+          operationId: operationIdAction,
+        };
+
+        const expectedState = initialState;
+
+        expect(reducer(initialState, testAction)).toEqual(expectedState);
+      });
     });
 
     it('should handle POSTS_ADD', () => {
@@ -91,28 +128,76 @@ describe('reducer', () => {
       expect(reducer(initialState, testAction)).toEqual(expectedState);
     });
 
-    it('should handle POSTS_SET_LOADING_STATE', () => {
-      const loadingState = true;
-      const testAction = {
-        type: postsActions.POSTS_SET_LOADING_STATE,
-        loading: loadingState,
-      };
+    describe('should handle POSTS_SET_LOADING_STATE', () => {
+      describe('an operation with the same id of the current state', () => {
+        it('is free to update any loading status', () => {
+          const initialState = { loading: {
+            id: 'testId',
+            isLoading: true,
+            hasErrored: false,
+          } };
 
-      const expectedState = { loading: loadingState };
+          const newLoadingState = {
+            id: initialState.loading.id,
+            isLoading: !initialState.loading.isLoading,
+            hasErrored: !initialState.loading.hasErrored,
+          };
+          const testAction = {
+            type: postsActions.POSTS_SET_LOADING_STATE,
+            loading: newLoadingState,
+          };
 
-      expect(reducer({}, testAction)).toEqual(expectedState);
-    });
+          const expectedState = { loading: newLoadingState };
 
-    it('should handle POSTS_SET_LOAD_ERROR', () => {
-      const errorOnLoad = true;
-      const testAction = {
-        type: postsActions.POSTS_SET_LOAD_ERROR,
-        errorOnLoad,
-      };
+          expect(reducer(initialState, testAction)).toEqual(expectedState);
+        });
+      });
 
-      const expectedState = { errorOnLoad };
+      describe('an operation with a different id of the current state', () => {
+        it('is free to update the loading status if it is a new loading operation', () => {
+          const initialState = { loading: {
+            id: 'testId',
+            isLoading: true,
+            hasErrored: false,
+          } };
 
-      expect(reducer({}, testAction)).toEqual(expectedState);
+          const newLoadingState = {
+            id: 'newTestId',
+            isLoading: true,    // new loading
+            hasErrored: false,
+          };
+          const testAction = {
+            type: postsActions.POSTS_SET_LOADING_STATE,
+            loading: newLoadingState,
+          };
+
+          const expectedState = { loading: newLoadingState };
+
+          expect(reducer(initialState, testAction)).toEqual(expectedState);
+        });
+
+        it('is not allowed to updated the loading status if it is a concluding operation', () => {
+          const initialState = { loading: {
+            id: 'testId',
+            isLoading: true,
+            hasErrored: false,
+          } };
+
+          const newLoadingState = {
+            id: 'newTestId',
+            isLoading: false,    // end loading
+            hasErrored: false,
+          };
+          const testAction = {
+            type: postsActions.POSTS_SET_LOADING_STATE,
+            loading: newLoadingState,
+          };
+
+          const expectedState = initialState;
+
+          expect(reducer(initialState, testAction)).toEqual(expectedState);
+        });
+      });
     });
   });
 
