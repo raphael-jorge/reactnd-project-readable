@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import ListPosts from './ListPosts';
+import ListData from './ListData';
+import Post from './Post';
 
 export class ShowPosts extends Component {
   static propTypes = {
@@ -19,12 +20,17 @@ export class ShowPosts extends Component {
 
     return (
       <div className="show-posts">
-        <ListPosts
-          posts={posts}
+        <ListData
+          ComponentToList={Post}
+          componentProps={{
+            dataPropName: 'postData',
+            dataArr: posts,
+            common: { maxBodyLength: 80 },
+          }}
           isLoading={isLoading}
           hasErrored={hasErrored}
           loadErrorMsg={'There was an error while loading posts from the server'}
-          noPostsMsg={'No posts to show'}
+          noDataMsg={'No posts to show'}
         />
       </div>
 

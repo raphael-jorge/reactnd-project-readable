@@ -1,5 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
+import Post from '../../components/Post';
 import {
   ShowPosts,
   mapStateToProps,
@@ -27,19 +28,21 @@ describe('<ShowPosts />', () => {
     expect(showPosts.find('.show-posts').length).toBe(1);
   });
 
-  it('renders a ListPosts component', () => {
+  it('renders a ListData component with Post components', () => {
     const testProps = {
       posts: [{ id: 'testId' }],
       isLoading: false,
       hasErrored: false,
     };
     const { showPosts, props } = setup(testProps);
-    const listPosts = showPosts.find('ListPosts');
+    const listData = showPosts.find('ListData');
 
-    expect(listPosts.length).toBe(1);
-    expect(listPosts.prop('posts')).toBe(props.posts);
-    expect(listPosts.prop('isLoading')).toBe(props.isLoading);
-    expect(listPosts.prop('hasErrored')).toBe(props.hasErrored);
+    expect(listData.length).toBe(1);
+    expect(listData.prop('ComponentToList')).toBe(Post);
+    expect(listData.prop('componentProps').dataArr).toBe(testProps.posts);
+    expect(listData.prop('componentProps').dataPropName).toBe('postData');
+    expect(listData.prop('isLoading')).toBe(props.isLoading);
+    expect(listData.prop('hasErrored')).toBe(props.hasErrored);
   });
 });
 
