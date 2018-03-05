@@ -32,12 +32,6 @@ describe('<Post />', () => {
     expect(post.find('.post-body').length).toBe(1);
   });
 
-  it('renders a link to the post page', () => {
-    const { post, props } = setup();
-    const expectedToProp = `/${props.postData.category}/${props.postData.id}`;
-    expect(post.find('Link').prop('to')).toBe(expectedToProp);
-  });
-
   it('crops the body length if the maxBodyLength prop is set', () => {
     const stringFiller = '-';
     const continueMark = '...';

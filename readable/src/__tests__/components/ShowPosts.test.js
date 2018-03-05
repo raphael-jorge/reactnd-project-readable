@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import Post from '../../components/Post';
+import { MemoryRouter } from 'react-router-dom';
 import {
   ShowPosts,
   mapStateToProps,
@@ -13,13 +13,22 @@ const setup = (propOverrides) => {
     hasErrored: undefined,
   }, propOverrides);
 
-  const showPosts = shallow(<ShowPosts {...props} />);
+  const showPosts= shallow(
+    <MemoryRouter>
+      <ShowPosts {...props} />
+    </MemoryRouter>
+  ).find(ShowPosts).dive();
 
   return {
     props,
     showPosts,
   };
 };
+
+const testPosts = [
+  { id: 'testId1', title: '', body: '', author: '', timestamp: 0, category: 'testCategory' },
+  { id: 'testId2', title: '', body: '', author: '', timestamp: 0, category: 'testCategory' },
+];
 
 
 describe('<ShowPosts />', () => {
@@ -28,21 +37,50 @@ describe('<ShowPosts />', () => {
     expect(showPosts.find('.show-posts').length).toBe(1);
   });
 
-  it('renders a ListData component with Post components', () => {
-    const testProps = {
-      posts: [{ id: 'testId' }],
-      isLoading: false,
-      hasErrored: false,
-    };
-    const { showPosts, props } = setup(testProps);
-    const listData = showPosts.find('ListData');
+  it('renders a Message component when an error occurs on load', () => {
+    let hasErrored = true;
+    const { showPosts } = setup({ hasErrored });
 
-    expect(listData.length).toBe(1);
-    expect(listData.prop('ComponentToList')).toBe(Post);
-    expect(listData.prop('componentProps').dataArr).toBe(testProps.posts);
-    expect(listData.prop('componentProps').dataPropName).toBe('postData');
-    expect(listData.prop('isLoading')).toBe(props.isLoading);
-    expect(listData.prop('hasErrored')).toBe(props.hasErrored);
+    expect(showPosts.find('Message').length).toBe(1);
+
+    hasErrored = false;
+    showPosts.setProps({ hasErrored, posts: testPosts });
+
+    expect(showPosts.find('Message').length).toBe(0);
+  });
+
+  it('renders one Post component for each post in posts', () => {
+    const { showPosts } = setup({ posts: testPosts });
+
+    const renderedPosts = showPosts.find('Post');
+
+    testPosts.forEach((testPost) => {
+      const matchingRenderedPost = renderedPosts.filterWhere((post) => (
+        post.prop('postData').id === testPost.id
+      ));
+      expect(matchingRenderedPost.prop('postData')).toEqual(testPost);
+    });
+  });
+
+  it('renders a Link component wrapping each Post component', () => {
+    const { showPosts } = setup({ posts: testPosts });
+
+    const renderedPosts = showPosts.find('Post');
+
+    testPosts.forEach((testPost) => {
+      const matchingRenderedPost = renderedPosts.filterWhere((post) => (
+        post.prop('postData').id === testPost.id
+      ));
+
+      const wrappingLink = matchingRenderedPost.parent().find('Link');
+      expect(wrappingLink.length).toBe(1);
+      expect(wrappingLink.prop('to')).toBe(`/${testPost.category}/${testPost.id}`);
+    });
+  });
+
+  it('renders a Message component when posts is empty', () => {
+    const { showPosts } = setup();
+    expect(showPosts.find('Message').length).toBe(1);
   });
 });
 
