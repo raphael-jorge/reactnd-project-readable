@@ -1,13 +1,21 @@
 import React, { Component } from 'react';
-import { Route } from 'react-router-dom';
+import { Route, withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
 import routes from '../routes';
+import Header from './Header';
 import ShowPosts from './ShowPosts';
 import ShowPostComments from './ShowPostComments';
 
-class App extends Component {
+export class App extends Component {
   render() {
+    const {
+      categories,
+      activePath,
+    } = this.props;
+
     return (
       <div>
+        <Header categories={categories} activePath={activePath}/>
 
         <Route exact path={routes.root} render={() => (
           <ShowPosts />
@@ -26,4 +34,19 @@ class App extends Component {
   }
 }
 
-export default App;
+export const mapStateToProps = (state, props) => {
+  const categoriesState = state.categories;
+  let categories;
+  if (categoriesState.isLoading || categoriesState.hasErrored) {
+    categories = [];
+  } else {
+    const categoriesIds = Object.keys(categoriesState.categories);
+    categories = categoriesIds.map((id) => categoriesState.categories[id]);
+  }
+  return {
+    categories,
+    activePath: categoriesState.activePath,
+  };
+};
+
+export default withRouter(connect(mapStateToProps)(App));

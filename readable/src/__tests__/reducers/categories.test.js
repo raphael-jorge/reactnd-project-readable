@@ -18,6 +18,7 @@ const structuredTestCategories = testCategories.reduce((categories, categorie) =
 describe('reducer', () => {
   it('should return the initial state', () => {
     const expectedState = {
+      activePath: null,
       loading: false,
       errorOnLoad: false,
       categories: {},
@@ -34,6 +35,19 @@ describe('reducer', () => {
     };
 
     const expectedState = { categories: structuredTestCategories };
+
+    expect(reducer({}, testAction)).toEqual(expectedState);
+  });
+
+
+  it('should handle SET_CATEGORIES_ACTIVE', () => {
+    const activePath = 'testActivePath';
+    const testAction = {
+      type: actions.CATEGORIES_SET_ACTIVE,
+      activePath,
+    };
+
+    const expectedState = { activePath };
 
     expect(reducer({}, testAction)).toEqual(expectedState);
   });

@@ -13,6 +13,10 @@ a {
   color: inherit;
 }
 
+.container {
+  max-width: 890px;
+  margin: 0 auto;
+}
 .status-msg {
   margin: 20px 0;
   padding: 0;
@@ -29,6 +33,89 @@ a {
   background-size: 100px;
   background-repeat: no-repeat;
   background-position: center;
+}
+
+
+/* Header */
+.header {
+  margin: 0 0 30px;
+  padding: 0;
+  background: #f8f8f8;
+  box-shadow: 0 2px 5px #222f5a;
+  height: 60px;
+}
+.header h1 {
+  margin: 0 20px;
+  padding: 0;
+  float: left;
+  font-size: 1.8rem;
+  font-weight: normal;
+  line-height: 60px;
+  color: #222f5a;
+  text-shadow: 1px 1px 1px #222f5a;
+}
+.header-nav {
+  float: right;
+}
+.header-nav ul {
+  margin: 0 20px;
+  padding: 15px 0;
+  list-style-type: none;
+}
+.header-nav li {
+  display: inline-block;
+  margin: 0 10px;
+  padding: 0;
+}
+.header-nav a {
+  display: inline-block;
+  margin: 0;
+  padding: 0 3px;
+  line-height: 30px;
+  color: #999;
+  text-shadow: 1px 1px 1px #bbb;
+  border-bottom: 1px solid #f8f8f8;
+  border-radius: 3px;
+  transition: border-color 0.3s, color 0.3s;
+}
+.header-nav li.active a {
+  color: #222f5a;
+}
+.header-nav a:hover {
+  border-color: #222f5a;
+  color: #222f5a;
+}
+@media screen and (max-width: 530px) {
+  .header {
+    height: auto;
+  }
+  .header h1, .header-nav {
+    float: none;
+  }
+  .header h1 {
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    font-size: 1.5rem;
+  }
+  .header-nav ul {
+    text-align: center;
+    padding: 10px 0 20px;
+  }
+}
+@media screen and (max-width: 350px) {
+  .header-nav ul {
+    margin: 0 auto;
+    padding: 0 0 10px;
+    width: 75%;
+  }
+  .header-nav li {
+    display: block;
+    margin: 10px 0;
+  }
+  .header-nav a {
+    width: 100%;
+  }
 }
 
 

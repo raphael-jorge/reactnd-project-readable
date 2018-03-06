@@ -1,12 +1,18 @@
 import * as PostsAPI from '../util/PostsAPI';
 
 export const CATEGORIES_SET = 'CATEGORIES_SET';
+export const CATEGORIES_SET_ACTIVE = 'CATEGORIES_SET_ACTIVE';
 export const CATEGORIES_SET_LOADING_STATE = 'CATEGORIES_SET_LOADING_STATE';
 export const CATEGORIES_SET_LOAD_ERROR = 'CATEGORIES_SET_LOAD_ERROR';
 
 export const setCategories = (categories) => ({
   type: CATEGORIES_SET,
   categories,
+});
+
+export const setActiveCategory = (activePath) => ({
+  type: CATEGORIES_SET_ACTIVE,
+  activePath,
 });
 
 export const setLoadingState = (loading) => ({

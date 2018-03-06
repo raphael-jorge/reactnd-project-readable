@@ -6,6 +6,15 @@ export function createId() {
   return Math.random().toString(36).substr(-8);
 }
 
+/**
+ * Transforma em maiúscula a primeira letra de uma string.
+ * @param  {string} str A string a ser transformada.
+ * @return {[type]}     A string transformada.
+ */
+export function capitalize(str) {
+  return `${str.slice(0, 1).toUpperCase()}${str.slice(1)}`;
+}
+
 
 /**
  * Formata um valor de data obtido com o objeto Date.

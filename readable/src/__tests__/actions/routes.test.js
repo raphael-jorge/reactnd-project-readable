@@ -1,9 +1,17 @@
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
+import categoriesActions from '../../actions/categories';
 import postsActions from '../../actions/posts';
 import commentsActions from '../../actions/comments';
 import routes from '../../routes';
 import setRouteState from '../../actions/routes';
+
+// Mock categories actions
+jest.mock('../../actions/categories', () => ({
+  setActiveCategory: jest.fn(
+    () => ({ type: 'TEST_ACTION' }),
+  ),
+}));
 
 // Mock posts actions
 jest.mock('../../actions/posts', () => ({
@@ -39,6 +47,7 @@ describe('actions', () => {
       store.dispatch(setRouteState(testLocation));
 
       expect(postsActions.fetchPosts).toHaveBeenCalledWith();
+      expect(categoriesActions.setActiveCategory).toHaveBeenCalledWith(null);
       expect(commentsActions.setComments).toHaveBeenCalledWith([]);
     });
 
@@ -50,6 +59,7 @@ describe('actions', () => {
       store.dispatch(setRouteState(testLocation));
 
       expect(postsActions.fetchPosts).toHaveBeenCalledWith(testCategory);
+      expect(categoriesActions.setActiveCategory).toHaveBeenCalledWith(testCategory);
       expect(commentsActions.setComments).toHaveBeenCalledWith([]);
     });
 
@@ -62,6 +72,7 @@ describe('actions', () => {
       store.dispatch(setRouteState(testLocation));
 
       expect(postsActions.fetchPosts).toHaveBeenCalledWith(testCategory);
+      expect(categoriesActions.setActiveCategory).toHaveBeenCalledWith(null);
       expect(commentsActions.fetchComments).toHaveBeenCalledWith(testPostId);
     });
 
@@ -72,6 +83,7 @@ describe('actions', () => {
       store.dispatch(setRouteState(testLocation));
 
       expect(postsActions.setPosts).toHaveBeenCalledWith([]);
+      expect(categoriesActions.setActiveCategory).toHaveBeenCalledWith(null);
       expect(commentsActions.setComments).toHaveBeenCalledWith([]);
     });
   });
