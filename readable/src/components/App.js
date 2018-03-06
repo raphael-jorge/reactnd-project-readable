@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Route } from 'react-router-dom';
 import routes from '../routes';
 import ShowPosts from './ShowPosts';
+import ShowPostComments from './ShowPostComments';
 
 class App extends Component {
   render() {
@@ -16,13 +17,9 @@ class App extends Component {
           <ShowPosts />
         )} />
 
-        <Route exact path={routes.post} render={({ match }) => {
-          const category = match.params.category;
-          const postId = match.params.postId;
-          return (
-            <p>{category} ({postId})</p>
-          );
-        }}/>
+        <Route exact path={routes.post} render={({ match }) => (
+          <ShowPostComments postId={match.params.postId}/>
+        )} />
 
       </div>
     );
