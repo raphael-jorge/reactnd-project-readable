@@ -4,7 +4,6 @@ import {
   COMMENTS_REMOVE,
   COMMENTS_UPDATE,
   COMMENTS_SET_LOADING_STATE,
-  COMMENTS_SET_LOAD_ERROR,
 } from '../actions/comments';
 
 import {
@@ -12,21 +11,33 @@ import {
 } from '../actions/posts';
 
 const initialState = {
-  loading: false,
-  errorOnLoad: false,
+  loading: {
+    id: null,
+    isLoading: false,
+    hasErrored: false,
+  },
   comments: {},
+  parentPostId: null,
 };
 
 export default function comments(state = initialState, action) {
   switch (action.type) {
-    case COMMENTS_SET:
-      return {
-        ...state,
-        comments: action.comments.reduce((comments, comment) => {
-          comments[comment.id] = comment;
-          return comments;
-        }, {}),
-      };
+    case COMMENTS_SET: {
+      // id corresponde à operação de loading -> atualização comments liberada
+      if (action.operationId === state.loading.id) {
+        return {
+          ...state,
+          comments: action.comments.reduce((comments, comment) => {
+            comments[comment.id] = comment;
+            return comments;
+          }, {}),
+          parentPostId: action.parentPostId,
+        };
+      } else {
+        // se não corresponder -> o estado fica inalterado
+        return state;
+      }
+    }
 
     case COMMENTS_ADD:
       return {
@@ -61,17 +72,34 @@ export default function comments(state = initialState, action) {
         },
       };
 
-    case COMMENTS_SET_LOADING_STATE:
-      return {
-        ...state,
-        loading: action.loading,
-      };
-
-    case COMMENTS_SET_LOAD_ERROR:
-      return {
-        ...state,
-        errorOnLoad: action.errorOnLoad,
-      };
+    case COMMENTS_SET_LOADING_STATE: {
+      // Mesmo id de operação -> atualização liberada
+      if (action.loading.id === state.loading.id) {
+        return {
+          ...state,
+          loading: {
+            ...state.loading,
+            isLoading: action.loading.isLoading,
+            hasErrored: action.loading.hasErrored,
+          },
+        };
+      } else {
+        // Se for uma nova operação -> atualização liberada
+        if (action.loading.isLoading) {
+          return {
+            ...state,
+            loading: {
+              id: action.loading.id,
+              isLoading: action.loading.isLoading,
+              hasErrored: action.loading.hasErrored,
+            },
+          };
+        } else {
+          // Se não for -> atualização bloqueada
+          return state;
+        }
+      }
+    }
 
     case POSTS_REMOVE: {
       const commentsIds = Object.keys(state.comments);

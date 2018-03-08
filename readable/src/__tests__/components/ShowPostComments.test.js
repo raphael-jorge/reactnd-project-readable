@@ -5,12 +5,15 @@ import {
   mapStateToProps,
 } from '../../components/ShowPostComments';
 
+// Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
     postData: {},
     comments: [],
-    isLoading: undefined,
-    hasErrored: undefined,
+    isLoadingPost: false,
+    isLoadingComments: false,
+    hasErroredPost: false,
+    hasErroredComments: false,
   }, propOverrides);
 
   const showPostComments= shallow(<ShowPostComments {...props} />);
@@ -21,164 +24,240 @@ const setup = (propOverrides) => {
   };
 };
 
-const testPostData = {
+const getDefaultPostData = () => ({
   id: 'testId',
   title: '',
   body: '',
   author: '',
   timestamp: 0,
+});
+
+const getDefaultComments = () => {
+  const commentsArray = [
+    { id: 'testId1', body: '', author: '', timestamp: 0 },
+    { id: 'testId2', body: '', author: '', timestamp: 0 },
+  ];
+
+  const commentsNormalized = commentsArray.reduce((commentsObj, comment) => {
+    commentsObj[comment.id] = comment;
+    return commentsObj;
+  }, {});
+
+  return {
+    commentsArray,
+    commentsNormalized,
+  };
 };
 
-const testComments = [
-  { id: 'testId1', body: '', author: '', timestamp: 0 },
-  { id: 'testId2', body: '', author: '', timestamp: 0 },
-];
+const getDefaultState = () => ({
+  posts: {
+    loading: {
+      isLoading: false,
+      hasErrored: false,
+    },
+    posts: {},
+  },
+  comments: {
+    loading: {
+      isLoading: false,
+      hasErrored: false,
+    },
+    comments: {},
+  },
+});
+
+const getDefaultExpectedState = () => ({
+  postData: {},
+  comments: [],
+  isLoadingPost: false,
+  isLoadingComments: false,
+  hasErroredPost: false,
+  hasErroredComments: false,
+});
+
+const getDefaultProps = () => ({ postId: getDefaultPostData().id });
 
 
+// Tests
 describe('<ShowPostComments />', () => {
-  it('renders a Message component when an error occurs on load', () => {
-    let hasErrored = true;
-    const { showPostComments } = setup({ hasErrored });
+  describe('Post', () => {
+    it('renders a Post component when postData is available', () => {
+      const postData = getDefaultPostData();
+      const { showPostComments } = setup({ postData });
 
-    expect(showPostComments.find('Message').length).toBe(1);
+      const renderedPost = showPostComments.find('Post');
+      expect(renderedPost.length).toBe(1);
+      expect(renderedPost.prop('postData')).toEqual(postData);
+    });
 
-    hasErrored = false;
-    showPostComments.setProps({ hasErrored, comments: testComments });
+    it('renders an error Message component when post load has errored', () => {
+      const hasErroredPost = true;
+      const { showPostComments } = setup({ hasErroredPost });
 
-    expect(showPostComments.find('Message').length).toBe(0);
-  });
+      const renderedPost = showPostComments.find('Post');
+      const renderedMessage = showPostComments.find('Message');
 
-  it('renders a Post component with the postData', () => {
-    const { showPostComments } = setup({ postData: testPostData });
+      const expectedMessage = showPostComments.instance().MESSAGE_LOAD_ERROR;
 
-    const post = showPostComments.find('Post');
-    expect(post.length).toBe(1);
-    expect(post.prop('postData')).toEqual(testPostData);
-  });
+      expect(renderedPost.length).toBe(0);
+      expect(renderedMessage.length).toBe(1);
+      expect(renderedMessage.prop('msg')).toBe(expectedMessage);
+    });
 
-  it('renders a Comment component for each comment in comments', () => {
-    const { showPostComments } = setup({ comments: testComments });
+    it('renders a no data Message component when postData is empty', () => {
+      const { showPostComments } = setup();
 
-    const renderedComments = showPostComments.find('Comment');
+      const renderedPost = showPostComments.find('Post');
+      const renderedMessage = showPostComments.find('Message');
 
-    testComments.forEach((testComment) => {
-      const matchingRenderedComment = renderedComments.filterWhere((comment) => (
-        comment.prop('commentData').id === testComment.id
-      ));
-      expect(matchingRenderedComment.prop('commentData')).toEqual(testComment);
+      const expectedMessage = showPostComments.instance().MESSAGE_NO_POST;
+
+      expect(renderedPost.length).toBe(0);
+      expect(renderedMessage.length).toBe(1);
+      expect(renderedMessage.prop('msg')).toBe(expectedMessage);
     });
   });
 
-  it('renders a Message component when comments is empty', () => {
-    const { showPostComments } = setup();
 
-    expect(showPostComments.find('Message').length).toBe(1);
+  describe('Comments', () => {
+    it('renders comments only when post load completely succeeded', () => {
+      const testComments = getDefaultComments();
+      let isLoadingPost = true;
+      let hasErroredPost = false;
+      let postData = {};
+
+      const { showPostComments } = setup({
+        isLoadingPost,
+        hasErroredPost,
+        postData,
+        comments: testComments.commentsArray,
+      });
+
+      expect(showPostComments.find('Comment').length).toBe(0);
+
+      isLoadingPost = false;
+      hasErroredPost = true;
+      showPostComments.setProps({ isLoadingPost, hasErroredPost });
+
+      expect(showPostComments.find('Comment').length).toBe(0);
+
+      hasErroredPost = false;
+      showPostComments.setProps({ hasErroredPost });
+
+      expect(showPostComments.find('Comment').length).toBe(0);
+
+      postData = getDefaultPostData();
+      showPostComments.setProps({ postData });
+
+      expect(showPostComments.find('Comment').length)
+        .toBe(testComments.commentsArray.length);
+    });
+
+    it('renders a Comment component for each comment in comments', () => {
+      const testComments = getDefaultComments();
+      const postData = getDefaultPostData();
+      const { showPostComments } = setup({
+        comments: testComments.commentsArray,
+        postData,
+      });
+
+      const renderedComments = showPostComments.find('Comment');
+
+      testComments.commentsArray.forEach((testComment) => {
+        const matchingRenderedComment = renderedComments.filterWhere((comment) => (
+          comment.prop('commentData').id === testComment.id
+        ));
+        expect(matchingRenderedComment.prop('commentData')).toEqual(testComment);
+      });
+    });
+
+    it('renders an error Message component when comments load has errored', () => {
+      const postData = getDefaultPostData();
+      const hasErroredComments = true;
+      const { showPostComments } = setup({ hasErroredComments, postData });
+
+      const renderedComments = showPostComments.find('Comment');
+      const renderedMessage = showPostComments.find('Message');
+
+      const expectedMessage = showPostComments.instance().MESSAGE_LOAD_ERROR;
+
+      expect(renderedComments.length).toBe(0);
+      expect(renderedMessage.length).toBe(1);
+      expect(renderedMessage.prop('msg')).toBe(expectedMessage);
+    });
+
+    it('renders a empty comments Message component when comments is empty', () => {
+      const postData = getDefaultPostData();
+      const { showPostComments } = setup({ postData });
+
+      const renderedComments = showPostComments.find('Comment');
+      const renderedMessage = showPostComments.find('Message');
+
+      const expectedMessage = showPostComments.instance().MESSAGE_NO_COMMENTS;
+
+      expect(renderedComments.length).toBe(0);
+      expect(renderedMessage.length).toBe(1);
+      expect(renderedMessage.prop('msg')).toBe(expectedMessage);
+    });
   });
 });
 
 
 describe('mapStateToProps', () => {
-  const getTestState = () => ({
-    posts: {
-      loading: {
-        isLoading: false,
-        hasErrored: false,
-      },
-      posts: {},
-    },
-    comments: {
-      loading: false,
-      errorOnLoad: false,
-      comments: {},
-    },
-  });
-
-  const getExpectedState = () => ({
-    isLoading: false,
-    hasErrored: false,
-    postData: {},
-    comments: [],
-  });
-
-  const getTestProps = () => ({ postId: 'testId' });
-
-  it('sets the default expected state', () => {
-    const testState = getTestState();
-    const expectedState = getExpectedState();
-
-    expect(mapStateToProps(testState, getTestProps())).toEqual(expectedState);
-  });
-
-  it('sets the isLoading prop', () => {
-    const testState = getTestState();
-    const expectedState = getExpectedState();
+  it('sets the post related props', () => {
+    const testState = getDefaultState();
+    const expectedState = getDefaultExpectedState();
+    const postData = getDefaultPostData();
 
     testState.posts.loading.isLoading = true;
-    expectedState.isLoading = true;
-    expect(mapStateToProps(testState, getTestProps())).toEqual(expectedState);
+
+    expectedState.isLoadingPost = true;
+
+    expect(mapStateToProps(testState, getDefaultProps())).toEqual(expectedState);
 
     testState.posts.loading.isLoading = false;
-    testState.comments.loading = true;
-    expectedState.isLoading = true;
-    expect(mapStateToProps(testState, getTestProps())).toEqual(expectedState);
-
-    testState.posts.loading.isLoading = true;
-    testState.comments.loading = true;
-    expectedState.isLoading = true;
-    expect(mapStateToProps(testState, getTestProps())).toEqual(expectedState);
-  });
-
-  it('sets the hasErrored prop', () => {
-    const testState = getTestState();
-    const expectedState = getExpectedState();
-
     testState.posts.loading.hasErrored = true;
-    expectedState.hasErrored = true;
-    expect(mapStateToProps(testState, getTestProps())).toEqual(expectedState);
+
+    expectedState.isLoadingPost = false;
+    expectedState.hasErroredPost = true;
+
+    expect(mapStateToProps(testState, getDefaultProps())).toEqual(expectedState);
 
     testState.posts.loading.hasErrored = false;
-    testState.comments.errorOnLoad = true;
-    expectedState.hasErrored = true;
-    expect(mapStateToProps(testState, getTestProps())).toEqual(expectedState);
+    testState.posts.posts = { [postData.id]: postData };
 
-    testState.posts.loading.hasErrored = true;
-    testState.comments.errorOnLoad = true;
-    expectedState.hasErrored = true;
-    expect(mapStateToProps(testState, getTestProps())).toEqual(expectedState);
+    expectedState.hasErroredPost = false;
+    expectedState.postData = postData;
+
+    expect(mapStateToProps(testState, getDefaultProps())).toEqual(expectedState);
   });
 
-  it('sets the postData prop', () => {
-    const testState = getTestState();
-    const expectedState = getExpectedState();
-    const { postId } = getTestProps();
 
-    const testPost = {
-      id: postId,
-      title: '',
-      body: '',
-      author: '',
-      timestamp: 0,
-    };
+  it('sets the comments related props', () => {
+    const testState = getDefaultState();
+    const expectedState = getDefaultExpectedState();
+    const testComments = getDefaultComments();
 
-    testState.posts.posts = { [postId]: testPost };
-    expectedState.postData = testPost;
+    testState.comments.loading.isLoading = true;
 
-    expect(mapStateToProps(testState, getTestProps())).toEqual(expectedState);
-  });
+    expectedState.isLoadingComments = true;
 
-  it('sets the comments prop', () => {
-    const testState = getTestState();
-    const expectedState = getExpectedState();
+    expect(mapStateToProps(testState, getDefaultProps())).toEqual(expectedState);
 
-    // Normalize comments
-    const commentsObj = testComments.reduce((commentsObj, comment) => {
-      commentsObj[comment.id] = comment;
-      return commentsObj;
-    }, {});
+    testState.comments.loading.isLoading = false;
+    testState.comments.loading.hasErrored = true;
 
-    testState.comments.comments = commentsObj;
-    expectedState.comments = testComments;
+    expectedState.isLoadingComments = false;
+    expectedState.hasErroredComments = true;
 
-    expect(mapStateToProps(testState, getTestProps())).toEqual(expectedState);
+    expect(mapStateToProps(testState, getDefaultProps())).toEqual(expectedState);
+
+    testState.comments.loading.hasErrored = false;
+    testState.comments.comments = testComments.commentsNormalized;
+
+    expectedState.hasErroredComments = false;
+    expectedState.comments = testComments.commentsArray;
+
+    expect(mapStateToProps(testState, getDefaultProps())).toEqual(expectedState);
   });
 });

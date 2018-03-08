@@ -25,69 +25,84 @@ jest.mock('../../util/PostsAPI', () => {
   };
 });
 
+// Mock createId
+jest.mock('../../util/utils', () => {
+  return { createId: () => 'testOperationId' };
+});
+
 // Mock redux store
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
 
-const testComments = [
-  { id: 'testId1', body: 'testBody1', author: 'testAuthor1' },
-  { id: 'testId2', body: 'testBody2', author: 'testAuthor2' },
-];
+// Utils
+const getDefaultComments = () => {
+  const commentsArray = [
+    { id: 'testId1', body: 'testBody1', author: 'testAuthor1' },
+    { id: 'testId2', body: 'testBody2', author: 'testAuthor2' },
+  ];
+
+  return {
+    commentsArray,
+  };
+};
 
 afterEach(() => {
   jest.clearAllMocks();
 });
 
 
+// Tests
 describe('actions', () => {
   describe('action creators', () => {
     it('should create an action to set the loading state', () => {
-      let loadingState = true;
+      const operationId = 'testOperationId';
+
+      let loadingState = {
+        id: operationId,
+        isLoading: true,
+      };
       let expectedAction = {
         type: actions.COMMENTS_SET_LOADING_STATE,
-        loading: loadingState,
+        loading: { ...loadingState, hasErrored: false },
       };
 
       expect(actions.setLoadingState(loadingState)).toEqual(expectedAction);
 
-      loadingState = false;
+      loadingState = {
+        id: operationId,
+        isLoading: false,
+        hasErrored: true,
+      };
       expectedAction = {
         type: actions.COMMENTS_SET_LOADING_STATE,
         loading: loadingState,
       };
 
       expect(actions.setLoadingState(loadingState)).toEqual(expectedAction);
-    });
-
-    it('should create an action to set the errorOnLoad state', () => {
-      let errorOnLoad = true;
-      let expectedAction = {
-        type: actions.COMMENTS_SET_LOAD_ERROR,
-        errorOnLoad: errorOnLoad,
-      };
-
-      expect(actions.setLoadError(errorOnLoad)).toEqual(expectedAction);
-
-      errorOnLoad = false;
-      expectedAction = {
-        type: actions.COMMENTS_SET_LOAD_ERROR,
-        errorOnLoad: errorOnLoad,
-      };
-
-      expect(actions.setLoadError(errorOnLoad)).toEqual(expectedAction);
     });
 
     it('should create an action to set comments', () => {
-      const expectedAction = {
-        type: actions.COMMENTS_SET,
-        comments: testComments,
+      const testComments = getDefaultComments();
+      const operationId = 'testOperationId';
+      const parentPostId = 'testParentPostId';
+
+      const testActionInput = {
+        comments: testComments.commentsArray,
+        operationId,
+        parentPostId,
       };
 
-      expect(actions.setComments(testComments)).toEqual(expectedAction);
+      const expectedAction = {
+        type: actions.COMMENTS_SET,
+        ...testActionInput,
+      };
+
+      expect(actions.setComments(testActionInput)).toEqual(expectedAction);
     });
 
     it('should create an action to add a new comment', () => {
       const commentToAdd = { id: 'testId' };
+
       const expectedAction = {
         type: actions.COMMENTS_ADD,
         comment: commentToAdd,
@@ -98,6 +113,7 @@ describe('actions', () => {
 
     it('should create an action to remove a comment', () => {
       const commentToRemove = { id: 'testId' };
+
       const expectedAction = {
         type: actions.COMMENTS_REMOVE,
         comment: commentToRemove,
@@ -109,6 +125,7 @@ describe('actions', () => {
     it('should create an action to update a comment', () => {
       const commentToUpdate = { id: 'testId' };
       const updatedCommentData = { body: 'testBody' };
+
       const expectedAction = {
         type: actions.COMMENTS_UPDATE,
         comment: commentToUpdate,
@@ -123,12 +140,27 @@ describe('actions', () => {
 
   describe('async actions', () => {
     it('should fetch comments from the api and dispatch actions on success', () => {
-      const parentPostId = 'testId';
+      const testComments = getDefaultComments();
+      const operationId = 'testOperationId';
+      const parentPostId = 'testParentPostId';
+
       const expectedActions = [
-        { type: actions.COMMENTS_SET_LOADING_STATE, loading: true },
-        { type: actions.COMMENTS_SET, comments: testComments },
-        { type: actions.COMMENTS_SET_LOADING_STATE, loading: false },
-        { type: actions.COMMENTS_SET_LOAD_ERROR, errorOnLoad: false },
+        { type: actions.COMMENTS_SET_LOADING_STATE, loading: {
+          id: operationId,
+          isLoading: true,
+          hasErrored: false,
+        } },
+        {
+          type: actions.COMMENTS_SET,
+          comments: testComments.commentsArray,
+          operationId,
+          parentPostId,
+        },
+        { type: actions.COMMENTS_SET_LOADING_STATE, loading: {
+          id: operationId,
+          isLoading: false,
+          hasErrored: false,
+        } },
       ];
 
       const store = mockStore({});
@@ -142,26 +174,34 @@ describe('actions', () => {
 
     it('should fetch comments from the api and dispatch actions on failure', () => {
       PostsAPI.get.postComments.mockImplementationOnce(() => Promise.reject());
+      const operationId = 'testOperationId';
+      const parentPostId = 'testParentPostId';
 
-      const postId = 'testId';
       const expectedActions = [
-        { type: actions.COMMENTS_SET_LOADING_STATE, loading: true },
-        { type: actions.COMMENTS_SET_LOADING_STATE, loading: false },
-        { type: actions.COMMENTS_SET_LOAD_ERROR, errorOnLoad: true },
+        { type: actions.COMMENTS_SET_LOADING_STATE, loading: {
+          id: operationId,
+          isLoading: true,
+          hasErrored: false,
+        } },
+        { type: actions.COMMENTS_SET, comments: [], parentPostId: null, operationId },
+        { type: actions.COMMENTS_SET_LOADING_STATE, loading: {
+          id: operationId,
+          isLoading: false,
+          hasErrored: true,
+        } },
       ];
-
 
       const store = mockStore({});
 
-      return store.dispatch(actions.fetchComments(postId)).then(() => {
+      return store.dispatch(actions.fetchComments(parentPostId)).then(() => {
         const dispatchedActions = store.getActions();
         expect(dispatchedActions).toEqual(expectedActions);
-        expect(PostsAPI.get.postComments).toHaveBeenCalledWith(postId);
+        expect(PostsAPI.get.postComments).toHaveBeenCalledWith(parentPostId);
       });
     });
 
     it('should add a new comment on the api and dispatch actions on success', () => {
-      const parentPostId = 'testId';
+      const parentPostId = 'testParentPostId';
       const commentToAdd = { body: 'testBody', author: 'testAuthor' };
 
       const expectedAddedComment = { ...commentToAdd, id: 'testCreatedCommentId' };

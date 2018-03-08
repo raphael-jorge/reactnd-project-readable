@@ -26,31 +26,40 @@ jest.mock('../../util/PostsAPI', () => {
 
 // Mock createId
 jest.mock('../../util/utils', () => {
-  return { createId: () => 'testId' };
+  return { createId: () => 'testOperationId' };
 });
 
 // Mock redux store
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
 
-const testPosts = [
-  { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
-  { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
-];
+// Utils
+const getDefaultPosts = () => {
+  const postsArray = [
+    { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
+    { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
+  ];
+
+  return {
+    postsArray,
+  };
+};
 
 afterEach(() => {
   jest.clearAllMocks();
 });
 
 
+// Tests
 describe('actions', () => {
   describe('action creators', () => {
     it('should create an action to set the loading state', () => {
+      const operationId = 'testOperationId';
+
       let loadingState = {
-        id: 'testId',
+        id: operationId,
         isLoading: true,
       };
-
       let expectedAction = {
         type: actions.POSTS_SET_LOADING_STATE,
         loading: { ...loadingState, hasErrored: false },
@@ -59,27 +68,28 @@ describe('actions', () => {
       expect(actions.setLoadingState(loadingState)).toEqual(expectedAction);
 
       loadingState = {
-        id: 'testId',
+        id: operationId,
         isLoading: false,
         hasErrored: true,
       };
-
       expectedAction = {
         type: actions.POSTS_SET_LOADING_STATE,
         loading: { ...loadingState },
       };
+
       expect(actions.setLoadingState(loadingState)).toEqual(expectedAction);
     });
 
     it('should create an action to set posts', () => {
-      const operationId = 'testId';
+      const testPosts = getDefaultPosts();
+      const operationId = 'testOperationId';
       const expectedAction = {
         type: actions.POSTS_SET,
-        posts: testPosts,
+        posts: testPosts.postsArray,
         operationId,
       };
 
-      expect(actions.setPosts({ posts: testPosts, operationId: 'testId' }))
+      expect(actions.setPosts({ posts: testPosts.postsArray, operationId }))
         .toEqual(expectedAction);
     });
 
@@ -120,14 +130,16 @@ describe('actions', () => {
 
   describe('async actions', () => {
     it('should fetch posts from the api and dispatch actions on success', () => {
-      const operationId = 'testId';
+      const testPosts = getDefaultPosts();
+      const operationId = 'testOperationId';
+
       const expectedActions = [
         { type: actions.POSTS_SET_LOADING_STATE, loading: {
           id: operationId,
           isLoading: true,
           hasErrored: false,
         } },
-        { type: actions.POSTS_SET, posts: testPosts, operationId },
+        { type: actions.POSTS_SET, posts: testPosts.postsArray, operationId },
         { type: actions.POSTS_SET_LOADING_STATE, loading: {
           id: operationId,
           isLoading: false,
@@ -147,7 +159,7 @@ describe('actions', () => {
     it('should fetch posts from the api and dispatch actions on failure', () => {
       PostsAPI.get.posts.mockImplementationOnce(() => Promise.reject());
 
-      const operationId = 'testId';
+      const operationId = 'testOperationId';
       const expectedActions = [
         { type: actions.POSTS_SET_LOADING_STATE, loading: {
           id: operationId,

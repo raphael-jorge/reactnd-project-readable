@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { shallow } from 'enzyme';
 import Header from '../../components/Header';
 
+// Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
     categories: [],
@@ -20,12 +21,19 @@ const setup = (propOverrides) => {
   };
 };
 
-const testCategories = [
-  { name: 'category1', path: 'categoryPath1' },
-  { name: 'category2', path: 'categoryPath2' },
-];
+const getDefaultCategories = () => {
+  const categoriesArray = [
+    { name: 'category1', path: 'categoryPath1' },
+    { name: 'category2', path: 'categoryPath2' },
+  ];
+
+  return {
+    categoriesArray,
+  };
+};
 
 
+// Tests
 describe('<Header />', () => {
   it('renders a link to the root page', () => {
     const { header } = setup();
@@ -34,11 +42,13 @@ describe('<Header />', () => {
     expect(rootLink.length).toBe(1);
   });
 
+
   it('renders a link to each category page for each category on categories', () => {
-    const { header } = setup({ categories: testCategories });
+    const categories = getDefaultCategories();
+    const { header } = setup({ categories: categories.categoriesArray });
     const renderedCategories = header.find('.category-item');
 
-    testCategories.forEach((testCategory) => {
+    categories.categoriesArray.forEach((testCategory) => {
       const matchingRenderedCategory = renderedCategories.filterWhere((category) => {
         return category.key() === testCategory.name;
       });
@@ -51,12 +61,17 @@ describe('<Header />', () => {
     });
   });
 
+
   it('renders an active category item when activePath is set', () => {
-    const activePath = testCategories[0].path;
-    const { header } = setup({ activePath, categories: testCategories });
+    const categories = getDefaultCategories();
+    const activePath = categories.categoriesArray[0].path;
+    const { header } = setup({
+      activePath,
+      categories: categories.categoriesArray,
+    });
     const renderedCategories = header.find('.category-item');
 
-    testCategories.forEach((testCategory) => {
+    categories.categoriesArray.forEach((testCategory) => {
       const matchingRenderedCategory = renderedCategories.filterWhere((category) => {
         return category.key() === testCategory.name;
       });

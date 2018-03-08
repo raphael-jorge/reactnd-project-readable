@@ -2,6 +2,7 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import Loading from '../../components/Loading';
 
+// Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
     type: undefined,
@@ -16,6 +17,7 @@ const setup = (propOverrides) => {
 };
 
 
+// Tests
 describe('<Loading />', () => {
   it('renders a Message component when no type is set', () => {
     const { loading } = setup();
@@ -24,6 +26,7 @@ describe('<Loading />', () => {
     expect(msg.length).toBe(1);
     expect(msg.prop('msg')).toBe('Loading...');
   });
+
 
   it('renders a .loading-squares element when type is set to squares', () => {
     const type = 'squares';

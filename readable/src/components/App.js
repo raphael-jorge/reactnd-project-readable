@@ -34,18 +34,20 @@ export class App extends Component {
   }
 }
 
-export const mapStateToProps = (state, props) => {
-  const categoriesState = state.categories;
-  let categories;
-  if (categoriesState.isLoading || categoriesState.hasErrored) {
-    categories = [];
+export const mapStateToProps = ({ categories }, props) => {
+  const categoriesObj = categories.categories;
+
+  let categoriesArr;
+  if (categories.loading.isLoading || categories.loading.hasErrored) {
+    categoriesArr = [];
   } else {
-    const categoriesIds = Object.keys(categoriesState.categories);
-    categories = categoriesIds.map((id) => categoriesState.categories[id]);
+    const categoriesPath = Object.keys(categoriesObj);
+    categoriesArr = categoriesPath.map((path) => categoriesObj[path]);
   }
+
   return {
-    categories,
-    activePath: categoriesState.activePath,
+    categories: categoriesArr,
+    activePath: categories.activePath,
   };
 };
 

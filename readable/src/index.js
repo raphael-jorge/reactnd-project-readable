@@ -7,14 +7,16 @@ import registerServiceWorker from './registerServiceWorker';
 import App from './components/App';
 import configureStore from './store';
 import { fetchCategories } from './actions/categories';
+import { fetchPosts } from './actions/posts';
 import setRouteState from './actions/routes';
 import './index.css';
 
 const store = configureStore();
 store.dispatch(fetchCategories());
+store.dispatch(fetchPosts());
 
 const history = createBrowserHistory();
-history.listen((location) => store.dispatch(setRouteState(history.location)));
+history.listen((location) => store.dispatch(setRouteState(location)));
 store.dispatch(setRouteState(history.location));
 
 ReactDOM.render(

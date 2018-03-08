@@ -1,17 +1,19 @@
 import * as PostsAPI from '../util/PostsAPI';
+import { createId } from '../util/utils';
 
 export const COMMENTS_SET = 'COMMENTS_SET';
 export const COMMENTS_ADD = 'COMMENTS_ADD';
 export const COMMENTS_REMOVE = 'COMMENTS_REMOVE';
 export const COMMENTS_UPDATE = 'COMMENTS_UPDATE';
 export const COMMENTS_SET_LOADING_STATE = 'COMMENTS_SET_LOADING_STATE';
-export const COMMENTS_SET_LOAD_ERROR = 'COMMENTS_SET_LOAD_ERROR';
 
 // Action creators
 
-export const setComments = (comments) => ({
+export const setComments = ({ comments, operationId, parentPostId }) => ({
   type: COMMENTS_SET,
   comments,
+  operationId,
+  parentPostId,
 });
 
 export const addComment = (comment) => ({
@@ -32,28 +34,36 @@ export const updateComment = (comment, updatedData) => ({
 
 export const setLoadingState = (loading) => ({
   type: COMMENTS_SET_LOADING_STATE,
-  loading,
-});
-
-export const setLoadError = (errorOnLoad) => ({
-  type: COMMENTS_SET_LOAD_ERROR,
-  errorOnLoad,
+  loading: {
+    ...loading,
+    hasErrored: loading.hasErrored || false,
+  },
 });
 
 // Async Actions
 
-export const fetchComments = (postId) => ((dispatch) => {
-  dispatch(setLoadingState(true));
+export const fetchComments = (parentPostId) => ((dispatch) => {
+  const operationId = createId();
+  dispatch(setLoadingState({
+    id: operationId,
+    isLoading: true,
+  }));
 
-  return PostsAPI.get.postComments(postId)
+  return PostsAPI.get.postComments(parentPostId)
     .then((comments) => {
-      dispatch(setComments(comments));
-      dispatch(setLoadingState(false));
-      dispatch(setLoadError(false));
+      dispatch(setComments({ comments, operationId, parentPostId }));
+      dispatch(setLoadingState({
+        id: operationId,
+        isLoading: false,
+      }));
     })
     .catch(() => {
-      dispatch(setLoadingState(false));
-      dispatch(setLoadError(true));
+      dispatch(setComments({ comments: [], operationId, parentPostId: null }));
+      dispatch(setLoadingState({
+        id: operationId,
+        isLoading: false,
+        hasErrored: true,
+      }));
     });
 });
 

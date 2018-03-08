@@ -1,26 +1,34 @@
 import * as actions from '../../actions/categories';
 import reducer from '../../reducers/categories';
 
-const testCategories = [
-  { name: 'testCategorie1', path: 'testCategorie2' },
-  { name: 'testCategorie2', path: 'testCategorie2' },
-];
+// Utils
+const getDefaultCategories = () => {
+  const categoriesArray = [
+    { name: 'testCategorie1', path: 'testCategorie2' },
+    { name: 'testCategorie2', path: 'testCategorie2' },
+  ];
 
-const structuredTestCategories = testCategories.reduce((categories, categorie) => {
-  categories[categorie.name] = {
-    name: categorie.name,
-    path: categorie.path,
+  const categoriesNormalized = categoriesArray.reduce((categoriesObj, category) => {
+    categoriesObj[category.path] = category;
+    return categoriesObj;
+  }, {});
+
+  return {
+    categoriesArray,
+    categoriesNormalized,
   };
-  return categories;
-}, {});
+};
 
 
+// Tests
 describe('reducer', () => {
   it('should return the initial state', () => {
     const expectedState = {
       activePath: null,
-      loading: false,
-      errorOnLoad: false,
+      loading: {
+        isLoading: false,
+        hasErrored: false,
+      },
       categories: {},
     };
 
@@ -28,24 +36,19 @@ describe('reducer', () => {
   });
 
 
-  it('should handle SET_CATEGORIES', () => {
-    const testAction = {
-      type: actions.CATEGORIES_SET,
-      categories: testCategories,
-    };
+  it('should handle CATEGORIES_SET', () => {
+    const testCategories = getDefaultCategories();
+    const testAction = actions.setCategories(testCategories.categoriesArray);
 
-    const expectedState = { categories: structuredTestCategories };
+    const expectedState = { categories: testCategories.categoriesNormalized };
 
     expect(reducer({}, testAction)).toEqual(expectedState);
   });
 
 
-  it('should handle SET_CATEGORIES_ACTIVE', () => {
+  it('should handle CATEGORIES_SET_ACTIVE', () => {
     const activePath = 'testActivePath';
-    const testAction = {
-      type: actions.CATEGORIES_SET_ACTIVE,
-      activePath,
-    };
+    const testAction = actions.setActiveCategory(activePath);
 
     const expectedState = { activePath };
 
@@ -53,25 +56,14 @@ describe('reducer', () => {
   });
 
 
-  it('should handle SET_CATEGORIES_LOADING_STATE', () => {
-    const testAction = {
-      type: actions.CATEGORIES_SET_LOADING_STATE,
-      loading: true,
+  it('should handle CATEGORIES_SET_LOADING_STATE', () => {
+    const loadingState = {
+      isLoading: false,
+      hasErrored: true,
     };
+    const testAction = actions.setLoadingState(loadingState);
 
-    const expectedState = { loading: true };
-
-    expect(reducer({}, testAction)).toEqual(expectedState);
-  });
-
-
-  it('should handle SET_CATEGORIES_LOAD_ERROR', () => {
-    const testAction = {
-      type: actions.CATEGORIES_SET_LOAD_ERROR,
-      errorOnLoad: true,
-    };
-
-    const expectedState = { errorOnLoad: true };
+    const expectedState = { loading: loadingState };
 
     expect(reducer({}, testAction)).toEqual(expectedState);
   });

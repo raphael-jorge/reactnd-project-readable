@@ -2,6 +2,26 @@ import * as postsActions from '../../actions/posts';
 import * as commentsActions from '../../actions/comments';
 import reducer from '../../reducers/posts';
 
+// Utils
+const getDefaultPosts = () => {
+  const postsArray = [
+    { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
+    { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
+  ];
+
+  const postsNormalized = postsArray.reduce((postsObj, post) => {
+    postsObj[post.id] = post;
+    return postsObj;
+  }, {});
+
+  return {
+    postsArray,
+    postsNormalized,
+  };
+};
+
+
+// Tests
 describe('reducer', () => {
   describe('posts actions', () => {
     it('should return the initial state', () => {
@@ -19,52 +39,41 @@ describe('reducer', () => {
 
     describe('should handle POSTS_SET', () => {
       it('updates posts if the operation id matches', () => {
-        const operationId = 'testId';
+        const testPosts = getDefaultPosts();
+        const operationId = 'testoperationId';
+
         const initialState = {
           loading: { id: operationId },
           posts: {},
         };
 
-        const postsToSet = [
-          { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
-          { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
-        ];
-
-        const testAction = {
-          type: postsActions.POSTS_SET,
-          posts: postsToSet,
+        const testAction = postsActions.setPosts({
+          posts: testPosts.postsArray,
           operationId,
-        };
+        });
 
         const expectedState = {
           loading: { id: operationId },
-          posts: postsToSet.reduce((posts, post) => {
-            posts[post.id] = post;
-            return posts;
-          }, {}),
+          posts: testPosts.postsNormalized,
         };
 
         expect(reducer(initialState, testAction)).toEqual(expectedState);
       });
 
       it('does not update posts if operation id does not match', () => {
-        const operationIdState = 'testIdState';
-        const operationIdAction = 'testIdAction';
+        const testPosts = getDefaultPosts();
+        const operationIdState = 'testOldOperationId';
+        const operationIdAction = 'testNewOperationId';
+
         const initialState = {
           loading: { id: operationIdState },
           posts: {},
         };
 
-        const postsToSet = [
-          { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
-          { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
-        ];
-
-        const testAction = {
-          type: postsActions.POSTS_SET,
-          posts: postsToSet,
+        const testAction = postsActions.setPosts({
+          posts: testPosts.postsArray,
           operationId: operationIdAction,
-        };
+        });
 
         const expectedState = initialState;
 
@@ -74,10 +83,8 @@ describe('reducer', () => {
 
     it('should handle POSTS_ADD', () => {
       const postToAdd = { id: 'testId', title: 'testTitle', body: 'testBody' };
-      const testAction = {
-        type: postsActions.POSTS_ADD,
-        post: postToAdd,
-      };
+
+      const testAction = postsActions.addPost(postToAdd);
 
       const expectedState = { posts: { [postToAdd.id]: postToAdd } };
 
@@ -87,15 +94,13 @@ describe('reducer', () => {
     it('should handle POSTS_REMOVE', () => {
       const postToRemove = { id: 'testId1' };
       const postToKeep = { id: 'testId2' };
+
       const initialState = { posts: {
         [postToRemove.id]: postToRemove,
         [postToKeep.id]: postToKeep,
       } };
 
-      const testAction = {
-        type: postsActions.POSTS_REMOVE,
-        post: postToRemove,
-      };
+      const testAction = postsActions.removePost(postToRemove);
 
       const expectedState = {
         posts: { [postToKeep.id]: postToKeep },
@@ -106,18 +111,15 @@ describe('reducer', () => {
 
     it('should handle POSTS_UPDATE', () => {
       const postToUpdate = { id: 'testId', title: 'testTitle', body: 'testBody' };
+      const updatedPostData = { title: 'testUpdatedTitle', body: 'testUpdatedBody' };
+
       const initialState = {
         posts: {
           [postToUpdate.id]: postToUpdate,
         },
       };
-      const updatedPostData = { title: 'testUpdatedTitle', body: 'testUpdatedBody' };
 
-      const testAction = {
-        type: postsActions.POSTS_UPDATE,
-        post: postToUpdate,
-        newData: updatedPostData,
-      };
+      const testAction = postsActions.updatePost(postToUpdate, updatedPostData);
 
       const expectedState = {
         posts: {
@@ -142,10 +144,7 @@ describe('reducer', () => {
             isLoading: !initialState.loading.isLoading,
             hasErrored: !initialState.loading.hasErrored,
           };
-          const testAction = {
-            type: postsActions.POSTS_SET_LOADING_STATE,
-            loading: newLoadingState,
-          };
+          const testAction = postsActions.setLoadingState(newLoadingState);
 
           const expectedState = { loading: newLoadingState };
 
@@ -166,10 +165,7 @@ describe('reducer', () => {
             isLoading: true,    // new loading
             hasErrored: false,
           };
-          const testAction = {
-            type: postsActions.POSTS_SET_LOADING_STATE,
-            loading: newLoadingState,
-          };
+          const testAction = postsActions.setLoadingState(newLoadingState);
 
           const expectedState = { loading: newLoadingState };
 
@@ -188,10 +184,7 @@ describe('reducer', () => {
             isLoading: false,    // end loading
             hasErrored: false,
           };
-          const testAction = {
-            type: postsActions.POSTS_SET_LOADING_STATE,
-            loading: newLoadingState,
-          };
+          const testAction = postsActions.setLoadingState(newLoadingState);
 
           const expectedState = initialState;
 
@@ -202,18 +195,16 @@ describe('reducer', () => {
   });
 
 
-  describe('comments postsActions', () => {
+  describe('comments actions', () => {
     it('should handle COMMENTS_ADD: update commentCount', () => {
       const postIdToAddComment = 'testId';
+      const commentToAdd = { parentId: postIdToAddComment };
 
       const initialState = {
         posts: { [postIdToAddComment]: { id: postIdToAddComment, commentCount: 0 } },
       };
 
-      const testAction = {
-        type: commentsActions.COMMENTS_ADD,
-        comment: { parentId: postIdToAddComment },
-      };
+      const testAction = commentsActions.addComment(commentToAdd);
 
       const expectedState = {
         posts: { [postIdToAddComment]: { id: postIdToAddComment, commentCount: 1 } },
@@ -224,15 +215,13 @@ describe('reducer', () => {
 
     it('should handle COMMENTS_REMOVE: update commentCount', () => {
       const postIdToRemoveComment = 'testId';
+      const commentToRemove = { parentId: postIdToRemoveComment };
 
       const initialState = {
         posts: { [postIdToRemoveComment]: { id: postIdToRemoveComment, commentCount: 1 } },
       };
 
-      const testAction = {
-        type: commentsActions.COMMENTS_REMOVE,
-        comment: { parentId: postIdToRemoveComment },
-      };
+      const testAction = commentsActions.removeComment(commentToRemove);
 
       const expectedState = {
         posts: { [postIdToRemoveComment]: { id: postIdToRemoveComment, commentCount: 0 } },

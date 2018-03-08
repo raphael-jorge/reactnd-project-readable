@@ -2,6 +2,7 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import Comment from '../../components/Comment';
 
+// Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
     commentData: {
@@ -20,6 +21,8 @@ const setup = (propOverrides) => {
   };
 };
 
+
+// Tests
 describe('<Comment />', () => {
   it('renders without crashing', () => {
     const { comment } = setup();

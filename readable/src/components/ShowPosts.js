@@ -14,6 +14,9 @@ export class ShowPosts extends Component {
     hasErrored: PropTypes.bool,
   }
 
+  MESSAGE_LOAD_ERROR = 'There was an error while loading posts from the server'
+  MESSAGE_NO_POSTS = 'No Posts Available'
+
   render() {
     const {
       posts,
@@ -27,10 +30,10 @@ export class ShowPosts extends Component {
         {/* Verifica se os posts estão sendo carregados */}
         <Placeholder
           isReady={!isLoading}
-          fallback={<Loading type={'squares'} />}
+          fallback={<Loading type="squares" />}
         >
           {hasErrored &&
-            <Message msg={'There was an error while loading posts from the server'} />
+            <Message msg={this.MESSAGE_LOAD_ERROR} />
           }
 
           {!hasErrored && posts.length > 0 && posts.map((postData) => (
@@ -47,7 +50,7 @@ export class ShowPosts extends Component {
           ))}
 
           {!hasErrored && !posts.length &&
-            <Message msg={'No Posts Available'} />
+            <Message msg={this.MESSAGE_NO_POSTS} />
           }
         </Placeholder>
 
@@ -56,13 +59,23 @@ export class ShowPosts extends Component {
   }
 }
 
-export const mapStateToProps = ({ posts: postsState }, props) => {
-  const posts = postsState.posts;
-  const postsIds = Object.keys(posts);
+export const mapStateToProps = ({ posts, categories }, props) => {
+  const postsObj = posts.posts;
+  const postsIds = Object.keys(postsObj);
+  const postsArr = postsIds.map((postId) => (postsObj[postId]));
+
+  const activeCategoryPath = categories.activePath;
+  let postsToProps;
+  if (activeCategoryPath === null) {
+    postsToProps = postsArr;
+  } else {
+    postsToProps = postsArr.filter((post) => post.category === activeCategoryPath);
+  }
+
   return {
-    isLoading: postsState.loading.isLoading,
-    hasErrored: postsState.loading.hasErrored,
-    posts: postsIds.map((postId) => (posts[postId])),
+    isLoading: posts.loading.isLoading,
+    hasErrored: posts.loading.hasErrored,
+    posts: postsToProps,
   };
 };
 

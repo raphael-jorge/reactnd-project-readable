@@ -2,13 +2,14 @@ import {
   CATEGORIES_SET,
   CATEGORIES_SET_ACTIVE,
   CATEGORIES_SET_LOADING_STATE,
-  CATEGORIES_SET_LOAD_ERROR,
 } from '../actions/categories';
 
 const initialState = {
   activePath: null,
-  loading: false,
-  errorOnLoad: false,
+  loading: {
+    isLoading: false,
+    hasErrored: false,
+  },
   categories: {},
 };
 
@@ -17,22 +18,19 @@ export default function categories(state = initialState, action) {
     case CATEGORIES_SET_LOADING_STATE:
       return {
         ...state,
-        loading: action.loading,
-      };
-
-    case CATEGORIES_SET_LOAD_ERROR:
-      return {
-        ...state,
-        errorOnLoad: action.errorOnLoad,
+        loading: {
+          isLoading: action.loading.isLoading,
+          hasErrored: action.loading.hasErrored,
+        },
       };
 
     case CATEGORIES_SET:
       return {
         ...state,
-        categories: action.categories.reduce((categories, categorie) => {
-          categories[categorie.name] = {
-            name: categorie.name,
-            path: categorie.path,
+        categories: action.categories.reduce((categories, category) => {
+          categories[category.path] = {
+            name: category.name,
+            path: category.path,
           };
           return categories;
         }, {}),

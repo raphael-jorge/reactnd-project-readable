@@ -2,6 +2,7 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import Post from '../../components/Post';
 
+// Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
     postData: {
@@ -23,6 +24,8 @@ const setup = (propOverrides) => {
   };
 };
 
+
+// Tests
 describe('<Post />', () => {
   it('renders without crashing', () => {
     const { post } = setup();
@@ -31,6 +34,7 @@ describe('<Post />', () => {
     expect(post.find('.post-title').length).toBe(1);
     expect(post.find('.post-body').length).toBe(1);
   });
+
 
   it('crops the body length if the maxBodyLength prop is set', () => {
     const stringFiller = '-';

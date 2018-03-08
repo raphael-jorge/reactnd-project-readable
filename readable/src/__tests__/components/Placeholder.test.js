@@ -2,6 +2,7 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import Placeholder from '../../components/Placeholder';
 
+// Utils
 const setup = (propOverrides) => {
   const children = {
     type: 'p',
@@ -24,6 +25,7 @@ const setup = (propOverrides) => {
 };
 
 
+// Tests
 describe('<Placeholder />', () => {
   it('renders the children component when isReady is true', () => {
     const isReady = true;
@@ -31,6 +33,7 @@ describe('<Placeholder />', () => {
 
     expect(placeholder.find(children.type).text()).toBe(children.text);
   });
+
 
   it('renders fallback when isReady is false', () => {
     const isReady = false;
@@ -44,6 +47,7 @@ describe('<Placeholder />', () => {
 
     expect(placeholder.find(fallbackData.type).text()).toBe(fallbackData.text);
   });
+
 
   it('renders nothing when isReady is false and fallback is not set', () => {
     const isReady = false;

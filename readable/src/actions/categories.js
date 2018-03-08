@@ -3,7 +3,6 @@ import * as PostsAPI from '../util/PostsAPI';
 export const CATEGORIES_SET = 'CATEGORIES_SET';
 export const CATEGORIES_SET_ACTIVE = 'CATEGORIES_SET_ACTIVE';
 export const CATEGORIES_SET_LOADING_STATE = 'CATEGORIES_SET_LOADING_STATE';
-export const CATEGORIES_SET_LOAD_ERROR = 'CATEGORIES_SET_LOAD_ERROR';
 
 export const setCategories = (categories) => ({
   type: CATEGORIES_SET,
@@ -17,25 +16,25 @@ export const setActiveCategory = (activePath) => ({
 
 export const setLoadingState = (loading) => ({
   type: CATEGORIES_SET_LOADING_STATE,
-  loading,
-});
-
-export const setLoadError = (errorOnLoad) => ({
-  type: CATEGORIES_SET_LOAD_ERROR,
-  errorOnLoad,
+  loading: {
+    ...loading,
+    hasErrored: loading.hasErrored || false,
+  },
 });
 
 export const fetchCategories = () => ((dispatch) => {
-  dispatch(setLoadingState(true));
+  dispatch(setLoadingState({ isLoading: true }));
 
   return PostsAPI.get.categories()
     .then((categories) => {
       dispatch(setCategories(categories.categories));
-      dispatch(setLoadingState(false));
-      dispatch(setLoadError(false));
+      dispatch(setLoadingState({ isLoading: false }));
     })
     .catch(() => {
-      dispatch(setLoadingState(false));
-      dispatch(setLoadError(true));
+      dispatch(setCategories([]));
+      dispatch(setLoadingState({
+        isLoading: false,
+        hasErrored: true,
+      }));
     });
 });

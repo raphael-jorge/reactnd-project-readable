@@ -1,7 +1,7 @@
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import * as PostsAPI from '../../util/PostsAPI';
-import * as actions from '../../actions/categories';
+import * as categoriesActions from '../../actions/categories';
 
 // Mock PostsAPI.get.categories()
 jest.mock('../../util/PostsAPI', () => {
@@ -19,84 +19,89 @@ jest.mock('../../util/PostsAPI', () => {
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
 
-const testCategories = [
-  { name: 'testCategorie1', path: 'testCategorie2' },
-  { name: 'testCategorie2', path: 'testCategorie2' },
-];
+// Utils
+const getDefaultCategories = () => {
+  const categoriesArray = [
+    { name: 'testCategorie1', path: 'testCategorie2' },
+    { name: 'testCategorie2', path: 'testCategorie2' },
+  ];
+
+  return {
+    categoriesArray,
+  };
+};
 
 afterEach(() => {
   jest.clearAllMocks();
 });
 
 
+// Tests
 describe('actions', () => {
   it('should create an action to set the loading state', () => {
-    let loadingState = true;
+    let loadingState = {
+      isLoading: true,
+    };
     let expectedAction = {
-      type: actions.CATEGORIES_SET_LOADING_STATE,
+      type: categoriesActions.CATEGORIES_SET_LOADING_STATE,
+      loading: { ...loadingState, hasErrored: false },
+    };
+
+    expect(categoriesActions.setLoadingState(loadingState)).toEqual(expectedAction);
+
+    loadingState = {
+      isLoading: false,
+      hasErrored: true,
+    };
+    expectedAction = {
+      type: categoriesActions.CATEGORIES_SET_LOADING_STATE,
       loading: loadingState,
     };
-
-    expect(actions.setLoadingState(loadingState)).toEqual(expectedAction);
-
-    loadingState = false;
-    expectedAction = {
-      type: actions.CATEGORIES_SET_LOADING_STATE,
-      loading: loadingState,
-    };
-    expect(actions.setLoadingState(loadingState)).toEqual(expectedAction);
-  });
-
-
-  it('should create an action to set the errorOnLoad state', () => {
-    let errorState = true;
-    let expectedAction = {
-      type: actions.CATEGORIES_SET_LOAD_ERROR,
-      errorOnLoad: errorState,
-    };
-
-    expect(actions.setLoadError(errorState)).toEqual(expectedAction);
-
-    errorState = false;
-    expectedAction = {
-      type: actions.CATEGORIES_SET_LOAD_ERROR,
-      errorOnLoad: errorState,
-    };
-    expect(actions.setLoadError(errorState)).toEqual(expectedAction);
+    expect(categoriesActions.setLoadingState(loadingState)).toEqual(expectedAction);
   });
 
 
   it('should create an action to set the categories', () => {
+    const testCategories = getDefaultCategories();
     const expectedAction = {
-      type: actions.CATEGORIES_SET,
-      categories: testCategories,
+      type: categoriesActions.CATEGORIES_SET,
+      categories: testCategories.categoriesArray,
     };
 
-    expect(actions.setCategories(testCategories)).toEqual(expectedAction);
+    expect(categoriesActions.setCategories(testCategories.categoriesArray))
+      .toEqual(expectedAction);
   });
+
 
   it('should create an action to set the activePath', () => {
     const activePath = 'testPath';
     const expectedAction = {
-      type: actions.CATEGORIES_SET_ACTIVE,
+      type: categoriesActions.CATEGORIES_SET_ACTIVE,
       activePath,
     };
 
-    expect(actions.setActiveCategory(activePath)).toEqual(expectedAction);
+    expect(categoriesActions.setActiveCategory(activePath)).toEqual(expectedAction);
   });
 
 
   it('should fetch data from the api and dispatch actions on success', () => {
+    const testCategories = getDefaultCategories();
+
     const expectedActions = [
-      { type: actions.CATEGORIES_SET_LOADING_STATE, loading: true },
-      { type: actions.CATEGORIES_SET, categories: testCategories },
-      { type: actions.CATEGORIES_SET_LOADING_STATE, loading: false },
-      { type: actions.CATEGORIES_SET_LOAD_ERROR, errorOnLoad: false },
+      { type: categoriesActions.CATEGORIES_SET_LOADING_STATE, loading: {
+        isLoading: true,
+        hasErrored: false,
+      } },
+      { type: categoriesActions.CATEGORIES_SET, categories: testCategories.categoriesArray },
+      { type: categoriesActions.CATEGORIES_SET_LOADING_STATE, loading: {
+        isLoading: false,
+        hasErrored: false,
+      } },
     ];
 
     const store = mockStore({});
 
-    return store.dispatch(actions.fetchCategories()).then(() => {
+    return store.dispatch(categoriesActions.fetchCategories()).then(() => {
       const dispatchedActions = store.getActions();
       expect(dispatchedActions).toEqual(expectedActions);
       expect(PostsAPI.get.categories).toHaveBeenCalled();
@@ -108,14 +113,20 @@ describe('actions', () => {
     PostsAPI.get.categories.mockImplementationOnce(() => Promise.reject());
 
     const expectedActions = [
-      { type: actions.CATEGORIES_SET_LOADING_STATE, loading: true },
-      { type: actions.CATEGORIES_SET_LOADING_STATE, loading: false },
-      { type: actions.CATEGORIES_SET_LOAD_ERROR, errorOnLoad: true },
+      { type: categoriesActions.CATEGORIES_SET_LOADING_STATE, loading: {
+        isLoading: true,
+        hasErrored: false,
+      } },
+      { type: categoriesActions.CATEGORIES_SET, categories: [] },
+      { type: categoriesActions.CATEGORIES_SET_LOADING_STATE, loading: {
+        isLoading: false,
+        hasErrored: true,
+      } },
     ];
 
     const store = mockStore({});
 
-    return store.dispatch(actions.fetchCategories()).then(() => {
+    return store.dispatch(categoriesActions.fetchCategories()).then(() => {
       const dispatchedActions = store.getActions();
       expect(dispatchedActions).toEqual(expectedActions);
       expect(PostsAPI.get.categories).toHaveBeenCalled();

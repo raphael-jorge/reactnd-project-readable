@@ -2,6 +2,7 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import Message from '../../components/Message';
 
+// Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
     msg: '',
@@ -16,6 +17,7 @@ const setup = (propOverrides) => {
 };
 
 
+// Tests
 describe('<Message />', () => {
   it('renders a paragraph element with the message', () => {
     const msg = 'test message';
