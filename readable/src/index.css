@@ -124,7 +124,7 @@ a {
 .post {
   position: relative;
   margin: 20px 10px;
-  padding: 15px 20px;
+  padding: 15px 20px 10px;
   background-color: #f8f8f8;
   box-shadow: 0 0 5px #222f5a;
 }
@@ -151,6 +151,13 @@ a {
   text-align: justify;
   letter-spacing: 0.03rem;
   line-height: 1.4rem;
+}
+.post-comments-info {
+  color: #777;
+  text-align: right;
+}
+.post-comments-info .info-data {
+  margin: 0 10px;
 }
 
 
@@ -201,7 +208,9 @@ a {
 
 
 /* Control */
-.post-control,
+.post-control {
+  padding: 25px 20px 10px 55px;
+}
 .comment-control {
   padding: 25px 20px 15px 55px;
 }

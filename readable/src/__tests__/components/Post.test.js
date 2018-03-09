@@ -38,6 +38,7 @@ describe('<Post />', () => {
     expect(post.find('.post-info').length).toBe(1);
     expect(post.find('.post-title').length).toBe(1);
     expect(post.find('.post-body').length).toBe(1);
+    expect(post.find('.post-comments-info').length).toBe(1);
   });
 
 

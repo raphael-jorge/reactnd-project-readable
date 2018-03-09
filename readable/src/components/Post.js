@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import CommentsIcon from 'react-icons/lib/md/comment';
 import { formatDate, trimStringToLength } from '../util/utils';
 import Controls from './Controls';
 
@@ -29,6 +30,11 @@ export default class Post extends Component {
         <p className="post-body">
           { maxBodyLength ? trimStringToLength(postData.body, maxBodyLength) : postData.body }
         </p>
+
+        <div className="post-comments-info">
+          <span className="info-data">{postData.commentCount}</span>
+          <CommentsIcon size={20} />
+        </div>
 
         <Controls
           voteData={{
