@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { formatDate } from '../util/utils';
+import Controls from './Controls';
 
 export default class Comment extends Component {
   static propTypes = {
@@ -13,7 +14,7 @@ export default class Comment extends Component {
     } = this.props;
 
     return (
-      <article className="comment">
+      <article className="comment comment-control">
 
         <div className="comment-info">
           <span>{ commentData.author }</span>
@@ -24,6 +25,16 @@ export default class Comment extends Component {
         <p className="comment-body">
           { commentData.body }
         </p>
+
+        <Controls
+          voteData={{
+            voteCount: commentData.voteScore,
+            onVoteUp: () => {},
+            onVoteDown: () => {},
+          }}
+          onEdit={() => {}}
+          onRemove={() => {}}
+        />
 
       </article>
     );

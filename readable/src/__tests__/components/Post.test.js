@@ -5,14 +5,7 @@ import Post from '../../components/Post';
 // Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
-    postData: {
-      id: 'testId',
-      category: 'testCategory',
-      timestamp: Date.now(),
-      title: '',
-      author: '',
-      body: '',
-    },
+    postData: getDefaultPostData(),
     maxBodyLength: undefined,
   }, propOverrides);
 
@@ -24,15 +17,33 @@ const setup = (propOverrides) => {
   };
 };
 
+const getDefaultPostData = () => ({
+  id: 'testId',
+  category: 'testCategory',
+  timestamp: Date.now(),
+  title: '',
+  author: '',
+  body: '',
+  voteScore: 0,
+  commentCount: 0,
+});
+
 
 // Tests
 describe('<Post />', () => {
   it('renders without crashing', () => {
     const { post } = setup();
     expect(post.find('.post').length).toBe(1);
+    expect(post.find('.post-control').length).toBe(1);
     expect(post.find('.post-info').length).toBe(1);
     expect(post.find('.post-title').length).toBe(1);
     expect(post.find('.post-body').length).toBe(1);
+  });
+
+
+  it('renders a Controls component', () => {
+    const { post } = setup();
+    expect(post.find('Controls').length).toBe(1);
   });
 
 
@@ -41,10 +52,12 @@ describe('<Post />', () => {
     const continueMark = '...';
     const testBodyLength = 100;
     const testBody = Array(testBodyLength + 1).join(stringFiller);
+    const postData = getDefaultPostData();
 
     // Limite maior que o body length
     let maxBodyLength = 150;
-    const { post } = setup({ postData: { body: testBody }, maxBodyLength });
+    postData.body = testBody;
+    const { post } = setup({ postData, maxBodyLength });
     let expectedRenderedBody = testBody;
 
     expect(post.find('.post-body').text()).toBe(expectedRenderedBody);

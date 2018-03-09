@@ -122,6 +122,7 @@ a {
 
 /* Posts */
 .post {
+  position: relative;
   margin: 20px 10px;
   padding: 15px 20px;
   background-color: #f8f8f8;
@@ -196,4 +197,72 @@ a {
   text-align: justify;
   letter-spacing: 0.03rem;
   line-height: 1.2rem;
+}
+
+
+/* Control */
+.post-control,
+.comment-control {
+  padding: 25px 20px 15px 55px;
+}
+.control {
+  font-size: 1rem;
+}
+.control button {
+  border: none;
+  background: none;
+  margin: 0;
+  padding: 0;
+}
+/* Vote control */
+.post-control .vote {
+  position: absolute;
+  top: 35px;
+  left: 0;
+  width: 50px;
+}
+.comment-control .vote {
+  position: absolute;
+  top: 11px;
+  left: 0;
+  width: 50px;
+}
+.control .vote {
+  color: #777;
+  text-align: center;
+}
+.control .vote-up,
+.control .vote-down {
+  color: #bbb;
+  transition: color 0.2s;
+}
+.control .vote-up:hover,
+.control .vote-down:hover {
+  color: inherit;
+  cursor: pointer;
+}
+/* Edit control */
+.control .edit {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: flex;
+  z-index: 10;
+}
+.control .edit-control {
+  margin: 0 0 0 5px;
+  padding: 0;
+  color: #bbb;
+  opacity: 0;
+  transition: color 0.3s;
+  cursor: pointer;
+}
+.post-control:hover .edit-control,
+.comment-control:hover .edit-control {
+  color: #bbb;
+  opacity: 1;
+}
+.post-control:hover .edit-control:hover,
+.comment-control:hover .edit-control:hover {
+  color: #777;
 }

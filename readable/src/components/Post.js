@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { formatDate, trimStringToLength } from '../util/utils';
+import Controls from './Controls';
 
 export default class Post extends Component {
   static propTypes = {
@@ -15,7 +16,7 @@ export default class Post extends Component {
     } = this.props;
 
     return (
-      <article className="post">
+      <article className="post post-control">
 
         <div className="post-info">
           <span>{ postData.author }</span>
@@ -28,6 +29,16 @@ export default class Post extends Component {
         <p className="post-body">
           { maxBodyLength ? trimStringToLength(postData.body, maxBodyLength) : postData.body }
         </p>
+
+        <Controls
+          voteData={{
+            voteCount: postData.voteScore,
+            onVoteUp: () => {},
+            onVoteDown: () => {},
+          }}
+          onEdit={() => {}}
+          onRemove={() => {}}
+        />
 
       </article>
     );
