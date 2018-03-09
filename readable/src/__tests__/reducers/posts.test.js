@@ -130,6 +130,28 @@ describe('reducer', () => {
       expect(reducer(initialState, testAction)).toEqual(expectedState);
     });
 
+    it('should handle POSTS_VOTE', () => {
+      const currentVoteScore = 3;
+      const postToVote = { id: 'testId', voteScore: currentVoteScore };
+      const vote = 1;
+
+      const initialState = {
+        posts: {
+          [postToVote.id]: postToVote,
+        },
+      };
+
+      const testAction = postsActions.voteOnPost(postToVote, vote);
+
+      const expectedState = {
+        posts: {
+          [postToVote.id]: { ...postToVote, voteScore: currentVoteScore + 1 },
+        },
+      };
+
+      expect(reducer(initialState, testAction)).toEqual(expectedState);
+    });
+
     describe('should handle POSTS_SET_LOADING_STATE', () => {
       describe('an operation with the same id of the current state', () => {
         it('is free to update any loading status', () => {

@@ -3,6 +3,7 @@ import {
   COMMENTS_ADD,
   COMMENTS_REMOVE,
   COMMENTS_UPDATE,
+  COMMENTS_VOTE,
   COMMENTS_SET_LOADING_STATE,
 } from '../actions/comments';
 
@@ -68,6 +69,18 @@ export default function comments(state = initialState, action) {
           [action.comment.id]: {
             ...state.comments[action.comment.id],
             body: action.newData.body,
+          },
+        },
+      };
+
+    case COMMENTS_VOTE:
+      return {
+        ...state,
+        comments: {
+          ...state.comments,
+          [action.comment.id]: {
+            ...state.comments[action.comment.id],
+            voteScore: state.comments[action.comment.id].voteScore + action.vote,
           },
         },
       };

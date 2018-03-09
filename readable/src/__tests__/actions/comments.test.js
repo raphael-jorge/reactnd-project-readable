@@ -19,6 +19,7 @@ jest.mock('../../util/PostsAPI', () => {
           id: 'testCreatedCommentId',
         })
       ),
+      voteOnComment: jest.fn(() => Promise.resolve()),
     },
     update: { comment: jest.fn(() => Promise.resolve()) },
     del: { comment: jest.fn(() => Promise.resolve()) },
@@ -134,6 +135,26 @@ describe('actions', () => {
 
       expect(actions.updateComment(commentToUpdate, updatedCommentData))
         .toEqual(expectedAction);
+    });
+
+    it('should create an action to vote on a comment', () => {
+      const commentToVote = { id: 'testId' };
+      let vote = 4;
+      let expectedVote = 1;
+
+      const expectedAction = {
+        type: actions.COMMENTS_VOTE,
+        comment: commentToVote,
+        vote: expectedVote,
+      };
+
+      expect(actions.voteOnComment(commentToVote, vote)).toEqual(expectedAction);
+
+      vote = -4;
+      expectedVote = -1;
+      expectedAction.vote = expectedVote;
+
+      expect(actions.voteOnComment(commentToVote, vote)).toEqual(expectedAction);
     });
   });
 
@@ -258,6 +279,25 @@ describe('actions', () => {
           expect(dispatchedActions).toEqual(expectedActions);
           expect(PostsAPI.update.comment)
             .toHaveBeenCalledWith(commentToUpdate.id, updatedCommentData);
+        });
+    });
+
+    it('should vote on a comment on the api and dispatch actions on success', () => {
+      const commentToVote = { id: 'testId' };
+      const vote = 4;
+      const expectedVote = 1;
+
+      const expectedActions = [
+        { type: actions.COMMENTS_VOTE, comment: commentToVote, vote: expectedVote },
+      ];
+
+      const store = mockStore({});
+
+      return store.dispatch(actions.fetchVoteOnComment(commentToVote, vote))
+        .then(() => {
+          const dispatchedActions = store.getActions();
+          expect(dispatchedActions).toEqual(expectedActions);
+          expect(PostsAPI.create.voteOnComment).toHaveBeenCalledWith(commentToVote.id, vote);
         });
     });
   });

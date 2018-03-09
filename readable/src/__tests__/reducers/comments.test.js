@@ -134,6 +134,28 @@ describe('reducer', () => {
       expect(reducer(initialState, testAction)).toEqual(expectedState);
     });
 
+    it('should handle COMMENTS_VOTE', () => {
+      const currentVoteScore = 3;
+      const commentToVote = { id: 'testId', voteScore: currentVoteScore };
+      const vote = 1;
+
+      const initialState = {
+        comments: {
+          [commentToVote.id]: commentToVote,
+        },
+      };
+
+      const testAction = commentsActions.voteOnComment(commentToVote, vote);
+
+      const expectedState = {
+        comments: {
+          [commentToVote.id]: { ...commentToVote, voteScore: currentVoteScore + 1 },
+        },
+      };
+
+      expect(reducer(initialState, testAction)).toEqual(expectedState);
+    });
+
     describe('should handle COMMENTS_SET_LOADING_STATE', () => {
       describe('an operation with the same id of the current state', () => {
         it('is free to update any loading status', () => {

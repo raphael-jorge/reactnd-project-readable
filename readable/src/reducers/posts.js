@@ -3,6 +3,7 @@ import {
   POSTS_ADD,
   POSTS_REMOVE,
   POSTS_UPDATE,
+  POSTS_VOTE,
   POSTS_SET_LOADING_STATE,
 } from '../actions/posts';
 
@@ -68,6 +69,18 @@ export default function posts(state = initialState, action) {
             ...state.posts[action.post.id],
             title: action.newData.title,
             body: action.newData.body,
+          },
+        },
+      };
+
+    case POSTS_VOTE:
+      return {
+        ...state,
+        posts: {
+          ...state.posts,
+          [action.post.id]: {
+            ...state.posts[action.post.id],
+            voteScore: state.posts[action.post.id].voteScore + action.vote,
           },
         },
       };

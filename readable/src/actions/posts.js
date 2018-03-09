@@ -5,6 +5,7 @@ export const POSTS_SET = 'POSTS_SET';
 export const POSTS_ADD = 'POSTS_ADD';
 export const POSTS_REMOVE = 'POSTS_REMOVE';
 export const POSTS_UPDATE = 'POSTS_UPDATE';
+export const POSTS_VOTE = 'POSTS_VOTE';
 export const POSTS_SET_LOADING_STATE = 'POSTS_SET_LOADING_STATE';
 
 // Action creators
@@ -29,6 +30,12 @@ export const updatePost = (post, updatedData) => ({
   type: POSTS_UPDATE,
   post,
   newData: updatedData,
+});
+
+export const voteOnPost = (post, vote) => ({
+  type: POSTS_VOTE,
+  vote: vote > 0 ? 1 : -1,
+  post,
 });
 
 export const setLoadingState = (loading) => ({
@@ -85,5 +92,12 @@ export const fetchUpdatePost = (post, updatedData) => ((dispatch) => {
   return PostsAPI.update.post(post.id, updatedData)
     .then(() => {
       dispatch(updatePost(post, updatedData));
+    });
+});
+
+export const fetchVoteOnPost = (post, vote) => ((dispatch) => {
+  return PostsAPI.create.voteOnPost(post.id, vote)
+    .then(() => {
+      dispatch(voteOnPost(post, vote));
     });
 });
