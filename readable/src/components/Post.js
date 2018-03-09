@@ -7,12 +7,14 @@ import Controls from './Controls';
 export default class Post extends Component {
   static propTypes = {
     postData: PropTypes.object.isRequired,
+    onVote: PropTypes.func.isRequired,
     maxBodyLength: PropTypes.number,
   }
 
   render() {
     const {
       postData,
+      onVote,
       maxBodyLength,
     } = this.props;
 
@@ -39,8 +41,8 @@ export default class Post extends Component {
         <Controls
           voteData={{
             voteCount: postData.voteScore,
-            onVoteUp: () => {},
-            onVoteDown: () => {},
+            onVoteUp: () => onVote(postData, 1),
+            onVoteDown: () => onVote(postData, -1),
           }}
           onEdit={() => {}}
           onRemove={() => {}}

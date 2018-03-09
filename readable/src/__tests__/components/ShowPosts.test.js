@@ -1,15 +1,26 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import { MemoryRouter } from 'react-router-dom';
+import { fetchVoteOnPost } from '../../actions/posts';
 import {
   ShowPosts,
   mapStateToProps,
+  mapDispatchToProps,
 } from '../../components/ShowPosts';
+
+// Mock posts actions
+jest.mock('../../actions/posts', () => ({
+  fetchVoteOnPost: jest.fn(),
+}));
+
+// Mock dispatch
+const dispatchMock = () => {};
 
 // Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
     posts: [],
+    onPostVote: () => {},
     isLoading: undefined,
     hasErrored: undefined,
   }, propOverrides);
@@ -82,7 +93,7 @@ describe('<ShowPosts />', () => {
 
   it('renders one Post component for each post in posts', () => {
     const testPosts = getDefaultPosts();
-    const { showPosts } = setup({ posts: testPosts.postsArray });
+    const { showPosts, props } = setup({ posts: testPosts.postsArray });
 
     const renderedPosts = showPosts.find('Post');
 
@@ -91,6 +102,7 @@ describe('<ShowPosts />', () => {
         post.prop('postData').id === testPost.id
       ));
       expect(matchingRenderedPost.prop('postData')).toEqual(testPost);
+      expect(matchingRenderedPost.prop('onVote')).toBe(props.onPostVote);
     });
   });
 
@@ -182,5 +194,19 @@ describe('mapStateToProps', () => {
     };
 
     expect(mapStateToProps(testState)).toEqual(expectedProps);
+  });
+});
+
+
+describe('mapDispatchToProps', () => {
+  it('sets the onPostVote prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const postData = getDefaultPosts().postsArray[0];
+    const vote = 1;
+
+    expect(mappedProps.onPostVote).toBeDefined();
+
+    mappedProps.onPostVote(postData, vote);
+    expect(fetchVoteOnPost).toHaveBeenCalledWith(postData, vote);
   });
 });

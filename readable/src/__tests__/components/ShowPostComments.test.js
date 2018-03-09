@@ -1,15 +1,33 @@
 import React from 'react';
 import { shallow } from 'enzyme';
+import { fetchVoteOnPost } from '../../actions/posts';
+import { fetchVoteOnComment } from '../../actions/comments';
 import {
   ShowPostComments,
   mapStateToProps,
+  mapDispatchToProps,
 } from '../../components/ShowPostComments';
+
+// Mock posts actions
+jest.mock('../../actions/posts', () => ({
+  fetchVoteOnPost: jest.fn(),
+}));
+
+// Mock comments actions
+jest.mock('../../actions/comments', () => ({
+  fetchVoteOnComment: jest.fn(),
+}));
+
+// Mock dispatch
+const dispatchMock = () => {};
 
 // Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
     postData: {},
     comments: [],
+    onPostVote: () => {},
+    onCommentVote: () => {},
     isLoadingPost: false,
     isLoadingComments: false,
     hasErroredPost: false,
@@ -83,11 +101,12 @@ describe('<ShowPostComments />', () => {
   describe('Post', () => {
     it('renders a Post component when postData is available', () => {
       const postData = getDefaultPostData();
-      const { showPostComments } = setup({ postData });
+      const { showPostComments, props } = setup({ postData });
 
       const renderedPost = showPostComments.find('Post');
       expect(renderedPost.length).toBe(1);
       expect(renderedPost.prop('postData')).toEqual(postData);
+      expect(renderedPost.prop('onVote')).toEqual(props.onPostVote);
     });
 
     it('renders an error Message component when post load has errored', () => {
@@ -259,5 +278,30 @@ describe('mapStateToProps', () => {
     expectedState.comments = testComments.commentsArray;
 
     expect(mapStateToProps(testState, getDefaultProps())).toEqual(expectedState);
+  });
+});
+
+
+describe('mapDispatchToProps', () => {
+  it('sets the onPostVote prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const postData = getDefaultPostData();
+    const vote = 1;
+
+    expect(mappedProps.onPostVote).toBeDefined();
+
+    mappedProps.onPostVote(postData, vote);
+    expect(fetchVoteOnPost).toHaveBeenCalledWith(postData, vote);
+  });
+
+  it('sets the onCommentVote prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const commentData = getDefaultComments().commentsArray[0];
+    const vote = 1;
+
+    expect(mappedProps.onCommentVote).toBeDefined();
+
+    mappedProps.onCommentVote(commentData, vote);
+    expect(fetchVoteOnComment).toHaveBeenCalledWith(commentData, vote);
   });
 });

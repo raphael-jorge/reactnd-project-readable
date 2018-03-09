@@ -6,11 +6,13 @@ import Controls from './Controls';
 export default class Comment extends Component {
   static propTypes = {
     commentData: PropTypes.object.isRequired,
+    onVote: PropTypes.func.isRequired,
   }
 
   render() {
     const {
       commentData,
+      onVote,
     } = this.props;
 
     return (
@@ -29,8 +31,8 @@ export default class Comment extends Component {
         <Controls
           voteData={{
             voteCount: commentData.voteScore,
-            onVoteUp: () => {},
-            onVoteDown: () => {},
+            onVoteUp: () => onVote(commentData, 1),
+            onVoteDown: () => onVote(commentData, -1),
           }}
           onEdit={() => {}}
           onRemove={() => {}}

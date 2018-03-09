@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { fetchVoteOnPost } from '../actions/posts';
+import { fetchVoteOnComment } from '../actions/comments';
 import Comment from './Comment';
 import Loading from './Loading';
 import Message from './Message';
@@ -11,6 +13,8 @@ export class ShowPostComments extends Component {
   static propTypes = {
     postData: PropTypes.object.isRequired,
     comments: PropTypes.array.isRequired,
+    onPostVote: PropTypes.func.isRequired,
+    onCommentVote: PropTypes.func.isRequired,
     isLoadingPost: PropTypes.bool,
     isLoadingComments: PropTypes.bool,
     hasErroredPost: PropTypes.bool,
@@ -25,6 +29,8 @@ export class ShowPostComments extends Component {
     const {
       postData,
       comments,
+      onPostVote,
+      onCommentVote,
       isLoadingPost,
       isLoadingComments,
       hasErroredPost,
@@ -44,7 +50,10 @@ export class ShowPostComments extends Component {
           }
 
           {!hasErroredPost && Object.keys(postData).length > 0 &&
-            <Post postData={postData} />
+            <Post
+              postData={postData}
+              onVote={onPostVote}
+            />
           }
 
           {!hasErroredPost && !Object.keys(postData).length &&
@@ -63,7 +72,11 @@ export class ShowPostComments extends Component {
             }
 
             {!hasErroredComments && comments.length > 0 && comments.map((commentData) => (
-              <Comment key={commentData.id} commentData={commentData}/>
+              <Comment
+                key={commentData.id}
+                commentData={commentData}
+                onVote={onCommentVote}
+              />
             ))}
 
             {!hasErroredComments && !comments.length &&
@@ -94,4 +107,11 @@ export const mapStateToProps = ({ posts, comments }, props) => {
   };
 };
 
-export default connect(mapStateToProps)(ShowPostComments);
+export const mapDispatchToProps = (dispatch, props) => {
+  return {
+    onPostVote: (post, vote) => dispatch(fetchVoteOnPost(post, vote)),
+    onCommentVote: (comment, vote) => dispatch(fetchVoteOnComment(comment, vote)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ShowPostComments);

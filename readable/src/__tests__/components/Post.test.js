@@ -6,6 +6,7 @@ import Post from '../../components/Post';
 const setup = (propOverrides) => {
   const props = Object.assign({
     postData: getDefaultPostData(),
+    onVote: jest.fn(),
     maxBodyLength: undefined,
   }, propOverrides);
 
@@ -28,6 +29,10 @@ const getDefaultPostData = () => ({
   commentCount: 0,
 });
 
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
 
 // Tests
 describe('<Post />', () => {
@@ -45,6 +50,21 @@ describe('<Post />', () => {
   it('renders a Controls component', () => {
     const { post } = setup();
     expect(post.find('Controls').length).toBe(1);
+  });
+
+
+  it('sets the Controls voteData.onVote props correctly', () => {
+    const { post, props } = setup();
+
+    const control = post.find('Controls');
+    const controlVoteData = control.prop('voteData');
+
+    controlVoteData.onVoteUp();
+    expect(props.onVote).toHaveBeenCalledWith(props.postData, 1);
+
+    props.onVote.mockClear();
+    controlVoteData.onVoteDown();
+    expect(props.onVote).toHaveBeenCalledWith(props.postData, -1);
   });
 
 

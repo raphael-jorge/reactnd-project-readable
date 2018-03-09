@@ -6,6 +6,7 @@ import Comment from '../../components/Comment';
 const setup = (propOverrides) => {
   const props = Object.assign({
     commentData: getDefaultCommentData(),
+    onVote: jest.fn(),
   }, propOverrides);
 
   const comment = shallow(<Comment {...props} />);
@@ -24,6 +25,10 @@ const getDefaultCommentData = () => ({
   voteScore: 0,
 });
 
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
 
 // Tests
 describe('<Comment />', () => {
@@ -40,5 +45,20 @@ describe('<Comment />', () => {
   it('renders a Controls component', () => {
     const { comment } = setup();
     expect(comment.find('Controls').length).toBe(1);
+  });
+
+
+  it('sets the Controls voteData.onVote props correctly', () => {
+    const { comment, props } = setup();
+
+    const control = comment.find('Controls');
+    const controlVoteData = control.prop('voteData');
+
+    controlVoteData.onVoteUp();
+    expect(props.onVote).toHaveBeenCalledWith(props.commentData, 1);
+
+    props.onVote.mockClear();
+    controlVoteData.onVoteDown();
+    expect(props.onVote).toHaveBeenCalledWith(props.commentData, -1);
   });
 });

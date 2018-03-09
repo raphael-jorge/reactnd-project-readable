@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { fetchVoteOnPost } from '../actions/posts';
 import Loading from './Loading';
 import Message from './Message';
 import Placeholder from './Placeholder';
@@ -10,6 +11,7 @@ import Post from './Post';
 export class ShowPosts extends Component {
   static propTypes = {
     posts: PropTypes.array.isRequired,
+    onPostVote: PropTypes.func.isRequired,
     isLoading: PropTypes.bool,
     hasErrored: PropTypes.bool,
   }
@@ -20,6 +22,7 @@ export class ShowPosts extends Component {
   render() {
     const {
       posts,
+      onPostVote,
       isLoading,
       hasErrored,
     } = this.props;
@@ -43,6 +46,7 @@ export class ShowPosts extends Component {
               to={ `/${postData.category}/${postData.id}` }
             >
               <Post
+                onVote={onPostVote}
                 postData={postData}
                 maxBodyLength={80}
               />
@@ -79,4 +83,10 @@ export const mapStateToProps = ({ posts, categories }, props) => {
   };
 };
 
-export default connect(mapStateToProps)(ShowPosts);
+export const mapDispatchToProps = (dispatch, props) => {
+  return {
+    onPostVote: (post, vote) => dispatch(fetchVoteOnPost(post, vote)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ShowPosts);
