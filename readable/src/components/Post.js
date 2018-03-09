@@ -8,6 +8,7 @@ export default class Post extends Component {
   static propTypes = {
     postData: PropTypes.object.isRequired,
     onVote: PropTypes.func.isRequired,
+    onRemove: PropTypes.func.isRequired,
     maxBodyLength: PropTypes.number,
   }
 
@@ -15,6 +16,7 @@ export default class Post extends Component {
     const {
       postData,
       onVote,
+      onRemove,
       maxBodyLength,
     } = this.props;
 
@@ -45,7 +47,7 @@ export default class Post extends Component {
             onVoteDown: () => onVote(postData, -1),
           }}
           onEdit={() => {}}
-          onRemove={() => {}}
+          onRemove={() => onRemove(postData)}
         />
 
       </article>

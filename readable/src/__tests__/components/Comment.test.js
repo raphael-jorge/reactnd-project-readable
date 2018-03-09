@@ -7,6 +7,7 @@ const setup = (propOverrides) => {
   const props = Object.assign({
     commentData: getDefaultCommentData(),
     onVote: jest.fn(),
+    onRemove: jest.fn(),
   }, propOverrides);
 
   const comment = shallow(<Comment {...props} />);
@@ -60,5 +61,16 @@ describe('<Comment />', () => {
     props.onVote.mockClear();
     controlVoteData.onVoteDown();
     expect(props.onVote).toHaveBeenCalledWith(props.commentData, -1);
+  });
+
+
+  it('sets the Controls onRemove prop correctly', () => {
+    const { comment, props } = setup();
+
+    const control = comment.find('Controls');
+    const controlOnRemove = control.prop('onRemove');
+
+    controlOnRemove();
+    expect(props.onRemove).toHaveBeenCalledWith(props.commentData);
   });
 });

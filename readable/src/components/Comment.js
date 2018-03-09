@@ -7,12 +7,14 @@ export default class Comment extends Component {
   static propTypes = {
     commentData: PropTypes.object.isRequired,
     onVote: PropTypes.func.isRequired,
+    onRemove: PropTypes.func.isRequired,
   }
 
   render() {
     const {
       commentData,
       onVote,
+      onRemove,
     } = this.props;
 
     return (
@@ -35,7 +37,7 @@ export default class Comment extends Component {
             onVoteDown: () => onVote(commentData, -1),
           }}
           onEdit={() => {}}
-          onRemove={() => {}}
+          onRemove={() => onRemove(commentData)}
         />
 
       </article>

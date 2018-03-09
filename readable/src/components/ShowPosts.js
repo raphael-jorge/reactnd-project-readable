@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { fetchVoteOnPost } from '../actions/posts';
+import { fetchVoteOnPost, fetchRemovePost } from '../actions/posts';
 import Loading from './Loading';
 import Message from './Message';
 import Placeholder from './Placeholder';
@@ -23,6 +23,7 @@ export class ShowPosts extends Component {
     const {
       posts,
       onPostVote,
+      onPostRemove,
       isLoading,
       hasErrored,
     } = this.props;
@@ -46,8 +47,9 @@ export class ShowPosts extends Component {
               to={ `/${postData.category}/${postData.id}` }
             >
               <Post
-                onVote={onPostVote}
                 postData={postData}
+                onVote={onPostVote}
+                onRemove={onPostRemove}
                 maxBodyLength={80}
               />
             </Link>
@@ -86,6 +88,7 @@ export const mapStateToProps = ({ posts, categories }, props) => {
 export const mapDispatchToProps = (dispatch, props) => {
   return {
     onPostVote: (post, vote) => dispatch(fetchVoteOnPost(post, vote)),
+    onPostRemove: (post) => dispatch(fetchRemovePost(post)),
   };
 };
 

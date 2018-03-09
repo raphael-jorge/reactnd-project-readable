@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import { MemoryRouter } from 'react-router-dom';
-import { fetchVoteOnPost } from '../../actions/posts';
+import { fetchVoteOnPost, fetchRemovePost } from '../../actions/posts';
 import {
   ShowPosts,
   mapStateToProps,
@@ -11,6 +11,7 @@ import {
 // Mock posts actions
 jest.mock('../../actions/posts', () => ({
   fetchVoteOnPost: jest.fn(),
+  fetchRemovePost: jest.fn(),
 }));
 
 // Mock dispatch
@@ -21,6 +22,7 @@ const setup = (propOverrides) => {
   const props = Object.assign({
     posts: [],
     onPostVote: () => {},
+    onPostRemove: () => {},
     isLoading: undefined,
     hasErrored: undefined,
   }, propOverrides);
@@ -103,6 +105,7 @@ describe('<ShowPosts />', () => {
       ));
       expect(matchingRenderedPost.prop('postData')).toEqual(testPost);
       expect(matchingRenderedPost.prop('onVote')).toBe(props.onPostVote);
+      expect(matchingRenderedPost.prop('onRemove')).toBe(props.onPostRemove);
     });
   });
 
@@ -208,5 +211,15 @@ describe('mapDispatchToProps', () => {
 
     mappedProps.onPostVote(postData, vote);
     expect(fetchVoteOnPost).toHaveBeenCalledWith(postData, vote);
+  });
+
+  it('sets the onPostRemove prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const postData = getDefaultPosts().postsArray[0];
+
+    expect(mappedProps.onPostRemove).toBeDefined();
+
+    mappedProps.onPostRemove(postData);
+    expect(fetchRemovePost).toHaveBeenCalledWith(postData);
   });
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import { fetchVoteOnPost } from '../../actions/posts';
-import { fetchVoteOnComment } from '../../actions/comments';
+import { fetchVoteOnPost, fetchRemovePost } from '../../actions/posts';
+import { fetchVoteOnComment, fetchRemoveComment } from '../../actions/comments';
 import {
   ShowPostComments,
   mapStateToProps,
@@ -11,11 +11,13 @@ import {
 // Mock posts actions
 jest.mock('../../actions/posts', () => ({
   fetchVoteOnPost: jest.fn(),
+  fetchRemovePost: jest.fn(),
 }));
 
 // Mock comments actions
 jest.mock('../../actions/comments', () => ({
   fetchVoteOnComment: jest.fn(),
+  fetchRemoveComment: jest.fn(),
 }));
 
 // Mock dispatch
@@ -28,6 +30,8 @@ const setup = (propOverrides) => {
     comments: [],
     onPostVote: () => {},
     onCommentVote: () => {},
+    onPostRemove: () => {},
+    onCommentRemove: () => {},
     isLoadingPost: false,
     isLoadingComments: false,
     hasErroredPost: false,
@@ -107,6 +111,7 @@ describe('<ShowPostComments />', () => {
       expect(renderedPost.length).toBe(1);
       expect(renderedPost.prop('postData')).toEqual(postData);
       expect(renderedPost.prop('onVote')).toEqual(props.onPostVote);
+      expect(renderedPost.prop('onRemove')).toEqual(props.onPostRemove);
     });
 
     it('renders an error Message component when post load has errored', () => {
@@ -303,5 +308,25 @@ describe('mapDispatchToProps', () => {
 
     mappedProps.onCommentVote(commentData, vote);
     expect(fetchVoteOnComment).toHaveBeenCalledWith(commentData, vote);
+  });
+
+  it('sets the onPostRemove prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const postData = getDefaultPostData();
+
+    expect(mappedProps.onPostRemove).toBeDefined();
+
+    mappedProps.onPostRemove(postData);
+    expect(fetchRemovePost).toHaveBeenCalledWith(postData);
+  });
+
+  it('sets the onCommentRemove prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const commentData = getDefaultComments().commentsArray[0];
+
+    expect(mappedProps.onCommentRemove).toBeDefined();
+
+    mappedProps.onCommentRemove(commentData);
+    expect(fetchRemoveComment).toHaveBeenCalledWith(commentData);
   });
 });

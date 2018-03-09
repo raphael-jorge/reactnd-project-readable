@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { fetchVoteOnPost } from '../actions/posts';
-import { fetchVoteOnComment } from '../actions/comments';
+import { fetchVoteOnPost, fetchRemovePost } from '../actions/posts';
+import { fetchVoteOnComment, fetchRemoveComment } from '../actions/comments';
 import Comment from './Comment';
 import Loading from './Loading';
 import Message from './Message';
@@ -15,6 +15,8 @@ export class ShowPostComments extends Component {
     comments: PropTypes.array.isRequired,
     onPostVote: PropTypes.func.isRequired,
     onCommentVote: PropTypes.func.isRequired,
+    onPostRemove: PropTypes.func.isRequired,
+    onCommentRemove: PropTypes.func.isRequired,
     isLoadingPost: PropTypes.bool,
     isLoadingComments: PropTypes.bool,
     hasErroredPost: PropTypes.bool,
@@ -31,6 +33,8 @@ export class ShowPostComments extends Component {
       comments,
       onPostVote,
       onCommentVote,
+      onPostRemove,
+      onCommentRemove,
       isLoadingPost,
       isLoadingComments,
       hasErroredPost,
@@ -53,6 +57,7 @@ export class ShowPostComments extends Component {
             <Post
               postData={postData}
               onVote={onPostVote}
+              onRemove={onPostRemove}
             />
           }
 
@@ -76,6 +81,7 @@ export class ShowPostComments extends Component {
                 key={commentData.id}
                 commentData={commentData}
                 onVote={onCommentVote}
+                onRemove={onCommentRemove}
               />
             ))}
 
@@ -110,7 +116,9 @@ export const mapStateToProps = ({ posts, comments }, props) => {
 export const mapDispatchToProps = (dispatch, props) => {
   return {
     onPostVote: (post, vote) => dispatch(fetchVoteOnPost(post, vote)),
+    onPostRemove: (post) => dispatch(fetchRemovePost(post)),
     onCommentVote: (comment, vote) => dispatch(fetchVoteOnComment(comment, vote)),
+    onCommentRemove: (comment) => dispatch(fetchRemoveComment(comment)),
   };
 };
 

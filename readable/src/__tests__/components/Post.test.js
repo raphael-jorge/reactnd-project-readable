@@ -7,6 +7,7 @@ const setup = (propOverrides) => {
   const props = Object.assign({
     postData: getDefaultPostData(),
     onVote: jest.fn(),
+    onRemove: jest.fn(),
     maxBodyLength: undefined,
   }, propOverrides);
 
@@ -65,6 +66,17 @@ describe('<Post />', () => {
     props.onVote.mockClear();
     controlVoteData.onVoteDown();
     expect(props.onVote).toHaveBeenCalledWith(props.postData, -1);
+  });
+
+
+  it('sets the Controls onRemove prop correctly', () => {
+    const { post, props } = setup();
+
+    const control = post.find('Controls');
+    const controlOnRemove = control.prop('onRemove');
+    controlOnRemove();
+
+    expect(props.onRemove).toHaveBeenCalledWith(props.postData);
   });
 
 
