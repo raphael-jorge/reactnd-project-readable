@@ -26,6 +26,10 @@ const getDefaultCommentData = () => ({
   voteScore: 0,
 });
 
+const getDefaultEvent = () => ({
+  preventDefault: jest.fn(),
+});
+
 afterEach(() => {
   jest.clearAllMocks();
 });
@@ -72,5 +76,43 @@ describe('<Comment />', () => {
 
     controlOnRemoveSubmit();
     expect(props.onRemove).toHaveBeenCalledWith(props.commentData);
+  });
+
+
+  it('sets the Controls onEdit prop correctly', () => {
+    const { comment } = setup();
+
+    const control = comment.find('Controls');
+    const controlOnEdit = control.prop('onEdit');
+
+    comment.setState({ editMode: false });
+    controlOnEdit.onRequest();
+    expect(comment.state('editMode')).toBe(true);
+
+    comment.setState({ editMode: true });
+    controlOnEdit.onAbort();
+    expect(comment.state('editMode')).toBe(false);
+
+    comment.setState({ editMode: true });
+    controlOnEdit.onSubmit();
+    expect(comment.state('editMode')).toBe(false);
+  });
+
+
+  it('renders an input to edit the comment body on edit mode', () => {
+    const commentData = getDefaultCommentData();
+    commentData.body = 'test comment body';
+    const { comment } = setup({ commentData });
+
+    comment.setState({ editMode: true });
+
+    const bodyInput = comment.find('.comment-body.input-edit');
+
+    const event = getDefaultEvent();
+    bodyInput.simulate('click', event);
+
+    expect(bodyInput.length).toBe(1);
+    expect(bodyInput.prop('defaultValue')).toBe(commentData.body);
+    expect(event.preventDefault).toHaveBeenCalled();
   });
 });

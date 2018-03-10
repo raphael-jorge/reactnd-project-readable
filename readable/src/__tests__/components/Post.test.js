@@ -30,6 +30,10 @@ const getDefaultPostData = () => ({
   commentCount: 0,
 });
 
+const getDefaultEvent = () => ({
+  preventDefault: jest.fn(),
+});
+
 afterEach(() => {
   jest.clearAllMocks();
 });
@@ -77,6 +81,62 @@ describe('<Post />', () => {
     controlOnRemoveSubmit();
 
     expect(props.onRemove).toHaveBeenCalledWith(props.postData);
+  });
+
+
+  it('sets the Controls onEdit prop correctly', () => {
+    const { post } = setup();
+
+    const control = post.find('Controls');
+    const controlOnEdit = control.prop('onEdit');
+
+    post.setState({ editMode: false });
+    controlOnEdit.onRequest();
+    expect(post.state('editMode')).toBe(true);
+
+    post.setState({ editMode: true });
+    controlOnEdit.onAbort();
+    expect(post.state('editMode')).toBe(false);
+
+    post.setState({ editMode: true });
+    controlOnEdit.onSubmit();
+    expect(post.state('editMode')).toBe(false);
+  });
+
+
+  it('renders an input to edit the post title on edit mode', () => {
+    const postData = getDefaultPostData();
+    postData.title = 'test post title';
+    const { post } = setup({ postData });
+
+    post.setState({ editMode: true });
+
+    const titleInput = post.find('.post-title.input-edit');
+
+    const event = getDefaultEvent();
+    titleInput.simulate('click', event);
+
+    expect(titleInput.length).toBe(1);
+    expect(titleInput.prop('defaultValue')).toBe(postData.title);
+    expect(event.preventDefault).toHaveBeenCalled();
+  });
+
+
+  it('renders an input to edit the post body on edit mode', () => {
+    const postData = getDefaultPostData();
+    postData.body = 'test post body';
+    const { post } = setup({ postData });
+
+    post.setState({ editMode: true });
+
+    const bodyInput = post.find('.post-body.input-edit');
+
+    const event = getDefaultEvent();
+    bodyInput.simulate('click', event);
+
+    expect(bodyInput.length).toBe(1);
+    expect(bodyInput.prop('defaultValue')).toBe(postData.body);
+    expect(event.preventDefault).toHaveBeenCalled();
   });
 
 

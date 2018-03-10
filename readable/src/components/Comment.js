@@ -10,6 +10,10 @@ export default class Comment extends Component {
     onRemove: PropTypes.func.isRequired,
   }
 
+  state = {
+    editMode: false,
+  }
+
   render() {
     const {
       commentData,
@@ -26,9 +30,18 @@ export default class Comment extends Component {
           <span>{ formatDate(commentData.timestamp) }</span>
         </div>
 
-        <p className="comment-body">
-          { commentData.body }
-        </p>
+        {this.state.editMode ? (
+          <textarea
+            className="comment-body input-edit"
+            placeholder="Comment Body"
+            defaultValue={commentData.body}
+            onClick={(event) => event.preventDefault()}
+          />
+        ) : (
+          <p className="comment-body">
+            { commentData.body }
+          </p>
+        )}
 
         <Controls
           voteData={{
@@ -37,7 +50,9 @@ export default class Comment extends Component {
             onVoteDown: () => onVote(commentData, -1),
           }}
           onEdit={{
-            onSubmit: () => {},
+            onRequest: () => this.setState({ editMode: true }),
+            onAbort: () => this.setState({ editMode: false }),
+            onSubmit: () => this.setState({ editMode: false }),
           }}
           onRemove={{ onSubmit: () => onRemove(commentData) }}
         />

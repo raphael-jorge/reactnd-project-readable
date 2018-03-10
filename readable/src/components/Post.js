@@ -12,6 +12,10 @@ export default class Post extends Component {
     maxBodyLength: PropTypes.number,
   }
 
+  state = {
+    editMode: false,
+  }
+
   render() {
     const {
       postData,
@@ -29,11 +33,31 @@ export default class Post extends Component {
           <span>{ formatDate(postData.timestamp) }</span>
         </div>
 
-        <h4 className="post-title">{ postData.title }</h4>
+        {this.state.editMode ? (
+          <div>
+            <input
+              className="post-title input-edit"
+              placeholder="Post Title"
+              defaultValue={postData.title}
+              onClick={(event) => event.preventDefault()}
+            />
 
-        <p className="post-body">
-          { maxBodyLength ? trimStringToLength(postData.body, maxBodyLength) : postData.body }
-        </p>
+            <textarea
+              className="post-body input-edit"
+              placeholder="Post Body"
+              defaultValue={postData.body}
+              onClick={(event) => event.preventDefault()}
+            />
+          </div>
+        ) : (
+          <div>
+            <h4 className="post-title">{ postData.title }</h4>
+
+            <p className="post-body">
+              { maxBodyLength ? trimStringToLength(postData.body, maxBodyLength) : postData.body }
+            </p>
+          </div>
+        )}
 
         <div className="post-comments-info">
           <span className="info-data">{postData.commentCount}</span>
@@ -47,7 +71,9 @@ export default class Post extends Component {
             onVoteDown: () => onVote(postData, -1),
           }}
           onEdit={{
-            onSubmit: () => {},
+            onRequest: () => this.setState({ editMode: true }),
+            onAbort: () => this.setState({ editMode: false }),
+            onSubmit: () => this.setState({ editMode: false }),
           }}
           onRemove={{ onSubmit: () => onRemove(postData) }}
         />

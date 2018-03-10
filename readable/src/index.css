@@ -145,7 +145,7 @@ a {
   color: #222f5a;
 }
 .post-body {
-  margin: 0;
+  margin: 0 0 10px;
   padding: 0;
   text-indent: 25px;
   text-align: justify;
@@ -295,4 +295,28 @@ a {
 .control .operation-submit:hover,
 .control .operation-abort:hover {
   opacity: 0.8;
+}
+
+
+/* Posts and comments edit mode */
+.input-edit {
+  display: block;
+  width: 100%;
+  border: 1px solid #222f5a;
+  border-radius: 4px;
+}
+.input-edit:focus {
+  box-shadow: 0 0 6px #222f5a;
+}
+.post-title.input-edit,
+.post-body.input-edit,
+.comment-body.input-edit {
+  padding: 5px;
+  min-height: 30px;
+  font-family: inherit;
+  font-size: 1rem;
+  color: inherit;
+  line-height: 1rem;
+  text-indent: 0;
+  resize: vertical;
 }
