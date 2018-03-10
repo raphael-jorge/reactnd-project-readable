@@ -46,8 +46,10 @@ export default class Post extends Component {
             onVoteUp: () => onVote(postData, 1),
             onVoteDown: () => onVote(postData, -1),
           }}
-          onEdit={() => {}}
-          onRemove={() => onRemove(postData)}
+          onEdit={{
+            onSubmit: () => {},
+          }}
+          onRemove={{ onSubmit: () => onRemove(postData) }}
         />
 
       </article>

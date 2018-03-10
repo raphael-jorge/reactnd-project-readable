@@ -250,28 +250,49 @@ a {
   color: inherit;
   cursor: pointer;
 }
-/* Edit control */
-.control .edit {
+/* Operation control */
+.control .operation {
   position: absolute;
   top: 5px;
   right: 5px;
   display: flex;
   z-index: 10;
 }
-.control .edit-control {
+.control .operation-item,
+.control .operation-submit,
+.control .operation-abort {
   margin: 0 0 0 5px;
-  padding: 0;
+  padding: 0 3px;
+  cursor: pointer;
+}
+/* Operation item */
+.control .operation-item {
   color: #bbb;
   opacity: 0;
   transition: color 0.3s;
-  cursor: pointer;
 }
-.post-control:hover .edit-control,
-.comment-control:hover .edit-control {
+.post-control:hover .operation-item,
+.comment-control:hover .operation-item {
   color: #bbb;
   opacity: 1;
 }
-.post-control:hover .edit-control:hover,
-.comment-control:hover .edit-control:hover {
+.post-control:hover .operation-item:hover,
+.comment-control:hover .operation-item:hover {
   color: #777;
+}
+/* Operation submit/abort */
+.control .operation-submit,
+.control .operation-abort {
+  opacity: 0.4;
+  transition: opacity 0.3s;
+}
+.control .operation-submit {
+  color: #0fad1c;
+}
+.control .operation-abort {
+  color: #b2120c;
+}
+.control .operation-submit:hover,
+.control .operation-abort:hover {
+  opacity: 0.8;
 }

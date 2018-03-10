@@ -36,8 +36,10 @@ export default class Comment extends Component {
             onVoteUp: () => onVote(commentData, 1),
             onVoteDown: () => onVote(commentData, -1),
           }}
-          onEdit={() => {}}
-          onRemove={() => onRemove(commentData)}
+          onEdit={{
+            onSubmit: () => {},
+          }}
+          onRemove={{ onSubmit: () => onRemove(commentData) }}
         />
 
       </article>

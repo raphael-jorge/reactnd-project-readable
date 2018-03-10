@@ -6,9 +6,8 @@ import Controls from '../../components/Controls';
 const setup = (propOverrides) => {
   const props = Object.assign({
     voteData: getDefaultVoteData(),
-    onEdit: jest.fn(),
-    onRemove: jest.fn(),
-    commentCount: undefined,
+    onEdit: { onSubmit: jest.fn() },
+    onRemove: { onSubmit: jest.fn() },
   }, propOverrides);
 
   const controls = shallow(<Controls {...props} />);
@@ -83,9 +82,10 @@ describe('<Controls />', () => {
   });
 
 
-  describe('edit control', () => {
+  describe('operations control', () => {
     it('renders a button to edit', () => {
       const { controls, props } = setup();
+      const handleRequestSpy = jest.spyOn(controls.instance(), 'handleRequest');
 
       const renderedButtons = controls.find('button');
 
@@ -98,11 +98,12 @@ describe('<Controls />', () => {
 
       expect(editRenderedButton.length).toBe(1);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(props.onEdit).toHaveBeenCalled();
+      expect(handleRequestSpy).toHaveBeenCalledWith(event, props.onEdit);
     });
 
     it('renders a button to remove', () => {
       const { controls, props } = setup();
+      const handleRequestSpy = jest.spyOn(controls.instance(), 'handleRequest');
 
       const renderedButtons = controls.find('button');
 
@@ -115,7 +116,135 @@ describe('<Controls />', () => {
 
       expect(removeRenderedButton.length).toBe(1);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(props.onRemove).toHaveBeenCalled();
+      expect(handleRequestSpy).toHaveBeenCalledWith(event, props.onRemove);
+    });
+
+    it('sets the operationHandler state once an operation is triggered', () => {
+      const { controls } = setup();
+      const operationHandler = {
+        onSubmit: () => {},
+      };
+
+      const event = getDefaultEvent();
+      controls.instance().handleRequest(event, operationHandler);
+
+      expect(controls.state('operationHandler')).toEqual(operationHandler);
+    });
+
+    it('calls operation handler`s onRequest method if one is set', () => {
+      const { controls } = setup();
+      const operationHandler = {
+        onRequest: jest.fn(),
+        onSubmit: () => {},
+      };
+
+      const event = getDefaultEvent();
+      controls.instance().handleRequest(event, operationHandler);
+
+      expect(operationHandler.onRequest).toHaveBeenCalled();
+    });
+
+    it('renders a Submit button when the operation is triggered', () => {
+      const { controls } = setup();
+      const handleSubmitSpy = jest.spyOn(controls.instance(), 'handleSubmit');
+      const operationHandler = {
+        onSubmit: jest.fn(),
+      };
+
+      controls.setState({ operationHandler });
+
+      const renderedButtons = controls.find('button');
+      const submitRenderedButton = renderedButtons.filterWhere((button) => (
+        button.prop('title') === 'Submit'
+      ));
+
+      const event = getDefaultEvent();
+      submitRenderedButton.simulate('click', event);
+
+      expect(submitRenderedButton.length).toBe(1);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(handleSubmitSpy).toHaveBeenCalled();
+      expect(operationHandler.onSubmit).toHaveBeenCalled();
+    });
+
+    it('renders an Abort button when the operation is triggered', () => {
+      const { controls } = setup();
+      const handleAbortSpy = jest.spyOn(controls.instance(), 'handleAbort');
+      const operationHandler = {
+        onSubmit: () => {},
+      };
+
+      controls.setState({ operationHandler });
+
+      const renderedButtons = controls.find('button');
+      const abortRenderedButton = renderedButtons.filterWhere((button) => (
+        button.prop('title') === 'Abort'
+      ));
+
+      const event = getDefaultEvent();
+      abortRenderedButton.simulate('click', event);
+
+      expect(abortRenderedButton.length).toBe(1);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(handleAbortSpy).toHaveBeenCalled();
+    });
+
+    it('calls operation handler`s onAbort method if one is set when aborted', () => {
+      const { controls } = setup();
+      const operationHandler = {
+        onAbort: jest.fn(),
+        onSubmit: () => {},
+      };
+
+      controls.setState({ operationHandler });
+
+      const renderedButtons = controls.find('button');
+      const abortRenderedButton = renderedButtons.filterWhere((button) => (
+        button.prop('title') === 'Abort'
+      ));
+
+      const event = getDefaultEvent();
+      abortRenderedButton.simulate('click', event);
+
+      expect(operationHandler.onAbort).toHaveBeenCalled();
+    });
+
+    it('sets the operationHandler state to null when submitted an operation', () => {
+      const { controls } = setup();
+      const operationHandler = {
+        onSubmit: jest.fn(),
+      };
+
+      controls.setState({ operationHandler });
+
+      const renderedButtons = controls.find('button');
+      const submitRenderedButton = renderedButtons.filterWhere((button) => (
+        button.prop('title') === 'Submit'
+      ));
+
+      const event = getDefaultEvent();
+      submitRenderedButton.simulate('click', event);
+
+      expect(controls.state('operationHandler')).toBe(null);
+    });
+
+    it('sets the operationHandler state to null when aborted an operation', () => {
+      const { controls } = setup();
+      const operationHandler = {
+        onSubmit: jest.fn(),
+      };
+
+      controls.setState({ operationHandler });
+
+      const renderedButtons = controls.find('button');
+      const abortRenderedButton = renderedButtons.filterWhere((button) => (
+        button.prop('title') === 'Abort'
+      ));
+
+      const event = getDefaultEvent();
+      abortRenderedButton.simulate('click', event);
+
+      expect(controls.state('operationHandler')).toBe(null);
     });
   });
 });

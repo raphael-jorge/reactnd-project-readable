@@ -73,8 +73,8 @@ describe('<Post />', () => {
     const { post, props } = setup();
 
     const control = post.find('Controls');
-    const controlOnRemove = control.prop('onRemove');
-    controlOnRemove();
+    const controlOnRemoveSubmit = control.prop('onRemove').onSubmit;
+    controlOnRemoveSubmit();
 
     expect(props.onRemove).toHaveBeenCalledWith(props.postData);
   });

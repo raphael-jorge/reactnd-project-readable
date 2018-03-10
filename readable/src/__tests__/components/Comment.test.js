@@ -68,9 +68,9 @@ describe('<Comment />', () => {
     const { comment, props } = setup();
 
     const control = comment.find('Controls');
-    const controlOnRemove = control.prop('onRemove');
+    const controlOnRemoveSubmit = control.prop('onRemove').onSubmit;
 
-    controlOnRemove();
+    controlOnRemoveSubmit();
     expect(props.onRemove).toHaveBeenCalledWith(props.commentData);
   });
 });
