@@ -1,7 +1,11 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import { MemoryRouter } from 'react-router-dom';
-import { fetchVoteOnPost, fetchRemovePost } from '../../actions/posts';
+import {
+  fetchVoteOnPost,
+  fetchRemovePost,
+  fetchUpdatePost,
+} from '../../actions/posts';
 import {
   ShowPosts,
   mapStateToProps,
@@ -12,6 +16,7 @@ import {
 jest.mock('../../actions/posts', () => ({
   fetchVoteOnPost: jest.fn(),
   fetchRemovePost: jest.fn(),
+  fetchUpdatePost: jest.fn(),
 }));
 
 // Mock dispatch
@@ -23,6 +28,7 @@ const setup = (propOverrides) => {
     posts: [],
     onPostVote: () => {},
     onPostRemove: () => {},
+    onPostUpdate: () => {},
     isLoading: undefined,
     hasErrored: undefined,
   }, propOverrides);
@@ -106,6 +112,7 @@ describe('<ShowPosts />', () => {
       expect(matchingRenderedPost.prop('postData')).toEqual(testPost);
       expect(matchingRenderedPost.prop('onVote')).toBe(props.onPostVote);
       expect(matchingRenderedPost.prop('onRemove')).toBe(props.onPostRemove);
+      expect(matchingRenderedPost.prop('onUpdate')).toBe(props.onPostUpdate);
     });
   });
 
@@ -221,5 +228,19 @@ describe('mapDispatchToProps', () => {
 
     mappedProps.onPostRemove(postData);
     expect(fetchRemovePost).toHaveBeenCalledWith(postData);
+  });
+
+  it('sets the onPostUpdate prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const postData = getDefaultPosts().postsArray[0];
+    const updatedPostData = {
+      title: 'test updated title',
+      body: 'test updated body',
+    };
+
+    expect(mappedProps.onPostUpdate).toBeDefined();
+
+    mappedProps.onPostUpdate(postData, updatedPostData);
+    expect(fetchUpdatePost).toHaveBeenCalledWith(postData, updatedPostData);
   });
 });

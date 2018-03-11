@@ -8,6 +8,7 @@ const setup = (propOverrides) => {
     postData: getDefaultPostData(),
     onVote: jest.fn(),
     onRemove: jest.fn(),
+    onUpdate: jest.fn(),
     maxBodyLength: undefined,
   }, propOverrides);
 
@@ -90,53 +91,118 @@ describe('<Post />', () => {
     const control = post.find('Controls');
     const controlOnEdit = control.prop('onEdit');
 
-    post.setState({ editMode: false });
-    controlOnEdit.onRequest();
-    expect(post.state('editMode')).toBe(true);
-
-    post.setState({ editMode: true });
-    controlOnEdit.onAbort();
-    expect(post.state('editMode')).toBe(false);
-
-    post.setState({ editMode: true });
-    controlOnEdit.onSubmit();
-    expect(post.state('editMode')).toBe(false);
+    expect(controlOnEdit.onRequest).toBe(post.instance().handleUpdateRequest);
+    expect(controlOnEdit.onAbort).toBe(post.instance().handleUpdateAbort);
+    expect(controlOnEdit.onSubmit).toBe(post.instance().handleUpdateSubmit);
   });
 
 
-  it('renders an input to edit the post title on edit mode', () => {
-    const postData = getDefaultPostData();
-    postData.title = 'test post title';
-    const { post } = setup({ postData });
+  describe('edit mode', () => {
+    describe('inputs', () => {
+      it('are rendered to edit the post title and body', () => {
+        const { post } = setup();
+        post.setState({ editMode: true });
 
-    post.setState({ editMode: true });
+        const titleInput = post.find('.post-title.input-edit');
+        const bodyInput = post.find('.post-body.input-edit');
 
-    const titleInput = post.find('.post-title.input-edit');
+        expect(titleInput.length).toBe(1);
+        expect(bodyInput.length).toBe(1);
+      });
 
-    const event = getDefaultEvent();
-    titleInput.simulate('click', event);
+      it('blocks click events', () => {
+        const { post } = setup();
+        post.setState({ editMode: true });
 
-    expect(titleInput.length).toBe(1);
-    expect(titleInput.prop('defaultValue')).toBe(postData.title);
-    expect(event.preventDefault).toHaveBeenCalled();
-  });
+        const titleInput = post.find('.post-title.input-edit');
+        const bodyInput = post.find('.post-body.input-edit');
 
+        const event = getDefaultEvent();
+        titleInput.simulate('click', event);
+        expect(event.preventDefault).toHaveBeenCalled();
 
-  it('renders an input to edit the post body on edit mode', () => {
-    const postData = getDefaultPostData();
-    postData.body = 'test post body';
-    const { post } = setup({ postData });
+        event.preventDefault.mockClear();
+        bodyInput.simulate('click', event);
+        expect(event.preventDefault).toHaveBeenCalled();
+      });
 
-    post.setState({ editMode: true });
+      it('update state on value change', () => {
+        const { post } = setup();
+        post.setState({ editMode: true });
 
-    const bodyInput = post.find('.post-body.input-edit');
+        const titleInput = post.find('.post-title.input-edit');
+        const bodyInput = post.find('.post-body.input-edit');
 
-    const event = getDefaultEvent();
-    bodyInput.simulate('click', event);
+        const newTitleValue = 'new post title';
+        const titleChangeEvent = {
+          target: { value: newTitleValue },
+        };
+        titleInput.simulate('change', titleChangeEvent);
+        expect(post.state('titleInputValue')).toBe(newTitleValue);
 
-    expect(bodyInput.length).toBe(1);
-    expect(bodyInput.prop('defaultValue')).toBe(postData.body);
-    expect(event.preventDefault).toHaveBeenCalled();
+        const newBodyValue = 'new post body';
+        const bodyChangeEvent = {
+          target: { value: newBodyValue },
+        };
+        bodyInput.simulate('change', bodyChangeEvent);
+        expect(post.state('bodyInputValue')).toBe(newBodyValue);
+      });
+    });
+
+    describe('methods', () => {
+      it('initializes the edit mode', () => {
+        const postData = getDefaultPostData();
+        postData.title = 'test post title';
+        postData.body = 'test post body';
+        const { post } = setup({ postData });
+
+        post.instance().handleUpdateRequest();
+
+        expect(post.state('editMode')).toBe(true);
+        expect(post.state('titleInputValue')).toBe(postData.title);
+        expect(post.state('bodyInputValue')).toBe(postData.body);
+      });
+
+      it('aborts the edit operation', () => {
+        const postData = getDefaultPostData();
+        postData.title = 'test post title';
+        postData.body = 'test post body';
+        const { post } = setup({ postData });
+
+        post.setState({
+          editMode: true,
+          titleInputValue: postData.title,
+          bodyInputValue: postData.body,
+        });
+
+        post.instance().handleUpdateAbort();
+
+        expect(post.state('editMode')).toBe(false);
+        expect(post.state('titleInputValue')).toBe('');
+        expect(post.state('bodyInputValue')).toBe('');
+      });
+
+      it('submits the edit operation', async () => {
+        const { post, props } = setup();
+        const updatedPostData = {
+          title: 'updated post title',
+          body: 'updated post body',
+        };
+
+        post.setState({
+          editMode: true,
+          titleInputValue: updatedPostData.title,
+          bodyInputValue: updatedPostData.body,
+        });
+
+        await post.instance().handleUpdateSubmit();
+
+        expect(post.state('editMode')).toBe(false);
+        expect(post.state('titleInputValue')).toBe('');
+        expect(post.state('bodyInputValue')).toBe('');
+        expect(props.onUpdate).toHaveBeenCalledWith(props.postData, updatedPostData);
+      });
+    });
   });
 
 

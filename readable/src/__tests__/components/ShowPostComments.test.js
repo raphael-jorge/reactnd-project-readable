@@ -1,7 +1,15 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import { fetchVoteOnPost, fetchRemovePost } from '../../actions/posts';
-import { fetchVoteOnComment, fetchRemoveComment } from '../../actions/comments';
+import {
+  fetchVoteOnPost,
+  fetchRemovePost,
+  fetchUpdatePost,
+} from '../../actions/posts';
+import {
+  fetchVoteOnComment,
+  fetchRemoveComment,
+  fetchUpdateComment,
+} from '../../actions/comments';
 import {
   ShowPostComments,
   mapStateToProps,
@@ -12,12 +20,14 @@ import {
 jest.mock('../../actions/posts', () => ({
   fetchVoteOnPost: jest.fn(),
   fetchRemovePost: jest.fn(),
+  fetchUpdatePost: jest.fn(),
 }));
 
 // Mock comments actions
 jest.mock('../../actions/comments', () => ({
   fetchVoteOnComment: jest.fn(),
   fetchRemoveComment: jest.fn(),
+  fetchUpdateComment: jest.fn(),
 }));
 
 // Mock dispatch
@@ -32,6 +42,8 @@ const setup = (propOverrides) => {
     onCommentVote: () => {},
     onPostRemove: () => {},
     onCommentRemove: () => {},
+    onPostUpdate: () => {},
+    onCommentUpdate: () => {},
     isLoadingPost: false,
     isLoadingComments: false,
     hasErroredPost: false,
@@ -112,6 +124,7 @@ describe('<ShowPostComments />', () => {
       expect(renderedPost.prop('postData')).toEqual(postData);
       expect(renderedPost.prop('onVote')).toEqual(props.onPostVote);
       expect(renderedPost.prop('onRemove')).toEqual(props.onPostRemove);
+      expect(renderedPost.prop('onUpdate')).toEqual(props.onPostUpdate);
     });
 
     it('renders an error Message component when post load has errored', () => {
@@ -328,5 +341,32 @@ describe('mapDispatchToProps', () => {
 
     mappedProps.onCommentRemove(commentData);
     expect(fetchRemoveComment).toHaveBeenCalledWith(commentData);
+  });
+
+  it('sets the onPostUpdate prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const postData = getDefaultPostData();
+    const updatedPostData = {
+      title: 'test updated title',
+      body: 'test updated body',
+    };
+
+    expect(mappedProps.onPostUpdate).toBeDefined();
+
+    mappedProps.onPostUpdate(postData, updatedPostData);
+    expect(fetchUpdatePost).toHaveBeenCalledWith(postData, updatedPostData);
+  });
+
+  it('sets the onCommentUpdate prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const commentData = getDefaultComments().commentsArray[0];
+    const updatedCommentData = {
+      body: 'test updated comment',
+    };
+
+    expect(mappedProps.onCommentUpdate).toBeDefined();
+
+    mappedProps.onCommentUpdate(commentData, updatedCommentData);
+    expect(fetchUpdateComment).toHaveBeenCalledWith(commentData, updatedCommentData);
   });
 });

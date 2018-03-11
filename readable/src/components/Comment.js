@@ -8,10 +8,39 @@ export default class Comment extends Component {
     commentData: PropTypes.object.isRequired,
     onVote: PropTypes.func.isRequired,
     onRemove: PropTypes.func.isRequired,
+    onUpdate: PropTypes.func.isRequired,
   }
 
   state = {
     editMode: false,
+    bodyInputValue: '',
+  }
+
+  handleUpdateRequest = () => {
+    this.setState({
+      editMode: true,
+      bodyInputValue: this.props.commentData.body,
+    });
+  }
+
+  handleUpdateAbort = () => {
+    this.setState({
+      editMode: false,
+      bodyInputValue: '',
+    });
+  }
+
+  handleUpdateSubmit = async () => {
+    const updatedData = {
+      body: this.state.bodyInputValue,
+    };
+
+    await this.props.onUpdate(this.props.commentData, updatedData);
+
+    this.setState({
+      editMode: false,
+      bodyInputValue: '',
+    });
   }
 
   render() {
@@ -34,8 +63,9 @@ export default class Comment extends Component {
           <textarea
             className="comment-body input-edit"
             placeholder="Comment Body"
-            defaultValue={commentData.body}
+            value={this.state.bodyInputValue}
             onClick={(event) => event.preventDefault()}
+            onChange={(event) => this.setState({ bodyInputValue: event.target.value })}
           />
         ) : (
           <p className="comment-body">
@@ -50,9 +80,9 @@ export default class Comment extends Component {
             onVoteDown: () => onVote(commentData, -1),
           }}
           onEdit={{
-            onRequest: () => this.setState({ editMode: true }),
-            onAbort: () => this.setState({ editMode: false }),
-            onSubmit: () => this.setState({ editMode: false }),
+            onRequest: this.handleUpdateRequest,
+            onAbort: this.handleUpdateAbort,
+            onSubmit: this.handleUpdateSubmit,
           }}
           onRemove={{ onSubmit: () => onRemove(commentData) }}
         />

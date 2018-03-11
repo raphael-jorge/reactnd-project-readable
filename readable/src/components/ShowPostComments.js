@@ -1,8 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { fetchVoteOnPost, fetchRemovePost } from '../actions/posts';
-import { fetchVoteOnComment, fetchRemoveComment } from '../actions/comments';
+import {
+  fetchVoteOnPost,
+  fetchRemovePost,
+  fetchUpdatePost,
+} from '../actions/posts';
+import {
+  fetchVoteOnComment,
+  fetchRemoveComment,
+  fetchUpdateComment,
+} from '../actions/comments';
 import Comment from './Comment';
 import Loading from './Loading';
 import Message from './Message';
@@ -17,6 +25,8 @@ export class ShowPostComments extends Component {
     onCommentVote: PropTypes.func.isRequired,
     onPostRemove: PropTypes.func.isRequired,
     onCommentRemove: PropTypes.func.isRequired,
+    onPostUpdate: PropTypes.func.isRequired,
+    onCommentUpdate: PropTypes.func.isRequired,
     isLoadingPost: PropTypes.bool,
     isLoadingComments: PropTypes.bool,
     hasErroredPost: PropTypes.bool,
@@ -35,6 +45,8 @@ export class ShowPostComments extends Component {
       onCommentVote,
       onPostRemove,
       onCommentRemove,
+      onPostUpdate,
+      onCommentUpdate,
       isLoadingPost,
       isLoadingComments,
       hasErroredPost,
@@ -58,6 +70,7 @@ export class ShowPostComments extends Component {
               postData={postData}
               onVote={onPostVote}
               onRemove={onPostRemove}
+              onUpdate={onPostUpdate}
             />
           }
 
@@ -82,6 +95,7 @@ export class ShowPostComments extends Component {
                 commentData={commentData}
                 onVote={onCommentVote}
                 onRemove={onCommentRemove}
+                onUpdate={onCommentUpdate}
               />
             ))}
 
@@ -117,8 +131,10 @@ export const mapDispatchToProps = (dispatch, props) => {
   return {
     onPostVote: (post, vote) => dispatch(fetchVoteOnPost(post, vote)),
     onPostRemove: (post) => dispatch(fetchRemovePost(post)),
+    onPostUpdate: (post, updatedData) => dispatch(fetchUpdatePost(post, updatedData)),
     onCommentVote: (comment, vote) => dispatch(fetchVoteOnComment(comment, vote)),
     onCommentRemove: (comment) => dispatch(fetchRemoveComment(comment)),
+    onCommentUpdate: (comment, updatedData) => dispatch(fetchUpdateComment(comment, updatedData)),
   };
 };
 

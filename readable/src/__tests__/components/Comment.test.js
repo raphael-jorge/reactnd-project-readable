@@ -8,6 +8,7 @@ const setup = (propOverrides) => {
     commentData: getDefaultCommentData(),
     onVote: jest.fn(),
     onRemove: jest.fn(),
+    onUpdate: jest.fn(),
   }, propOverrides);
 
   const comment = shallow(<Comment {...props} />);
@@ -85,34 +86,96 @@ describe('<Comment />', () => {
     const control = comment.find('Controls');
     const controlOnEdit = control.prop('onEdit');
 
-    comment.setState({ editMode: false });
-    controlOnEdit.onRequest();
-    expect(comment.state('editMode')).toBe(true);
-
-    comment.setState({ editMode: true });
-    controlOnEdit.onAbort();
-    expect(comment.state('editMode')).toBe(false);
-
-    comment.setState({ editMode: true });
-    controlOnEdit.onSubmit();
-    expect(comment.state('editMode')).toBe(false);
+    expect(controlOnEdit.onRequest).toBe(comment.instance().handleUpdateRequest);
+    expect(controlOnEdit.onAbort).toBe(comment.instance().handleUpdateAbort);
+    expect(controlOnEdit.onSubmit).toBe(comment.instance().handleUpdateSubmit);
   });
 
 
-  it('renders an input to edit the comment body on edit mode', () => {
-    const commentData = getDefaultCommentData();
-    commentData.body = 'test comment body';
-    const { comment } = setup({ commentData });
+  describe('edit mode', () => {
+    describe('input', () => {
+      it('is rendered to edit the comment body', () => {
+        const { comment } = setup();
+        comment.setState({ editMode: true });
 
-    comment.setState({ editMode: true });
+        const bodyInput = comment.find('.comment-body.input-edit');
 
-    const bodyInput = comment.find('.comment-body.input-edit');
+        expect(bodyInput.length).toBe(1);
+      });
 
-    const event = getDefaultEvent();
-    bodyInput.simulate('click', event);
+      it('blocks click events', () => {
+        const { comment } = setup();
+        comment.setState({ editMode: true });
 
-    expect(bodyInput.length).toBe(1);
-    expect(bodyInput.prop('defaultValue')).toBe(commentData.body);
-    expect(event.preventDefault).toHaveBeenCalled();
+        const bodyInput = comment.find('.comment-body.input-edit');
+
+        const event = getDefaultEvent();
+        bodyInput.simulate('click', event);
+
+        expect(event.preventDefault).toHaveBeenCalled();
+      });
+
+      it('update state on value change', () => {
+        const { comment } = setup();
+        comment.setState({ editMode: true });
+
+        const bodyInput = comment.find('.comment-body.input-edit');
+
+        const newBodyValue = 'new comment body';
+        const bodyChangeEvent = {
+          target: { value: newBodyValue },
+        };
+        bodyInput.simulate('change', bodyChangeEvent);
+
+        expect(comment.state('bodyInputValue')).toBe(newBodyValue);
+      });
+    });
+
+    describe('methods', () => {
+      it('initializes the edit mode', () => {
+        const commentData = getDefaultCommentData();
+        commentData.body = 'test comment body';
+        const { comment } = setup({ commentData });
+
+        comment.instance().handleUpdateRequest();
+
+        expect(comment.state('editMode')).toBe(true);
+        expect(comment.state('bodyInputValue')).toBe(commentData.body);
+      });
+
+      it('aborts the edit operation', () => {
+        const commentData = getDefaultCommentData();
+        commentData.body = 'test comment body';
+        const { comment } = setup({ commentData });
+
+        comment.setState({
+          editMode: true,
+          bodyInputValue: commentData.body,
+        });
+
+        comment.instance().handleUpdateAbort();
+
+        expect(comment.state('editMode')).toBe(false);
+        expect(comment.state('bodyInputValue')).toBe('');
+      });
+
+      it('submits the edit operation', async () => {
+        const { comment, props } = setup();
+        const updatedCommentData = {
+          body: 'updated comment body',
+        };
+
+        comment.setState({
+          editMode: true,
+          bodyInputValue: updatedCommentData.body,
+        });
+
+        await comment.instance().handleUpdateSubmit();
+
+        expect(comment.state('editMode')).toBe(false);
+        expect(comment.state('bodyInputValue')).toBe('');
+        expect(props.onUpdate).toHaveBeenCalledWith(props.commentData, updatedCommentData);
+      });
+    });
   });
 });

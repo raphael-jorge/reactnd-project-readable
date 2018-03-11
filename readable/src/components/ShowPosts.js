@@ -2,7 +2,11 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { fetchVoteOnPost, fetchRemovePost } from '../actions/posts';
+import {
+  fetchVoteOnPost,
+  fetchRemovePost,
+  fetchUpdatePost,
+} from '../actions/posts';
 import Loading from './Loading';
 import Message from './Message';
 import Placeholder from './Placeholder';
@@ -12,6 +16,8 @@ export class ShowPosts extends Component {
   static propTypes = {
     posts: PropTypes.array.isRequired,
     onPostVote: PropTypes.func.isRequired,
+    onPostRemove: PropTypes.func.isRequired,
+    onPostUpdate: PropTypes.func.isRequired,
     isLoading: PropTypes.bool,
     hasErrored: PropTypes.bool,
   }
@@ -24,6 +30,7 @@ export class ShowPosts extends Component {
       posts,
       onPostVote,
       onPostRemove,
+      onPostUpdate,
       isLoading,
       hasErrored,
     } = this.props;
@@ -50,6 +57,7 @@ export class ShowPosts extends Component {
                 postData={postData}
                 onVote={onPostVote}
                 onRemove={onPostRemove}
+                onUpdate={onPostUpdate}
                 maxBodyLength={80}
               />
             </Link>
@@ -89,6 +97,7 @@ export const mapDispatchToProps = (dispatch, props) => {
   return {
     onPostVote: (post, vote) => dispatch(fetchVoteOnPost(post, vote)),
     onPostRemove: (post) => dispatch(fetchRemovePost(post)),
+    onPostUpdate: (post, updatedData) => dispatch(fetchUpdatePost(post, updatedData)),
   };
 };
 

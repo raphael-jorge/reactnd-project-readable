@@ -9,11 +9,45 @@ export default class Post extends Component {
     postData: PropTypes.object.isRequired,
     onVote: PropTypes.func.isRequired,
     onRemove: PropTypes.func.isRequired,
+    onUpdate: PropTypes.func.isRequired,
     maxBodyLength: PropTypes.number,
   }
 
   state = {
     editMode: false,
+    bodyInputValue: '',
+    titleInputValue: '',
+  }
+
+  handleUpdateRequest = () => {
+    this.setState({
+      editMode: true,
+      bodyInputValue: this.props.postData.body,
+      titleInputValue: this.props.postData.title,
+    });
+  }
+
+  handleUpdateAbort = () => {
+    this.setState({
+      editMode: false,
+      bodyInputValue: '',
+      titleInputValue: '',
+    });
+  }
+
+  handleUpdateSubmit = async () => {
+    const updatedData = {
+      body: this.state.bodyInputValue,
+      title: this.state.titleInputValue,
+    };
+
+    await this.props.onUpdate(this.props.postData, updatedData);
+
+    this.setState({
+      editMode: false,
+      bodyInputValue: '',
+      titleInputValue: '',
+    });
   }
 
   render() {
@@ -38,15 +72,17 @@ export default class Post extends Component {
             <input
               className="post-title input-edit"
               placeholder="Post Title"
-              defaultValue={postData.title}
+              value={this.state.titleInputValue}
               onClick={(event) => event.preventDefault()}
+              onChange={(event) => this.setState({ titleInputValue: event.target.value })}
             />
 
             <textarea
               className="post-body input-edit"
               placeholder="Post Body"
-              defaultValue={postData.body}
+              value={this.state.bodyInputValue}
               onClick={(event) => event.preventDefault()}
+              onChange={(event) => this.setState({ bodyInputValue: event.target.value })}
             />
           </div>
         ) : (
@@ -71,9 +107,9 @@ export default class Post extends Component {
             onVoteDown: () => onVote(postData, -1),
           }}
           onEdit={{
-            onRequest: () => this.setState({ editMode: true }),
-            onAbort: () => this.setState({ editMode: false }),
-            onSubmit: () => this.setState({ editMode: false }),
+            onRequest: this.handleUpdateRequest,
+            onAbort: this.handleUpdateAbort,
+            onSubmit: this.handleUpdateSubmit,
           }}
           onRemove={{ onSubmit: () => onRemove(postData) }}
         />
