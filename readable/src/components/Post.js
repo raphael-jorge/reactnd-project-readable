@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import CommentsIcon from 'react-icons/lib/md/comment';
 import { formatDate, trimStringToLength } from '../util/utils';
 import Controls from './Controls';
+import Loading from './Loading';
+import Placeholder from './Placeholder';
 
 export default class Post extends Component {
   static propTypes = {
@@ -60,6 +62,11 @@ export default class Post extends Component {
 
     return (
       <article className="post post-control">
+
+        <Placeholder
+          isReady={!postData.processing}
+          fallback={<Loading type="cover-squares" />}
+        />
 
         <div className="post-info">
           <span>{ postData.author }</span>

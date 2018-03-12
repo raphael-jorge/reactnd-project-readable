@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { formatDate } from '../util/utils';
 import Controls from './Controls';
+import Loading from './Loading';
+import Placeholder from './Placeholder';
 
 export default class Comment extends Component {
   static propTypes = {
@@ -52,6 +54,11 @@ export default class Comment extends Component {
 
     return (
       <article className="comment comment-control">
+
+        <Placeholder
+          isReady={!commentData.processing}
+          fallback={<Loading type="cover-squares" />}
+        />
 
         <div className="comment-info">
           <span>{ commentData.author }</span>

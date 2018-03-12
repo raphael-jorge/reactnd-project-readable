@@ -5,6 +5,7 @@ import {
   COMMENTS_UPDATE,
   COMMENTS_VOTE,
   COMMENTS_SET_LOADING_STATE,
+  COMMENTS_SET_PROCESSING_STATE,
 } from '../actions/comments';
 
 import {
@@ -29,7 +30,8 @@ export default function comments(state = initialState, action) {
         return {
           ...state,
           comments: action.comments.reduce((comments, comment) => {
-            comments[comment.id] = comment;
+            comments[comment.id] = { ...comment };
+            comments[comment.id].processing = false;
             return comments;
           }, {}),
           parentPostId: action.parentPostId,
@@ -45,7 +47,10 @@ export default function comments(state = initialState, action) {
         ...state,
         comments: {
           ...state.comments,
-          [action.comment.id]: action.comment,
+          [action.comment.id]: {
+            ...action.comment,
+            processing: false,
+          },
         },
       };
 
@@ -55,7 +60,7 @@ export default function comments(state = initialState, action) {
       return {
         ...state,
         comments: idsToKeep.reduce((comments, id) => {
-          comments[id] = state.comments[id];
+          comments[id] = { ...state.comments[id] };
           return comments;
         }, {}),
       };
@@ -114,6 +119,18 @@ export default function comments(state = initialState, action) {
       }
     }
 
+    case COMMENTS_SET_PROCESSING_STATE:
+      return {
+        ...state,
+        comments: {
+          ...state.comments,
+          [action.comment.id]: {
+            ...state.comments[action.comment.id],
+            processing: action.processingState,
+          },
+        },
+      };
+
     case POSTS_REMOVE: {
       const commentsIds = Object.keys(state.comments);
       const idsToKeep = commentsIds.filter(
@@ -122,7 +139,7 @@ export default function comments(state = initialState, action) {
       return {
         ...state,
         comments: idsToKeep.reduce((comments, id) => {
-          comments[id] = state.comments[id];
+          comments[id] = { ...state.comments[id] };
           return comments;
         }, {}),
       };

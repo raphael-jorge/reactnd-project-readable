@@ -7,6 +7,7 @@ export const POSTS_REMOVE = 'POSTS_REMOVE';
 export const POSTS_UPDATE = 'POSTS_UPDATE';
 export const POSTS_VOTE = 'POSTS_VOTE';
 export const POSTS_SET_LOADING_STATE = 'POSTS_SET_LOADING_STATE';
+export const POSTS_SET_PROCESSING_STATE = 'POSTS_SET_PROCESSING_STATE';
 
 // Action creators
 
@@ -46,6 +47,12 @@ export const setLoadingState = (loading) => ({
   },
 });
 
+export const setProcessingState = (post, processingState) => ({
+  type: POSTS_SET_PROCESSING_STATE,
+  post,
+  processingState,
+});
+
 // Async action creators
 
 export const fetchPosts = (category) => ((dispatch) => {
@@ -82,22 +89,39 @@ export const fetchAddPost = (postData) => ((dispatch) => {
 });
 
 export const fetchRemovePost = (post) => ((dispatch) => {
+  dispatch(setProcessingState(post, true));
+
   return PostsAPI.del.post(post.id)
     .then(() => {
       dispatch(removePost(post));
+    })
+    .catch(() => {
+      dispatch(setProcessingState(post, false));
     });
 });
 
 export const fetchUpdatePost = (post, updatedData) => ((dispatch) => {
+  dispatch(setProcessingState(post, true));
+
   return PostsAPI.update.post(post.id, updatedData)
     .then(() => {
       dispatch(updatePost(post, updatedData));
+      dispatch(setProcessingState(post, false));
+    })
+    .catch(() => {
+      dispatch(setProcessingState(post, false));
     });
 });
 
 export const fetchVoteOnPost = (post, vote) => ((dispatch) => {
+  dispatch(setProcessingState(post, true));
+
   return PostsAPI.create.voteOnPost(post.id, vote)
     .then(() => {
       dispatch(voteOnPost(post, vote));
+      dispatch(setProcessingState(post, false));
+    })
+    .catch(() => {
+      dispatch(setProcessingState(post, false));
     });
 });

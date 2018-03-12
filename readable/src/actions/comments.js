@@ -7,6 +7,7 @@ export const COMMENTS_REMOVE = 'COMMENTS_REMOVE';
 export const COMMENTS_UPDATE = 'COMMENTS_UPDATE';
 export const COMMENTS_VOTE = 'COMMENTS_VOTE';
 export const COMMENTS_SET_LOADING_STATE = 'COMMENTS_SET_LOADING_STATE';
+export const COMMENTS_SET_PROCESSING_STATE = 'COMMENTS_SET_PROCESSING_STATE';
 
 // Action creators
 
@@ -47,6 +48,12 @@ export const setLoadingState = (loading) => ({
   },
 });
 
+export const setProcessingState = (comment, processingState) => ({
+  type: COMMENTS_SET_PROCESSING_STATE,
+  comment,
+  processingState,
+});
+
 // Async Actions
 
 export const fetchComments = (parentPostId) => ((dispatch) => {
@@ -82,22 +89,39 @@ export const fetchAddComment = (postId, comment) => ((dispatch) => {
 });
 
 export const fetchRemoveComment = (comment) => ((dispatch) => {
+  dispatch(setProcessingState(comment, true));
+
   return PostsAPI.del.comment(comment.id)
     .then(() => {
       dispatch(removeComment(comment));
+    })
+    .catch(() => {
+      dispatch(setProcessingState(comment, false));
     });
 });
 
 export const fetchUpdateComment = (comment, updatedData) => ((dispatch) => {
+  dispatch(setProcessingState(comment, true));
+
   return PostsAPI.update.comment(comment.id, updatedData)
     .then(() => {
       dispatch(updateComment(comment, updatedData));
+      dispatch(setProcessingState(comment, false));
+    })
+    .catch(() => {
+      dispatch(setProcessingState(comment, false));
     });
 });
 
 export const fetchVoteOnComment = (comment, vote) => ((dispatch) => {
+  dispatch(setProcessingState(comment, true));
+
   return PostsAPI.create.voteOnComment(comment.id, vote)
     .then(() => {
       dispatch(voteOnComment(comment, vote));
+      dispatch(setProcessingState(comment, false));
+    })
+    .catch(() => {
+      dispatch(setProcessingState(comment, false));
     });
 });

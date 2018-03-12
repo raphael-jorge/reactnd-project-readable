@@ -3,21 +3,23 @@ import * as postsActions from '../../actions/posts';
 import reducer from '../../reducers/comments';
 
 // Utils
-const getDefaultComments = () => {
+const getDefaultCommentsArray = () => {
   const commentsArray = [
     { id: 'testId1', body: 'testBody1', author: 'testAuthor1' },
     { id: 'testId2', body: 'testBody2', author: 'testAuthor2' },
   ];
 
+  return commentsArray;
+};
+
+const getExpectedCommentsOnState = (commentsArray = getDefaultCommentsArray()) => {
   const commentsNormalized = commentsArray.reduce((commentsObj, comment) => {
-    commentsObj[comment.id] = comment;
+    commentsObj[comment.id] = { ...comment };
+    commentsObj[comment.id].processing = false;
     return commentsObj;
   }, {});
 
-  return {
-    commentsArray,
-    commentsNormalized,
-  };
+  return commentsNormalized;
 };
 
 
@@ -40,7 +42,7 @@ describe('reducer', () => {
 
     describe('should handle COMMENTS_SET', () => {
       it('updates comments if the operation id matches', () => {
-        const testComments = getDefaultComments();
+        const testCommentsArray = getDefaultCommentsArray();
         const parentPostId = 'testParentPostId';
         const operationId = 'testOperationId';
 
@@ -51,14 +53,15 @@ describe('reducer', () => {
         };
 
         const testAction = commentsActions.setComments({
-          comments: testComments.commentsArray,
+          comments: testCommentsArray,
           operationId,
           parentPostId,
         });
 
+        const expectedCommentsOnState = getExpectedCommentsOnState();
         const expectedState = {
           loading: { id: operationId },
-          comments: testComments.commentsNormalized,
+          comments: expectedCommentsOnState,
           parentPostId,
         };
 
@@ -66,7 +69,7 @@ describe('reducer', () => {
       });
 
       it('does not update comments if operation id does not match', () => {
-        const testComments = getDefaultComments();
+        const testCommentsArray = getDefaultCommentsArray();
         const parentPostId = 'testParentPostId';
         const operationIdState = 'testOldOperationId';
         const operationIdAction = 'testNewOperationId';
@@ -78,7 +81,7 @@ describe('reducer', () => {
         };
 
         const testAction = commentsActions.setComments({
-          comments: testComments.commentsArray,
+          comments: testCommentsArray,
           operationId: operationIdAction,
           parentPostId,
         });
@@ -94,7 +97,9 @@ describe('reducer', () => {
 
       const testAction = commentsActions.addComment(commentToAdd);
 
-      const expectedState = { comments: { [commentToAdd.id]: commentToAdd } };
+      const expectedState = { comments: {
+        [commentToAdd.id]: { ...commentToAdd, processing: false },
+      } };
 
       expect(reducer({}, testAction)).toEqual(expectedState);
     });
@@ -150,6 +155,27 @@ describe('reducer', () => {
       const expectedState = {
         comments: {
           [commentToVote.id]: { ...commentToVote, voteScore: currentVoteScore + 1 },
+        },
+      };
+
+      expect(reducer(initialState, testAction)).toEqual(expectedState);
+    });
+
+    it('should handle COMMENTS_SET_PROCESSING_STATE', () => {
+      const processingState = true;
+      const commentToSet = { id: 'testId', processing: false };
+
+      const initialState = {
+        comments: {
+          [commentToSet.id]: commentToSet,
+        },
+      };
+
+      const testAction = commentsActions.setProcessingState(commentToSet, processingState);
+
+      const expectedState = {
+        comments: {
+          [commentToSet.id]: { ...commentToSet, processing: processingState },
         },
       };
 

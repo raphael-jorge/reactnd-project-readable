@@ -3,21 +3,24 @@ import * as commentsActions from '../../actions/comments';
 import reducer from '../../reducers/posts';
 
 // Utils
-const getDefaultPosts = () => {
+const getDefaultPostsArray = () => {
   const postsArray = [
     { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
     { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
   ];
+  return postsArray;
 
+
+};
+
+const getExpectedPostsOnState = (postsArray = getDefaultPostsArray()) => {
   const postsNormalized = postsArray.reduce((postsObj, post) => {
-    postsObj[post.id] = post;
+    postsObj[post.id] = { ...post };
+    postsObj[post.id].processing = false;
     return postsObj;
   }, {});
 
-  return {
-    postsArray,
-    postsNormalized,
-  };
+  return postsNormalized;
 };
 
 
@@ -39,7 +42,7 @@ describe('reducer', () => {
 
     describe('should handle POSTS_SET', () => {
       it('updates posts if the operation id matches', () => {
-        const testPosts = getDefaultPosts();
+        const testPostsArray = getDefaultPostsArray();
         const operationId = 'testoperationId';
 
         const initialState = {
@@ -48,20 +51,21 @@ describe('reducer', () => {
         };
 
         const testAction = postsActions.setPosts({
-          posts: testPosts.postsArray,
+          posts: testPostsArray,
           operationId,
         });
 
+        const expectedPostsOnState = getExpectedPostsOnState();
         const expectedState = {
           loading: { id: operationId },
-          posts: testPosts.postsNormalized,
+          posts: expectedPostsOnState,
         };
 
         expect(reducer(initialState, testAction)).toEqual(expectedState);
       });
 
       it('does not update posts if operation id does not match', () => {
-        const testPosts = getDefaultPosts();
+        const testPostsArray = getDefaultPostsArray();
         const operationIdState = 'testOldOperationId';
         const operationIdAction = 'testNewOperationId';
 
@@ -71,7 +75,7 @@ describe('reducer', () => {
         };
 
         const testAction = postsActions.setPosts({
-          posts: testPosts.postsArray,
+          posts: testPostsArray,
           operationId: operationIdAction,
         });
 
@@ -86,7 +90,9 @@ describe('reducer', () => {
 
       const testAction = postsActions.addPost(postToAdd);
 
-      const expectedState = { posts: { [postToAdd.id]: postToAdd } };
+      const expectedState = { posts: {
+        [postToAdd.id]: { ...postToAdd, processing: false },
+      } };
 
       expect(reducer({}, testAction)).toEqual(expectedState);
     });
@@ -146,6 +152,27 @@ describe('reducer', () => {
       const expectedState = {
         posts: {
           [postToVote.id]: { ...postToVote, voteScore: currentVoteScore + 1 },
+        },
+      };
+
+      expect(reducer(initialState, testAction)).toEqual(expectedState);
+    });
+
+    it('should handle POSTS_SET_PROCESSING_STATE', () => {
+      const processingState = true;
+      const postToSet = { id: 'testId', processing: false };
+
+      const initialState = {
+        posts: {
+          [postToSet.id]: postToSet,
+        },
+      };
+
+      const testAction = postsActions.setProcessingState(postToSet, processingState);
+
+      const expectedState = {
+        posts: {
+          [postToSet.id]: { ...postToSet, processing: processingState },
         },
       };
 

@@ -5,6 +5,7 @@ import {
   POSTS_UPDATE,
   POSTS_VOTE,
   POSTS_SET_LOADING_STATE,
+  POSTS_SET_PROCESSING_STATE,
 } from '../actions/posts';
 
 import {
@@ -29,7 +30,8 @@ export default function posts(state = initialState, action) {
         return {
           ...state,
           posts: action.posts.reduce((posts, post) => {
-            posts[post.id] = post;
+            posts[post.id] = { ...post };
+            posts[post.id].processing = false;
             return posts;
           }, {}),
         };
@@ -44,7 +46,10 @@ export default function posts(state = initialState, action) {
         ...state,
         posts: {
           ...state.posts,
-          [action.post.id]: action.post,
+          [action.post.id]: {
+            ...action.post,
+            processing: false,
+          },
         },
       };
 
@@ -54,7 +59,7 @@ export default function posts(state = initialState, action) {
       return {
         ...state,
         posts: idsToKeep.reduce((posts, id) => {
-          posts[id] = state.posts[id];
+          posts[id] = { ...state.posts[id] };
           return posts;
         }, {}),
       };
@@ -113,6 +118,18 @@ export default function posts(state = initialState, action) {
         }
       }
     }
+
+    case POSTS_SET_PROCESSING_STATE:
+      return {
+        ...state,
+        posts: {
+          ...state.posts,
+          [action.post.id]: {
+            ...state.posts[action.post.id],
+            processing: action.processingState,
+          },
+        },
+      };
 
     case COMMENTS_ADD:
       return {

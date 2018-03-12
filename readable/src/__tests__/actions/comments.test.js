@@ -36,15 +36,13 @@ const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
 
 // Utils
-const getDefaultComments = () => {
+const getDefaultCommentsArray = () => {
   const commentsArray = [
     { id: 'testId1', body: 'testBody1', author: 'testAuthor1' },
     { id: 'testId2', body: 'testBody2', author: 'testAuthor2' },
   ];
 
-  return {
-    commentsArray,
-  };
+  return commentsArray;
 };
 
 afterEach(() => {
@@ -83,12 +81,12 @@ describe('actions', () => {
     });
 
     it('should create an action to set comments', () => {
-      const testComments = getDefaultComments();
+      const testCommentsArray = getDefaultCommentsArray();
       const operationId = 'testOperationId';
       const parentPostId = 'testParentPostId';
 
       const testActionInput = {
-        comments: testComments.commentsArray,
+        comments: testCommentsArray,
         operationId,
         parentPostId,
       };
@@ -156,149 +154,192 @@ describe('actions', () => {
 
       expect(actions.voteOnComment(commentToVote, vote)).toEqual(expectedAction);
     });
+
+    it('should create an action to set the processing state of a comment', () => {
+      const commentToSet = { id: 'testId' };
+
+      let processingState = false;
+      const expectedAction = {
+        type: actions.COMMENTS_SET_PROCESSING_STATE,
+        comment: commentToSet,
+        processingState,
+      };
+
+      expect(actions.setProcessingState(commentToSet, processingState))
+        .toEqual(expectedAction);
+
+      processingState = true;
+      expectedAction.processingState = processingState;
+
+      expect(actions.setProcessingState(commentToSet, processingState))
+        .toEqual(expectedAction);
+    });
   });
 
 
   describe('async actions', () => {
-    it('should fetch comments from the api and dispatch actions on success', () => {
-      const testComments = getDefaultComments();
+    it('should fetch comments from the api and dispatch actions on success', async () => {
+      const testCommentsArray = getDefaultCommentsArray();
       const operationId = 'testOperationId';
       const parentPostId = 'testParentPostId';
 
       const expectedActions = [
-        { type: actions.COMMENTS_SET_LOADING_STATE, loading: {
-          id: operationId,
-          isLoading: true,
-          hasErrored: false,
-        } },
-        {
-          type: actions.COMMENTS_SET,
-          comments: testComments.commentsArray,
-          operationId,
-          parentPostId,
-        },
-        { type: actions.COMMENTS_SET_LOADING_STATE, loading: {
-          id: operationId,
-          isLoading: false,
-          hasErrored: false,
-        } },
+        actions.setLoadingState({ id: operationId, isLoading: true, hasErrored: false }),
+        actions.setComments({ comments: testCommentsArray, operationId, parentPostId }),
+        actions.setLoadingState({ id: operationId, isLoading: false, hasErrored: false }),
       ];
 
       const store = mockStore({});
+      await store.dispatch(actions.fetchComments(parentPostId));
+      const dispatchedActions = store.getActions();
 
-      return store.dispatch(actions.fetchComments(parentPostId)).then(() => {
-        const dispatchedActions = store.getActions();
-        expect(dispatchedActions).toEqual(expectedActions);
-        expect(PostsAPI.get.postComments).toHaveBeenCalledWith(parentPostId);
-      });
+      expect(dispatchedActions).toEqual(expectedActions);
+      expect(PostsAPI.get.postComments).toHaveBeenCalledWith(parentPostId);
     });
 
-    it('should fetch comments from the api and dispatch actions on failure', () => {
+    it('should fetch comments from the api and dispatch actions on failure', async () => {
       PostsAPI.get.postComments.mockImplementationOnce(() => Promise.reject());
       const operationId = 'testOperationId';
       const parentPostId = 'testParentPostId';
 
       const expectedActions = [
-        { type: actions.COMMENTS_SET_LOADING_STATE, loading: {
-          id: operationId,
-          isLoading: true,
-          hasErrored: false,
-        } },
-        { type: actions.COMMENTS_SET, comments: [], parentPostId: null, operationId },
-        { type: actions.COMMENTS_SET_LOADING_STATE, loading: {
-          id: operationId,
-          isLoading: false,
-          hasErrored: true,
-        } },
+        actions.setLoadingState({ id: operationId, isLoading: true, hasErrored: false }),
+        actions.setComments({ comments: [], operationId, parentPostId: null }),
+        actions.setLoadingState({ id: operationId, isLoading: false, hasErrored: true }),
       ];
 
       const store = mockStore({});
+      await store.dispatch(actions.fetchComments(parentPostId));
+      const dispatchedActions = store.getActions();
 
-      return store.dispatch(actions.fetchComments(parentPostId)).then(() => {
-        const dispatchedActions = store.getActions();
-        expect(dispatchedActions).toEqual(expectedActions);
-        expect(PostsAPI.get.postComments).toHaveBeenCalledWith(parentPostId);
-      });
+      expect(dispatchedActions).toEqual(expectedActions);
+      expect(PostsAPI.get.postComments).toHaveBeenCalledWith(parentPostId);
     });
 
-    it('should add a new comment on the api and dispatch actions on success', () => {
+    it('should add a new comment on the api and dispatch actions on success', async () => {
       const parentPostId = 'testParentPostId';
       const commentToAdd = { body: 'testBody', author: 'testAuthor' };
 
       const expectedAddedComment = { ...commentToAdd, id: 'testCreatedCommentId' };
 
       const expectedActions = [
-        { type: actions.COMMENTS_ADD, comment: expectedAddedComment },
+        actions.addComment(expectedAddedComment),
       ];
 
       const store = mockStore({});
+      await store.dispatch(actions.fetchAddComment(parentPostId, commentToAdd));
+      const dispatchedActions = store.getActions();
 
-      return store.dispatch(actions.fetchAddComment(parentPostId, commentToAdd))
-        .then(() => {
-          const dispatchedActions = store.getActions();
-          expect(dispatchedActions).toEqual(expectedActions);
-          expect(PostsAPI.create.comment)
-            .toHaveBeenCalledWith(parentPostId, commentToAdd);
-        });
+      expect(dispatchedActions).toEqual(expectedActions);
+      expect(PostsAPI.create.comment)
+        .toHaveBeenCalledWith(parentPostId, commentToAdd);
     });
 
-    it('should remove a comment from the api and dispatch actions on success', () => {
+    it('should remove a comment from the api and dispatch actions on success', async () => {
       const commentToRemove = { id: 'testId' };
 
       const expectedActions = [
-        { type: actions.COMMENTS_REMOVE, comment: commentToRemove },
+        actions.setProcessingState(commentToRemove, true),
+        actions.removeComment(commentToRemove),
       ];
 
       const store = mockStore({});
+      await store.dispatch(actions.fetchRemoveComment(commentToRemove));
+      const dispatchedActions = store.getActions();
 
-      return store.dispatch(actions.fetchRemoveComment(commentToRemove))
-        .then(() => {
-          const dispatchedActions = store.getActions();
-          expect(dispatchedActions).toEqual(expectedActions);
-          expect(PostsAPI.del.comment).toHaveBeenCalledWith(commentToRemove.id);
-        });
+      expect(dispatchedActions).toEqual(expectedActions);
+      expect(PostsAPI.del.comment).toHaveBeenCalledWith(commentToRemove.id);
     });
 
-    it('should update a comment on the api and dispatch actions on success', () => {
+    it('should remove a comment from the api and dispatch actions on failure', async () => {
+      PostsAPI.del.comment.mockImplementationOnce(() => Promise.reject());
+      const commentToRemove = { id: 'testId' };
+
+      const expectedActions = [
+        actions.setProcessingState(commentToRemove, true),
+        actions.setProcessingState(commentToRemove, false),
+      ];
+
+      const store = mockStore({});
+      await store.dispatch(actions.fetchRemoveComment(commentToRemove));
+      const dispatchedActions = store.getActions();
+
+      expect(dispatchedActions).toEqual(expectedActions);
+      expect(PostsAPI.del.comment).toHaveBeenCalledWith(commentToRemove.id);
+    });
+
+    it('should update a comment on the api and dispatch actions on success', async () => {
       const commentToUpdate = { id: 'testId', body: 'testBody' };
       const updatedCommentData = { body: 'updatedTestBody' };
 
       const expectedActions = [
-        {
-          type: actions.COMMENTS_UPDATE,
-          comment: commentToUpdate,
-          newData: updatedCommentData,
-        },
+        actions.setProcessingState(commentToUpdate, true),
+        actions.updateComment(commentToUpdate, updatedCommentData),
+        actions.setProcessingState(commentToUpdate, false),
       ];
 
       const store = mockStore({});
+      await store.dispatch(actions.fetchUpdateComment(commentToUpdate, updatedCommentData));
+      const dispatchedActions = store.getActions();
 
-      return store.dispatch(actions.fetchUpdateComment(commentToUpdate, updatedCommentData))
-        .then(() => {
-          const dispatchedActions = store.getActions();
-          expect(dispatchedActions).toEqual(expectedActions);
-          expect(PostsAPI.update.comment)
-            .toHaveBeenCalledWith(commentToUpdate.id, updatedCommentData);
-        });
+      expect(dispatchedActions).toEqual(expectedActions);
+      expect(PostsAPI.update.comment)
+        .toHaveBeenCalledWith(commentToUpdate.id, updatedCommentData);
     });
 
-    it('should vote on a comment on the api and dispatch actions on success', () => {
-      const commentToVote = { id: 'testId' };
-      const vote = 4;
-      const expectedVote = 1;
+    it('should update a comment on the api and dispatch actions on failure', async () => {
+      PostsAPI.update.comment.mockImplementationOnce(() => Promise.reject());
+      const commentToUpdate = { id: 'testId', body: 'testBody' };
+      const updatedCommentData = { body: 'updatedTestBody' };
 
       const expectedActions = [
-        { type: actions.COMMENTS_VOTE, comment: commentToVote, vote: expectedVote },
+        actions.setProcessingState(commentToUpdate, true),
+        actions.setProcessingState(commentToUpdate, false),
       ];
 
       const store = mockStore({});
+      await store.dispatch(actions.fetchUpdateComment(commentToUpdate, updatedCommentData));
+      const dispatchedActions = store.getActions();
 
-      return store.dispatch(actions.fetchVoteOnComment(commentToVote, vote))
-        .then(() => {
-          const dispatchedActions = store.getActions();
-          expect(dispatchedActions).toEqual(expectedActions);
-          expect(PostsAPI.create.voteOnComment).toHaveBeenCalledWith(commentToVote.id, vote);
-        });
+      expect(dispatchedActions).toEqual(expectedActions);
+      expect(PostsAPI.update.comment)
+        .toHaveBeenCalledWith(commentToUpdate.id, updatedCommentData);
+    });
+
+    it('should vote on a comment on the api and dispatch actions on success', async () => {
+      const commentToVote = { id: 'testId' };
+      const vote = 1;
+
+      const expectedActions = [
+        actions.setProcessingState(commentToVote, true),
+        actions.voteOnComment(commentToVote, vote),
+        actions.setProcessingState(commentToVote, false),
+      ];
+
+      const store = mockStore({});
+      await store.dispatch(actions.fetchVoteOnComment(commentToVote, vote));
+      const dispatchedActions = store.getActions();
+
+      expect(dispatchedActions).toEqual(expectedActions);
+      expect(PostsAPI.create.voteOnComment).toHaveBeenCalledWith(commentToVote.id, vote);
+    });
+
+    it('should vote on a comment on the api and dispatch actions on failure', async () => {
+      PostsAPI.create.voteOnComment.mockImplementationOnce(() => Promise.reject());
+      const commentToVote = { id: 'testId' };
+      const vote = 1;
+
+      const expectedActions = [
+        actions.setProcessingState(commentToVote, true),
+        actions.setProcessingState(commentToVote, false),
+      ];
+
+      const store = mockStore({});
+      await store.dispatch(actions.fetchVoteOnComment(commentToVote, vote));
+      const dispatchedActions = store.getActions();
+
+      expect(dispatchedActions).toEqual(expectedActions);
+      expect(PostsAPI.create.voteOnComment).toHaveBeenCalledWith(commentToVote.id, vote);
     });
   });
 });
