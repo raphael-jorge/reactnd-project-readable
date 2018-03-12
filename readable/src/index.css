@@ -26,10 +26,33 @@ a {
 }
 
 /* Loadings */
-.loading-squares {
-  font-size: 0;
+.loading-icon {
   width: 100%;
   height: 60px;
+}
+.loading-cover {
+  z-index: 30;
+}
+.loading-icon,
+.loading-cover {
+  font-size: 0;
+  cursor: wait;
+}
+.loading-cover-overlay {
+  background-color: #fff;
+  opacity: 0.75;
+  z-index: 20;
+}
+.loading-cover,
+.loading-cover-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+/* Loading icons */
+.loading-squares {
   background-image: url('./icons/loading-squares.gif');
   background-size: 100px;
   background-repeat: no-repeat;

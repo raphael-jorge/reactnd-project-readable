@@ -59,7 +59,7 @@ export class ShowPostComments extends Component {
         {/* Verifica se os dados do post estão sendo carregados */}
         <Placeholder
           isReady={!isLoadingPost}
-          fallback={<Loading type={'squares'} />}
+          fallback={<Loading type={'icon-squares'} />}
         >
           {hasErroredPost &&
             <Message msg={this.MESSAGE_LOAD_ERROR} />
@@ -83,7 +83,7 @@ export class ShowPostComments extends Component {
         {!isLoadingPost && !hasErroredPost && Object.keys(postData).length > 0 &&
           <Placeholder
             isReady={!isLoadingComments}
-            fallback={<Loading type={'squares'} />}
+            fallback={<Loading type={'icon-squares'} />}
           >
             {hasErroredComments &&
               <Message msg={this.MESSAGE_LOAD_ERROR} />

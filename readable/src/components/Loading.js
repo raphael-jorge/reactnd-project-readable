@@ -4,8 +4,22 @@ import Message from './Message';
 
 export default function Loading(props) {
   switch (props.type) {
-    case 'squares':
-      return <div className="loading-squares">Loading</div>;
+    case 'icon-squares':
+      return <div className="loading-icon loading-squares">Loading</div>;
+
+    case 'cover-squares':
+      return (
+        <div>
+          <div className="loading-cover-overlay" />
+          <div
+            className="loading-cover loading-squares"
+            onClick={(event) => event.preventDefault()}
+          >
+            Loading
+          </div>
+        </div>
+      );
+
     default:
       return <Message msg={'Loading...'}/>;
   }

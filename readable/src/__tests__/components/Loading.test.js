@@ -16,6 +16,10 @@ const setup = (propOverrides) => {
   };
 };
 
+const getDefaultEvent = () => ({
+  preventDefault: jest.fn(),
+})
+
 
 // Tests
 describe('<Loading />', () => {
@@ -28,10 +32,31 @@ describe('<Loading />', () => {
   });
 
 
-  it('renders a .loading-squares element when type is set to squares', () => {
-    const type = 'squares';
+  it('renders a loading squares icon when type is set to icon-squares', () => {
+    const type = 'icon-squares';
     const { loading } = setup({ type });
 
-    expect(loading.find('.loading-squares').length).toBe(1);
+    expect(loading.find('.loading-icon.loading-squares').length).toBe(1);
+  });
+
+  describe('cover-squares type', () => {
+    it('renders a loading squares cover', () => {
+      const type = 'cover-squares';
+      const { loading } = setup({ type });
+
+      expect(loading.find('.loading-cover.loading-squares').length).toBe(1);
+      expect(loading.find('.loading-cover-overlay').length).toBe(1);
+    });
+
+    it('prevents click actions to be triggered', () => {
+      const type = 'cover-squares';
+      const { loading } = setup({ type });
+
+      const cover = loading.find('.loading-cover');
+
+      const event = getDefaultEvent();
+      cover.simulate('click', event);
+      expect(event.preventDefault).toHaveBeenCalled();
+    });
   });
 });

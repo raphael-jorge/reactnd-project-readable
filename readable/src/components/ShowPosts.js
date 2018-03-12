@@ -41,7 +41,7 @@ export class ShowPosts extends Component {
         {/* Verifica se os posts estão sendo carregados */}
         <Placeholder
           isReady={!isLoading}
-          fallback={<Loading type="squares" />}
+          fallback={<Loading type="icon-squares" />}
         >
           {hasErrored &&
             <Message msg={this.MESSAGE_LOAD_ERROR} />
