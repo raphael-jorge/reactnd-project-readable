@@ -209,10 +209,10 @@ describe('<Controls />', () => {
       expect(operationHandler.onAbort).toHaveBeenCalled();
     });
 
-    it('sets the operationHandler state to null when submitted an operation', () => {
+    it('sets the operationHandler state to null on a successful submit', async () => {
       const { controls } = setup();
       const operationHandler = {
-        onSubmit: jest.fn(),
+        onSubmit: jest.fn(() => Promise.resolve(true)),
       };
 
       controls.setState({ operationHandler });
@@ -223,9 +223,28 @@ describe('<Controls />', () => {
       ));
 
       const event = getDefaultEvent();
-      submitRenderedButton.simulate('click', event);
+      await submitRenderedButton.simulate('click', event);
 
       expect(controls.state('operationHandler')).toBe(null);
+    });
+
+    it('does not change the operationHandler state on a false submit', async () => {
+      const { controls } = setup();
+      const operationHandler = {
+        onSubmit: jest.fn(() => Promise.resolve(false)),
+      };
+
+      controls.setState({ operationHandler });
+
+      const renderedButtons = controls.find('button');
+      const submitRenderedButton = renderedButtons.filterWhere((button) => (
+        button.prop('title') === 'Submit'
+      ));
+
+      const event = getDefaultEvent();
+      await submitRenderedButton.simulate('click', event);
+
+      expect(controls.state('operationHandler')).toEqual(operationHandler);
     });
 
     it('sets the operationHandler state to null when aborted an operation', () => {

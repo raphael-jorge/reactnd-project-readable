@@ -159,7 +159,7 @@ describe('<Comment />', () => {
         expect(comment.state('bodyInputValue')).toBe('');
       });
 
-      it('submits the edit operation', async () => {
+      it('submits the edit operation when valid and different', async () => {
         const { comment, props } = setup();
         const updatedCommentData = {
           body: 'updated comment body',
@@ -175,6 +175,38 @@ describe('<Comment />', () => {
         expect(comment.state('editMode')).toBe(false);
         expect(comment.state('bodyInputValue')).toBe('');
         expect(props.onUpdate).toHaveBeenCalledWith(props.commentData, updatedCommentData);
+      });
+
+      it('leaves the edit mode when submitted data is equal to current data', async () => {
+        const commentData = getDefaultCommentData();
+        commentData.body = 'test comment body';
+        const { comment, props } = setup({ commentData });
+
+        comment.setState({
+          editMode: true,
+          bodyInputValue: commentData.body,
+        });
+
+        await comment.instance().handleUpdateSubmit();
+
+        expect(comment.state('editMode')).toBe(false);
+        expect(comment.state('bodyInputValue')).toBe('');
+        expect(props.onUpdate).not.toHaveBeenCalled();
+      });
+
+      it('stops submit operation if no body is provided', async () => {
+        const { comment, props } = setup();
+
+        comment.setState({
+          editMode: true,
+          bodyInputValue: '',
+        });
+
+        await comment.instance().handleUpdateSubmit();
+
+        expect(comment.state('editMode')).toBe(true);
+        expect(comment.state('bodyInputErrorClass')).toBe('input-error');
+        expect(props.onUpdate).not.toHaveBeenCalled();
       });
     });
   });

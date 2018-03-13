@@ -16,6 +16,7 @@ export default class Comment extends Component {
   state = {
     editMode: false,
     bodyInputValue: '',
+    bodyInputErrorClass: '',
   }
 
   handleUpdateRequest = () => {
@@ -29,20 +30,50 @@ export default class Comment extends Component {
     this.setState({
       editMode: false,
       bodyInputValue: '',
+      bodyInputErrorClass: '',
     });
   }
 
   handleUpdateSubmit = async () => {
-    const updatedData = {
-      body: this.state.bodyInputValue,
-    };
+    let done = true;
+    if (this.isUpdateValid()) {
+      if (this.updateRequiresSubmit()) {
+        const updatedData = {
+          body: this.state.bodyInputValue,
+        };
 
-    await this.props.onUpdate(this.props.commentData, updatedData);
+        await this.props.onUpdate(this.props.commentData, updatedData);
+      }
 
-    this.setState({
-      editMode: false,
-      bodyInputValue: '',
-    });
+      this.setState({
+        editMode: false,
+        bodyInputValue: '',
+        bodyInputErrorClass: '',
+      });
+    } else {
+      done = false;
+    }
+
+    return done;
+  }
+
+  isUpdateValid = () => {
+    let valid = true;
+    if (this.state.bodyInputValue === '') {
+      valid = false;
+      this.setState({ bodyInputErrorClass: 'input-error' });
+    } else {
+      this.setState({ bodyInputErrorClass: '' });
+    }
+    return valid;
+  }
+
+  updateRequiresSubmit = () => {
+    let submitRequired = true;
+    if (this.state.bodyInputValue === this.props.commentData.body) {
+      submitRequired = false;
+    }
+    return submitRequired;
   }
 
   render() {
@@ -69,7 +100,7 @@ export default class Comment extends Component {
 
         {this.state.editMode ? (
           <textarea
-            className="comment-body input-edit"
+            className={`comment-body input-edit ${this.state.bodyInputErrorClass}`}
             placeholder="Comment Body"
             value={this.state.bodyInputValue}
             onClick={(event) => event.preventDefault()}

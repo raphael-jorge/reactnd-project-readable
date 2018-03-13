@@ -182,7 +182,7 @@ describe('<Post />', () => {
         expect(post.state('bodyInputValue')).toBe('');
       });
 
-      it('submits the edit operation', async () => {
+      it('submits the edit operation when valid and different', async () => {
         const { post, props } = setup();
         const updatedPostData = {
           title: 'updated post title',
@@ -201,6 +201,55 @@ describe('<Post />', () => {
         expect(post.state('titleInputValue')).toBe('');
         expect(post.state('bodyInputValue')).toBe('');
         expect(props.onUpdate).toHaveBeenCalledWith(props.postData, updatedPostData);
+      });
+
+      it('leaves the edit mode when submitted data is equal to current data', async () => {
+        const postData = getDefaultPostData();
+        postData.title = 'test post title';
+        postData.body = 'test post body';
+        const { post, props } = setup({ postData });
+
+        post.setState({
+          editMode: true,
+          titleInputValue: postData.title,
+          bodyInputValue: postData.body,
+        });
+
+        await post.instance().handleUpdateSubmit();
+
+        expect(post.state('editMode')).toBe(false);
+        expect(post.state('bodyInputValue')).toBe('');
+        expect(props.onUpdate).not.toHaveBeenCalled();
+      });
+
+      it('stops submit operation if no title is provided', async () => {
+        const { post, props } = setup();
+
+        post.setState({
+          editMode: true,
+          titleInputValue: '',
+        });
+
+        await post.instance().handleUpdateSubmit();
+
+        expect(post.state('editMode')).toBe(true);
+        expect(post.state('titleInputErrorClass')).toBe('input-error');
+        expect(props.onUpdate).not.toHaveBeenCalled();
+      });
+
+      it('stops submit operation if no body is provided', async () => {
+        const { post, props } = setup();
+
+        post.setState({
+          editMode: true,
+          bodyInputValue: '',
+        });
+
+        await post.instance().handleUpdateSubmit();
+
+        expect(post.state('editMode')).toBe(true);
+        expect(post.state('bodyInputErrorClass')).toBe('input-error');
+        expect(props.onUpdate).not.toHaveBeenCalled();
       });
     });
   });

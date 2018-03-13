@@ -19,6 +19,8 @@ export default class Post extends Component {
     editMode: false,
     bodyInputValue: '',
     titleInputValue: '',
+    bodyInputErrorClass: '',
+    titleInputErrorClass: '',
   }
 
   handleUpdateRequest = () => {
@@ -34,22 +36,62 @@ export default class Post extends Component {
       editMode: false,
       bodyInputValue: '',
       titleInputValue: '',
+      bodyInputErrorClass: '',
+      titleInputErrorClass: '',
     });
   }
 
   handleUpdateSubmit = async () => {
-    const updatedData = {
-      body: this.state.bodyInputValue,
-      title: this.state.titleInputValue,
-    };
+    let done = true;
+    if (this.isUpdateValid()) {
+      if (this.updateRequiresSubmit()) {
+        const updatedData = {
+          body: this.state.bodyInputValue,
+          title: this.state.titleInputValue,
+        };
 
-    await this.props.onUpdate(this.props.postData, updatedData);
+        await this.props.onUpdate(this.props.postData, updatedData);
+      }
 
-    this.setState({
-      editMode: false,
-      bodyInputValue: '',
-      titleInputValue: '',
-    });
+      this.setState({
+        editMode: false,
+        bodyInputValue: '',
+        titleInputValue: '',
+        bodyInputErrorClass: '',
+        titleInputErrorClass: '',
+      });
+
+    } else {
+      done = false;
+    }
+
+    return done;
+  }
+
+  isUpdateValid = () => {
+    let valid = true;
+    if (this.state.bodyInputValue === '') {
+      valid = false;
+      this.setState({ bodyInputErrorClass: 'input-error' });
+    } else {
+      this.setState({ bodyInputErrorClass: '' });
+    }
+    if (this.state.titleInputValue === '') {
+      valid = false;
+      this.setState({ titleInputErrorClass: 'input-error' });
+    } else {
+      this.setState({ titleInputErrorClass: '' });
+    }
+    return valid;
+  }
+
+  updateRequiresSubmit = () => {
+    let submitRequired = true;
+    if (this.state.bodyInputValue === this.props.postData.body
+        && this.state.titleInputValue === this.props.postData.title) {
+      submitRequired = false;
+    }
+    return submitRequired;
   }
 
   render() {
@@ -78,7 +120,7 @@ export default class Post extends Component {
         {this.state.editMode ? (
           <div>
             <input
-              className="post-title input-edit"
+              className={`post-title input-edit ${this.state.titleInputErrorClass}`}
               placeholder="Post Title"
               value={this.state.titleInputValue}
               onClick={(event) => event.preventDefault()}
@@ -86,7 +128,7 @@ export default class Post extends Component {
             />
 
             <textarea
-              className="post-body input-edit"
+              className={`post-body input-edit ${this.state.bodyInputErrorClass}`}
               placeholder="Post Body"
               value={this.state.bodyInputValue}
               onClick={(event) => event.preventDefault()}

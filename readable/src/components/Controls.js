@@ -66,14 +66,16 @@ export default class Controls extends Component {
 
   /**
    * Executa o método onSubmit presente no estado operationHandler.
-   * Após realizar essa chamada, o estado operationHandler é configurado
-   * para null. (O estado operationHandler deve ser previamente configurado
-   * com o método handleRequest).
+   * Se essa operação retornar true, indicando que a operação foi bem
+   * sucedida, o estado operationHandler é configurado para null. Caso
+   * contrário, o estado permanece inalterado. (O estado operationHandler
+   * deve ser previamente configurado com o método handleRequest).
    */
-  handleSubmit = (event) => {
+  handleSubmit = async (event) => {
     event.preventDefault();
-    this.state.operationHandler.onSubmit();
-    this.setState({ operationHandler: null });
+    if (await this.state.operationHandler.onSubmit()) {
+      this.setState({ operationHandler: null });
+    }
   }
 
   /**
