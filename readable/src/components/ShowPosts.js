@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import {
   fetchVoteOnPost,
@@ -49,19 +48,14 @@ export class ShowPosts extends Component {
           }
 
           {!hasErrored && posts.length > 0 && posts.map((postData) => (
-            <Link
+            <Post
               key={postData.id}
-              className="post-link"
-              to={ `/${postData.category}/${postData.id}` }
-            >
-              <Post
-                postData={postData}
-                onVote={onPostVote}
-                onRemove={onPostRemove}
-                onUpdate={onPostUpdate}
-                maxBodyLength={80}
-              />
-            </Link>
+              postData={postData}
+              onVote={onPostVote}
+              onRemove={onPostRemove}
+              onUpdate={onPostUpdate}
+              linkMode={true}
+            />
           ))}
 
           {!hasErrored && !posts.length &&

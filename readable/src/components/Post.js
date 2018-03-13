@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import CommentsIcon from 'react-icons/lib/md/comment';
-import { formatDate, trimStringToLength } from '../util/utils';
+import { formatDate } from '../util/utils';
 import Controls from './Controls';
 import Loading from './Loading';
 import Placeholder from './Placeholder';
@@ -12,7 +13,7 @@ export default class Post extends Component {
     onVote: PropTypes.func.isRequired,
     onRemove: PropTypes.func.isRequired,
     onUpdate: PropTypes.func.isRequired,
-    maxBodyLength: PropTypes.number,
+    linkMode: PropTypes.bool,
   }
 
   state = {
@@ -99,7 +100,7 @@ export default class Post extends Component {
       postData,
       onVote,
       onRemove,
-      maxBodyLength,
+      linkMode,
     } = this.props;
 
     return (
@@ -136,13 +137,19 @@ export default class Post extends Component {
             />
           </div>
         ) : (
-          <div>
-            <h4 className="post-title">{ postData.title }</h4>
+          linkMode ? (
+            <h4 className="post-title">
+              <Link to={`/${postData.category}/${postData.id}`}>
+                { postData.title }
+              </Link>
+            </h4>
+          ) : (
+            <div>
+              <h4 className="post-title">{ postData.title }</h4>
 
-            <p className="post-body">
-              { maxBodyLength ? trimStringToLength(postData.body, maxBodyLength) : postData.body }
-            </p>
-          </div>
+              <p className="post-body">{postData.body}</p>
+            </div>
+          )
         )}
 
         <div className="post-comments-info">

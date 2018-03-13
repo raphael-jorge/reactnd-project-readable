@@ -32,21 +32,3 @@ export function formatDate(dateValue) {
 
   return `${ dateStr } ${ timeStr }`;
 }
-
-
-/**
- * Formata uma string. A string formatada corresponde à porção inicial da string
- * original com um tamanho máximo definido pelo parâmetro length.
- * @param  {string} str A string a ser formatada.
- * @param  {number} length O tamanho máximo da string.
- * @return {string} A string formatada.
- */
-export function trimStringToLength(str, length) {
-  const strLength = str.length;
-
-  const formattedStr = strLength > length ?
-    `${str.slice(0, length - 3)}...` :
-    str;
-
-  return formattedStr;
-}

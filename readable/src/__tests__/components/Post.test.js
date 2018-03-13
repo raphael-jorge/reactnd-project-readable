@@ -1,5 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
+import { MemoryRouter } from 'react-router-dom';
 import Post from '../../components/Post';
 
 // Utils
@@ -9,10 +10,14 @@ const setup = (propOverrides) => {
     onVote: jest.fn(),
     onRemove: jest.fn(),
     onUpdate: jest.fn(),
-    maxBodyLength: undefined,
+    linkMode: undefined,
   }, propOverrides);
 
-  const post = shallow(<Post {...props} />);
+  const post = shallow(
+    <MemoryRouter>
+      <Post {...props} />
+    </MemoryRouter>
+  ).find(Post).dive();
 
   return {
     props,
@@ -94,6 +99,24 @@ describe('<Post />', () => {
     expect(controlOnEdit.onRequest).toBe(post.instance().handleUpdateRequest);
     expect(controlOnEdit.onAbort).toBe(post.instance().handleUpdateAbort);
     expect(controlOnEdit.onSubmit).toBe(post.instance().handleUpdateSubmit);
+  });
+
+
+  describe('link mode', () => {
+    it('does not render the post body', () => {
+      const { post } = setup({ linkMode: true });
+      expect(post.find('post-body').length).toBe(0);
+    });
+
+    it('renders a link to the post route', () => {
+      const { post, props } = setup({ linkMode: true });
+      const postData = props.postData;
+
+      const link = post.find('Link');
+
+      expect(link.length).toBe(1);
+      expect(link.prop('to')).toBe(`/${postData.category}/${postData.id}`);
+    });
   });
 
 
@@ -252,30 +275,5 @@ describe('<Post />', () => {
         expect(props.onUpdate).not.toHaveBeenCalled();
       });
     });
-  });
-
-
-  it('crops the body length if the maxBodyLength prop is set', () => {
-    const stringFiller = '-';
-    const continueMark = '...';
-    const testBodyLength = 100;
-    const testBody = Array(testBodyLength + 1).join(stringFiller);
-    const postData = getDefaultPostData();
-
-    // Limite maior que o body length
-    let maxBodyLength = 150;
-    postData.body = testBody;
-    const { post } = setup({ postData, maxBodyLength });
-    let expectedRenderedBody = testBody;
-
-    expect(post.find('.post-body').text()).toBe(expectedRenderedBody);
-
-    // Limite menor que o body length
-    maxBodyLength = 50;
-    post.setProps({ maxBodyLength });
-    expectedRenderedBody = Array(maxBodyLength - continueMark.length + 1)
-      .join(stringFiller) + continueMark;
-
-    expect(post.find('.post-body').text()).toBe(expectedRenderedBody);
   });
 });

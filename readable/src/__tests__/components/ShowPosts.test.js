@@ -1,6 +1,5 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import { MemoryRouter } from 'react-router-dom';
 import {
   fetchVoteOnPost,
   fetchRemovePost,
@@ -33,11 +32,7 @@ const setup = (propOverrides) => {
     hasErrored: undefined,
   }, propOverrides);
 
-  const showPosts= shallow(
-    <MemoryRouter>
-      <ShowPosts {...props} />
-    </MemoryRouter>
-  ).find(ShowPosts).dive();
+  const showPosts= shallow(<ShowPosts {...props} />);
 
   return {
     props,
@@ -113,24 +108,6 @@ describe('<ShowPosts />', () => {
       expect(matchingRenderedPost.prop('onVote')).toBe(props.onPostVote);
       expect(matchingRenderedPost.prop('onRemove')).toBe(props.onPostRemove);
       expect(matchingRenderedPost.prop('onUpdate')).toBe(props.onPostUpdate);
-    });
-  });
-
-
-  it('renders a Link component wrapping each Post component', () => {
-    const testPosts = getDefaultPosts();
-    const { showPosts } = setup({ posts: testPosts.postsArray });
-
-    const renderedPosts = showPosts.find('Post');
-
-    testPosts.postsArray.forEach((testPost) => {
-      const matchingRenderedPost = renderedPosts.filterWhere((post) => (
-        post.prop('postData').id === testPost.id
-      ));
-
-      const wrappingLink = matchingRenderedPost.parent().find('Link');
-      expect(wrappingLink.length).toBe(1);
-      expect(wrappingLink.prop('to')).toBe(`/${testPost.category}/${testPost.id}`);
     });
   });
 
