@@ -66,6 +66,7 @@ export default class Post extends Component {
         <Placeholder
           isReady={!postData.processing}
           fallback={<Loading type="cover-squares" />}
+          delay={250}
         />
 
         <div className="post-info">

@@ -58,6 +58,7 @@ export default class Comment extends Component {
         <Placeholder
           isReady={!commentData.processing}
           fallback={<Loading type="cover-squares" />}
+          delay={250}
         />
 
         <div className="comment-info">

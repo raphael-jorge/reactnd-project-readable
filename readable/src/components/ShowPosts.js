@@ -42,6 +42,7 @@ export class ShowPosts extends Component {
         <Placeholder
           isReady={!isLoading}
           fallback={<Loading type="icon-squares" />}
+          delay={250}
         >
           {hasErrored &&
             <Message msg={this.MESSAGE_LOAD_ERROR} />

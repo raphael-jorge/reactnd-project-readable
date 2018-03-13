@@ -60,6 +60,7 @@ export class ShowPostComments extends Component {
         <Placeholder
           isReady={!isLoadingPost}
           fallback={<Loading type={'icon-squares'} />}
+          delay={250}
         >
           {hasErroredPost &&
             <Message msg={this.MESSAGE_LOAD_ERROR} />
@@ -84,6 +85,7 @@ export class ShowPostComments extends Component {
           <Placeholder
             isReady={!isLoadingComments}
             fallback={<Loading type={'icon-squares'} />}
+            delay={250}
           >
             {hasErroredComments &&
               <Message msg={this.MESSAGE_LOAD_ERROR} />
