@@ -2,16 +2,15 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ArrowUpIcon from 'react-icons/lib/fa/caret-up';
 import ArrowDownIcon from 'react-icons/lib/fa/caret-down';
-import CheckIcon from 'react-icons/lib/fa/check';
-import CrossIcon from 'react-icons/lib/fa/close';
 import EditIcon from 'react-icons/lib/ti/edit';
 import RemoveIcon from 'react-icons/lib/fa/trash';
+import OperationConfirm from './OperationConfirm';
 
 /**
  * Interface de controle para manipulação de votos, operações de edição
  * e remoção de posts ou comentários.
  */
-export default class Controls extends Component {
+export default class Operations extends Component {
   static propTypes = {
     voteData: PropTypes.shape({
       voteCount: PropTypes.number.isRequired,
@@ -71,8 +70,7 @@ export default class Controls extends Component {
    * contrário, o estado permanece inalterado. (O estado operationHandler
    * deve ser previamente configurado com o método handleRequest).
    */
-  handleSubmit = async (event) => {
-    event.preventDefault();
+  handleSubmit = async () => {
     if (await this.state.operationHandler.onSubmit()) {
       this.setState({ operationHandler: null });
     }
@@ -84,8 +82,7 @@ export default class Controls extends Component {
    * é configurado para null. (O estado operationHandler deve ser previamente
    * configurado com o método handleRequest).
    */
-  handleAbort = (event) => {
-    event.preventDefault();
+  handleAbort = () => {
     if (this.state.operationHandler.onAbort) {
       this.state.operationHandler.onAbort();
     }
@@ -100,10 +97,10 @@ export default class Controls extends Component {
     } = this.props;
 
     return (
-      <div className="control">
+      <div>
 
         {/* Interface de votos */}
-        <div className="vote">
+        <div className="vote-operations">
           <button
             title="Vote Up"
             className="vote-up"
@@ -124,47 +121,32 @@ export default class Controls extends Component {
         </div>
 
         {/* Interface de operações => edição, remoção */}
-        <div className="operation">
-          {this.state.operationHandler === null ? (
-            // Renderiza um button para cada operação (edit, remove)
-            <div>
-              <button
-                title="Edit"
-                className="operation-item"
-                onClick={(event) => this.handleRequest(event, onEdit)}
-              >
-                <EditIcon size={20} />
-              </button>
+        {this.state.operationHandler === null ? (
+          // Renderiza um button para cada operação (edit, remove)
+          <div className="operations">
+            <button
+              title="Edit"
+              className="operation-item"
+              onClick={(event) => this.handleRequest(event, onEdit)}
+            >
+              <EditIcon size={20} />
+            </button>
 
-              <button
-                title="Delete"
-                className="operation-item"
-                onClick={(event) => this.handleRequest(event, onRemove)}
-              >
-                <RemoveIcon size={20} />
-              </button>
-            </div>
-          ) : (
-            // Qunado uma operação é inicializada, renderiza botões de submit e abort
-            <div>
-              <button
-                title="Submit"
-                className="operation-submit"
-                onClick={this.handleSubmit}
-              >
-                <CheckIcon size={20} />
-              </button>
-
-              <button
-                title="Abort"
-                className="operation-abort"
-                onClick={this.handleAbort}
-              >
-                <CrossIcon size={20} />
-              </button>
-            </div>
-          )}
-        </div>
+            <button
+              title="Delete"
+              className="operation-item"
+              onClick={(event) => this.handleRequest(event, onRemove)}
+            >
+              <RemoveIcon size={20} />
+            </button>
+          </div>
+        ) : (
+          // Qunado uma operação é inicializada, renderiza componente para confirmação
+          <OperationConfirm
+            onConfirm={this.handleSubmit}
+            onCancel={this.handleAbort}
+          />
+        )}
 
       </div>
     );

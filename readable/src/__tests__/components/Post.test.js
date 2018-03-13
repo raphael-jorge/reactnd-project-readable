@@ -50,7 +50,6 @@ describe('<Post />', () => {
   it('renders without crashing', () => {
     const { post } = setup();
     expect(post.find('.post').length).toBe(1);
-    expect(post.find('.post-control').length).toBe(1);
     expect(post.find('.post-info').length).toBe(1);
     expect(post.find('.post-title').length).toBe(1);
     expect(post.find('.post-body').length).toBe(1);
@@ -58,47 +57,48 @@ describe('<Post />', () => {
   });
 
 
-  it('renders a Controls component', () => {
+  it('renders a Operations component', () => {
     const { post } = setup();
-    expect(post.find('Controls').length).toBe(1);
+    expect(post.find('Operations').length).toBe(1);
+    expect(post.find('.post-operations').length).toBe(1);
   });
 
 
-  it('sets the Controls voteData.onVote props correctly', () => {
-    const { post, props } = setup();
+  describe('operations', () => {
+    it('sets vote operations to vote up and down on the post', () => {
+      const { post, props } = setup();
 
-    const control = post.find('Controls');
-    const controlVoteData = control.prop('voteData');
+      const operations = post.find('Operations');
+      const operationVote = operations.prop('voteData');
 
-    controlVoteData.onVoteUp();
-    expect(props.onVote).toHaveBeenCalledWith(props.postData, 1);
+      operationVote.onVoteUp();
+      expect(props.onVote).toHaveBeenCalledWith(props.postData, 1);
 
-    props.onVote.mockClear();
-    controlVoteData.onVoteDown();
-    expect(props.onVote).toHaveBeenCalledWith(props.postData, -1);
-  });
+      props.onVote.mockClear();
+      operationVote.onVoteDown();
+      expect(props.onVote).toHaveBeenCalledWith(props.postData, -1);
+    });
 
+    it('sets remove operation submit to remove the post', () => {
+      const { post, props } = setup();
 
-  it('sets the Controls onRemove prop correctly', () => {
-    const { post, props } = setup();
+      const operations = post.find('Operations');
+      const operationRemove = operations.prop('onRemove');
+      operationRemove.onSubmit();
 
-    const control = post.find('Controls');
-    const controlOnRemoveSubmit = control.prop('onRemove').onSubmit;
-    controlOnRemoveSubmit();
+      expect(props.onRemove).toHaveBeenCalledWith(props.postData);
+    });
 
-    expect(props.onRemove).toHaveBeenCalledWith(props.postData);
-  });
+    it('sets edit operation methods correctly', () => {
+      const { post } = setup();
 
+      const operations = post.find('Operations');
+      const operationEdit = operations.prop('onEdit');
 
-  it('sets the Controls onEdit prop correctly', () => {
-    const { post } = setup();
-
-    const control = post.find('Controls');
-    const controlOnEdit = control.prop('onEdit');
-
-    expect(controlOnEdit.onRequest).toBe(post.instance().handleUpdateRequest);
-    expect(controlOnEdit.onAbort).toBe(post.instance().handleUpdateAbort);
-    expect(controlOnEdit.onSubmit).toBe(post.instance().handleUpdateSubmit);
+      expect(operationEdit.onRequest).toBe(post.instance().handleUpdateRequest);
+      expect(operationEdit.onSubmit).toBe(post.instance().handleUpdateSubmit);
+      expect(operationEdit.onAbort).toBe(post.instance().handleUpdateAbort);
+    });
   });
 
 

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import CommentsIcon from 'react-icons/lib/md/comment';
 import { formatDate } from '../util/utils';
-import Controls from './Controls';
+import Operations from './Operations';
 import Loading from './Loading';
 import Placeholder from './Placeholder';
 
@@ -104,7 +104,7 @@ export default class Post extends Component {
     } = this.props;
 
     return (
-      <article className="post post-control">
+      <article className="post post-operations">
 
         <Placeholder
           isReady={!postData.processing}
@@ -157,7 +157,7 @@ export default class Post extends Component {
           <CommentsIcon size={20} />
         </div>
 
-        <Controls
+        <Operations
           voteData={{
             voteCount: postData.voteScore,
             onVoteUp: () => onVote(postData, 1),

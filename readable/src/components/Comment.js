@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { formatDate } from '../util/utils';
-import Controls from './Controls';
+import Operations from './Operations';
 import Loading from './Loading';
 import Placeholder from './Placeholder';
 
@@ -84,7 +84,7 @@ export default class Comment extends Component {
     } = this.props;
 
     return (
-      <article className="comment comment-control">
+      <article className="comment comment-operations">
 
         <Placeholder
           isReady={!commentData.processing}
@@ -112,7 +112,7 @@ export default class Comment extends Component {
           </p>
         )}
 
-        <Controls
+        <Operations
           voteData={{
             voteCount: commentData.voteScore,
             onVoteUp: () => onVote(commentData, 1),

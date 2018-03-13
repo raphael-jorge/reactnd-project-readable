@@ -228,92 +228,93 @@ a {
 
 
 /* Control */
-.post-control {
+.post-operations {
   padding: 25px 20px 10px 55px;
 }
-.comment-control {
+.comment-operations {
   padding: 25px 20px 15px 55px;
 }
-.control {
+.operations {
   font-size: 1rem;
 }
-.control button {
+.operations button,
+.vote-operations button {
   border: none;
   background: none;
   margin: 0;
   padding: 0;
 }
-/* Vote control */
-.post-control .vote {
+/* Vote operations */
+.post-operations .vote-operations {
   position: absolute;
   top: 35px;
   left: 0;
   width: 50px;
 }
-.comment-control .vote {
+.comment-operations .vote-operations {
   position: absolute;
   top: 11px;
   left: 0;
   width: 50px;
 }
-.control .vote {
+.vote-operations {
   color: #777;
   text-align: center;
 }
-.control .vote-up,
-.control .vote-down {
+.vote-operations .vote-up,
+.vote-operations .vote-down {
   color: #bbb;
   transition: color 0.2s;
 }
-.control .vote-up:hover,
-.control .vote-down:hover {
+.vote-operations .vote-up:hover,
+.vote-operations .vote-down:hover {
   color: inherit;
   cursor: pointer;
 }
-/* Operation control */
-.control .operation {
+/* Other operations */
+.operations {
   position: absolute;
   top: 5px;
   right: 5px;
   display: flex;
   z-index: 10;
 }
-.control .operation-item,
-.control .operation-submit,
-.control .operation-abort {
+.operations .operation-item,
+.operations .operation-confirm,
+.operations .operation-cancel {
   margin: 0 0 0 5px;
   padding: 0 3px;
   cursor: pointer;
 }
 /* Operation item */
-.control .operation-item {
+.operations .operation-item {
   color: #bbb;
   opacity: 0;
   transition: color 0.3s;
 }
-.post-control:hover .operation-item,
-.comment-control:hover .operation-item {
+.post-operations:hover .operation-item,
+.comment-operations:hover .operation-item {
   color: #bbb;
   opacity: 1;
 }
-.post-control:hover .operation-item:hover,
-.comment-control:hover .operation-item:hover {
+.post-operations:hover .operation-item:hover,
+.comment-operations:hover .operation-item:hover {
   color: #777;
 }
 /* Operation submit/abort */
-.control .operation-submit,
-.control .operation-abort {
+.operations .operation-confirm,
+.operations .operation-cancel {
   opacity: 0.4;
   transition: opacity 0.3s;
 }
-.control .operation-submit {
+.operations .operation-confirm {
   color: #0fad1c;
 }
-.control .operation-abort {
+.operations .operation-cancel {
   color: #b2120c;
 }
-.control .operation-submit:hover,
-.control .operation-abort:hover {
+.operations .operation-confirm:hover,
+.operations .operation-cancel:hover {
   opacity: 0.8;
 }
 
