@@ -4,6 +4,7 @@ import {
   fetchVoteOnPost,
   fetchRemovePost,
   fetchUpdatePost,
+  fetchAddPost,
 } from '../../actions/posts';
 import {
   ShowPosts,
@@ -16,6 +17,7 @@ jest.mock('../../actions/posts', () => ({
   fetchVoteOnPost: jest.fn(),
   fetchRemovePost: jest.fn(),
   fetchUpdatePost: jest.fn(),
+  fetchAddPost: jest.fn(),
 }));
 
 // Mock dispatch
@@ -24,12 +26,15 @@ const dispatchMock = () => {};
 // Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
+    categories: [],
     posts: [],
     onPostVote: () => {},
     onPostRemove: () => {},
     onPostUpdate: () => {},
+    onPostAdd: () => {},
     isLoading: undefined,
     hasErrored: undefined,
+    activeCategoryPath: undefined,
   }, propOverrides);
 
   const showPosts= shallow(<ShowPosts {...props} />);
@@ -57,6 +62,23 @@ const getDefaultPosts = () => {
   };
 };
 
+const getDefaultCategories = () => {
+  const categoriesArray = [
+    { name: 'category1', path: 'categoryPath1' },
+    { name: 'category2', path: 'categoryPath2' },
+  ];
+
+  const categoriesNormalized = categoriesArray.reduce((categoriesObj, category) => {
+    categoriesObj[category.path] = { ...category };
+    return categoriesObj;
+  }, {});
+
+  return {
+    categoriesArray,
+    categoriesNormalized,
+  };
+};
+
 const getDefaultState = () => ({
   posts: {
     loading: {
@@ -67,7 +89,16 @@ const getDefaultState = () => ({
   },
   categories: {
     activePath: null,
+    categories: {},
   },
+});
+
+const getDefaultExpectedProps = () => ({
+  isLoading: false,
+  hasErrored: false,
+  posts: [],
+  categories: [],
+  activeCategoryPath: null,
 });
 
 
@@ -124,18 +155,53 @@ describe('<ShowPosts />', () => {
     expect(renderedMessage.length).toBe(1);
     expect(renderedMessage.prop('msg')).toBe(expectedMessage);
   });
+
+
+  it('renders a ModalAddPost component', () => {
+    const { showPosts } = setup();
+
+    expect(showPosts.find('ModalAddPost').length).toBe(1);
+  });
+
+
+  it('provides a method to open the add post modal', () => {
+    const { showPosts } = setup();
+
+    showPosts.setState({ isModalAddPostOpen: false });
+    showPosts.instance().openModalAddPost();
+
+    expect(showPosts.state('isModalAddPostOpen')).toBe(true);
+  });
+
+
+  it('provides a method to close the add post modal', () => {
+    const { showPosts } = setup();
+
+    showPosts.setState({ isModalAddPostOpen: true });
+    showPosts.instance().closeModalAddPost();
+
+    expect(showPosts.state('isModalAddPostOpen')).toBe(false);
+  });
+
+
+  it('renders a button to open the add post modal', () => {
+    const { showPosts } = setup();
+
+    const button = showPosts.find('.btn-fixed');
+
+    expect(button.length).toBe(1);
+    expect(button.prop('onClick')).toBe(showPosts.instance().openModalAddPost);
+  });
 });
 
 
 describe('mapStateToProps', () => {
   it('returns the expected isLoading and hasErrored props', () => {
     const testState = getDefaultState();
+    const expectedProps = getDefaultExpectedProps();
 
-    const expectedProps = {
-      isLoading: testState.posts.loading.isLoading,
-      hasErrored: testState.posts.loading.hasErrored,
-      posts: [],
-    };
+    expectedProps.isLoading = testState.posts.loading.isLoading;
+    expectedProps.hasErrored = testState.posts.loading.hasErrored;
 
     expect(mapStateToProps(testState)).toEqual(expectedProps);
 
@@ -152,13 +218,12 @@ describe('mapStateToProps', () => {
   it('returns all posts when categories.activePath is not set', () => {
     const testPosts = getDefaultPosts();
     const testState = getDefaultState();
+    const expectedProps = getDefaultExpectedProps();
     testState.posts.posts = testPosts.postsNormalized;
 
-    const expectedProps = {
-      isLoading: testState.posts.loading.isLoading,
-      hasErrored: testState.posts.loading.hasErrored,
-      posts: testPosts.postsArray,
-    };
+    expectedProps.isLoading = testState.posts.loading.isLoading;
+    expectedProps.hasErrored = testState.posts.loading.hasErrored;
+    expectedProps.posts = testPosts.postsArray;
 
     expect(mapStateToProps(testState)).toEqual(expectedProps);
   });
@@ -167,18 +232,40 @@ describe('mapStateToProps', () => {
   it('returns only the matching posts when categories.activePath is set', () => {
     const testPosts = getDefaultPosts();
     const testState = getDefaultState();
+    const expectedProps = getDefaultExpectedProps();
 
     const activeCategoryPath = 'testCategory1';
     testState.categories.activePath = activeCategoryPath;
     testState.posts.posts = testPosts.postsNormalized;
 
-    const expectedProps = {
-      isLoading: testState.posts.loading.isLoading,
-      hasErrored: testState.posts.loading.hasErrored,
-      posts: testPosts.postsArray.filter((post) => (
-        post.category === activeCategoryPath
-      )),
-    };
+    expectedProps.activeCategoryPath = activeCategoryPath;
+    expectedProps.isLoading = testState.posts.loading.isLoading;
+    expectedProps.hasErrored = testState.posts.loading.hasErrored;
+    expectedProps.posts = testPosts.postsArray.filter((post) => (
+      post.category === activeCategoryPath
+    ));
+
+    expect(mapStateToProps(testState)).toEqual(expectedProps);
+  });
+
+  it('returns the expected categories props', () => {
+    const testCategories = getDefaultCategories();
+    const testState = getDefaultState();
+    const expectedProps = getDefaultExpectedProps();
+
+    testState.categories.categories = testCategories.categoriesNormalized;
+    expectedProps.categories = testCategories.categoriesArray;
+
+    expect(mapStateToProps(testState)).toEqual(expectedProps);
+  });
+
+  it('returns the expected activeCategoryPath prop', () => {
+    const testState = getDefaultState();
+    const expectedProps = getDefaultExpectedProps();
+    const activeCategoryPath = 'test category';
+
+    testState.categories.activePath = activeCategoryPath;
+    expectedProps.activeCategoryPath = activeCategoryPath;
 
     expect(mapStateToProps(testState)).toEqual(expectedProps);
   });
@@ -219,5 +306,20 @@ describe('mapDispatchToProps', () => {
 
     mappedProps.onPostUpdate(postData, updatedPostData);
     expect(fetchUpdatePost).toHaveBeenCalledWith(postData, updatedPostData);
+  });
+
+  it('sets the onPostAdd prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const postDataToAdd = {
+      title: 'test title',
+      body: 'test body',
+      author: 'test author',
+      category: 'test category',
+    };
+
+    expect(mappedProps.onPostAdd).toBeDefined();
+
+    mappedProps.onPostAdd(postDataToAdd);
+    expect(fetchAddPost).toHaveBeenCalledWith(postDataToAdd);
   });
 });

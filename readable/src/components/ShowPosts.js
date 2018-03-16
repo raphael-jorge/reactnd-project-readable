@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import AddIcon from 'react-icons/lib/fa/plus';
 import {
   fetchVoteOnPost,
   fetchRemovePost,
   fetchUpdatePost,
+  fetchAddPost,
 } from '../actions/posts';
+import ModalAddPost from './ModalAddPost';
 import Loading from './Loading';
 import Message from './Message';
 import Placeholder from './Placeholder';
@@ -13,16 +16,30 @@ import Post from './Post';
 
 export class ShowPosts extends Component {
   static propTypes = {
+    categories: PropTypes.array.isRequired,
     posts: PropTypes.array.isRequired,
     onPostVote: PropTypes.func.isRequired,
     onPostRemove: PropTypes.func.isRequired,
     onPostUpdate: PropTypes.func.isRequired,
     isLoading: PropTypes.bool,
     hasErrored: PropTypes.bool,
+    activeCategoryPath: PropTypes.string,
   }
 
   MESSAGE_LOAD_ERROR = 'There was an error while loading posts from the server'
   MESSAGE_NO_POSTS = 'No Posts Available'
+
+  state = {
+    isModalAddPostOpen: false,
+  }
+
+  openModalAddPost = () => {
+    this.setState({ isModalAddPostOpen: true });
+  }
+
+  closeModalAddPost = () => {
+    this.setState({ isModalAddPostOpen: false });
+  }
 
   render() {
     const {
@@ -30,12 +47,24 @@ export class ShowPosts extends Component {
       onPostVote,
       onPostRemove,
       onPostUpdate,
+      onPostAdd,
       isLoading,
       hasErrored,
+      categories,
+      activeCategoryPath,
     } = this.props;
 
     return (
       <div className="show-posts">
+
+        <button
+          className="btn-fixed"
+          title="Add Post"
+          onClick={this.openModalAddPost}
+        >
+          Add Post
+          <AddIcon size={20} />
+        </button>
 
         {/* Verifica se os posts estão sendo carregados */}
         <Placeholder
@@ -63,6 +92,14 @@ export class ShowPosts extends Component {
           }
         </Placeholder>
 
+        <ModalAddPost
+          isOpen={this.state.isModalAddPostOpen}
+          onModalClose={this.closeModalAddPost}
+          onPostAdd={onPostAdd}
+          categories={categories}
+          activeCategoryPath={activeCategoryPath}
+        />
+
       </div>
     );
   }
@@ -72,6 +109,10 @@ export const mapStateToProps = ({ posts, categories }, props) => {
   const postsObj = posts.posts;
   const postsIds = Object.keys(postsObj);
   const postsArr = postsIds.map((postId) => (postsObj[postId]));
+
+  const categoriesObj = categories.categories;
+  const categoriesPaths = Object.keys(categoriesObj);
+  const categoriesArr = categoriesPaths.map((path) => categoriesObj[path]);
 
   const activeCategoryPath = categories.activePath;
   let postsToProps;
@@ -85,6 +126,8 @@ export const mapStateToProps = ({ posts, categories }, props) => {
     isLoading: posts.loading.isLoading,
     hasErrored: posts.loading.hasErrored,
     posts: postsToProps,
+    categories: categoriesArr,
+    activeCategoryPath,
   };
 };
 
@@ -93,6 +136,7 @@ export const mapDispatchToProps = (dispatch, props) => {
     onPostVote: (post, vote) => dispatch(fetchVoteOnPost(post, vote)),
     onPostRemove: (post) => dispatch(fetchRemovePost(post)),
     onPostUpdate: (post, updatedData) => dispatch(fetchUpdatePost(post, updatedData)),
+    onPostAdd: (postData) => dispatch(fetchAddPost(postData)),
   };
 };
 
