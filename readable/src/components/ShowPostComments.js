@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import AddIcon from 'react-icons/lib/fa/plus';
 import {
   fetchVoteOnPost,
   fetchRemovePost,
@@ -10,10 +11,12 @@ import {
   fetchVoteOnComment,
   fetchRemoveComment,
   fetchUpdateComment,
+  fetchAddComment,
 } from '../actions/comments';
 import Comment from './Comment';
 import Loading from './Loading';
 import Message from './Message';
+import ModalAddComment from './ModalAddComment';
 import Placeholder from './Placeholder';
 import Post from './Post';
 
@@ -27,11 +30,24 @@ export class ShowPostComments extends Component {
     onCommentRemove: PropTypes.func.isRequired,
     onPostUpdate: PropTypes.func.isRequired,
     onCommentUpdate: PropTypes.func.isRequired,
+    onCommentAdd: PropTypes.func.isRequired,
     isLoadingPost: PropTypes.bool,
     isLoadingComments: PropTypes.bool,
     hasErroredPost: PropTypes.bool,
     hasErroredComments: PropTypes.bool,
   };
+
+  state = {
+    isModalAddCommentOpen: false,
+  }
+
+  openModalAddComment = () => {
+    this.setState({ isModalAddCommentOpen: true });
+  }
+
+  closeModalAddComment = () => {
+    this.setState({ isModalAddCommentOpen: false });
+  }
 
   MESSAGE_LOAD_ERROR = 'There was an error while loading data from the server'
   MESSAGE_NO_POST = 'It was not possible to find the requested post'
@@ -47,6 +63,7 @@ export class ShowPostComments extends Component {
       onCommentRemove,
       onPostUpdate,
       onCommentUpdate,
+      onCommentAdd,
       isLoadingPost,
       isLoadingComments,
       hasErroredPost,
@@ -67,12 +84,23 @@ export class ShowPostComments extends Component {
           }
 
           {!hasErroredPost && Object.keys(postData).length > 0 &&
-            <Post
-              postData={postData}
-              onVote={onPostVote}
-              onRemove={onPostRemove}
-              onUpdate={onPostUpdate}
-            />
+            <div>
+              <Post
+                postData={postData}
+                onVote={onPostVote}
+                onRemove={onPostRemove}
+                onUpdate={onPostUpdate}
+              />
+
+              <button
+                className="btn-fixed btn-magenta"
+                title="Add Comment"
+                onClick={this.openModalAddComment}
+              >
+                Add Post
+                <AddIcon size={20} />
+              </button>
+            </div>
           }
 
           {!hasErroredPost && !Object.keys(postData).length &&
@@ -107,6 +135,13 @@ export class ShowPostComments extends Component {
           </Placeholder>
         }
 
+        <ModalAddComment
+          isOpen={this.state.isModalAddCommentOpen}
+          onModalClose={this.closeModalAddComment}
+          onCommentAdd={onCommentAdd}
+          postData={postData}
+        />
+
       </div>
     );
   }
@@ -137,6 +172,7 @@ export const mapDispatchToProps = (dispatch, props) => {
     onCommentVote: (comment, vote) => dispatch(fetchVoteOnComment(comment, vote)),
     onCommentRemove: (comment) => dispatch(fetchRemoveComment(comment)),
     onCommentUpdate: (comment, updatedData) => dispatch(fetchUpdateComment(comment, updatedData)),
+    onCommentAdd: (postId, commentData) => dispatch(fetchAddComment(postId, commentData)),
   };
 };
 

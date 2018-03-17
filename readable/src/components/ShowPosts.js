@@ -58,7 +58,7 @@ export class ShowPosts extends Component {
       <div className="show-posts">
 
         <button
-          className="btn-fixed"
+          className="btn-fixed btn-blue"
           title="Add Post"
           onClick={this.openModalAddPost}
         >

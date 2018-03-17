@@ -9,6 +9,7 @@ import {
   fetchVoteOnComment,
   fetchRemoveComment,
   fetchUpdateComment,
+  fetchAddComment,
 } from '../../actions/comments';
 import {
   ShowPostComments,
@@ -28,6 +29,7 @@ jest.mock('../../actions/comments', () => ({
   fetchVoteOnComment: jest.fn(),
   fetchRemoveComment: jest.fn(),
   fetchUpdateComment: jest.fn(),
+  fetchAddComment: jest.fn(),
 }));
 
 // Mock dispatch
@@ -44,6 +46,7 @@ const setup = (propOverrides) => {
     onCommentRemove: () => {},
     onPostUpdate: () => {},
     onCommentUpdate: () => {},
+    onCommentAdd: () => {},
     isLoadingPost: false,
     isLoadingComments: false,
     hasErroredPost: false,
@@ -114,6 +117,43 @@ const getDefaultProps = () => ({ postId: getDefaultPostData().id });
 
 // Tests
 describe('<ShowPostComments />', () => {
+  it('renders a ModalAddComment component', () => {
+    const { showPostComments } = setup();
+
+    expect(showPostComments.find('ModalAddComment').length).toBe(1);
+  });
+
+
+  it('provides a method to open the add comment modal', () => {
+    const { showPostComments } = setup();
+
+    showPostComments.setState({ isModalAddCommentOpen: false });
+    showPostComments.instance().openModalAddComment();
+
+    expect(showPostComments.state('isModalAddCommentOpen')).toBe(true);
+  });
+
+
+  it('provides a method to open the add comment modal', () => {
+    const { showPostComments } = setup();
+
+    showPostComments.setState({ isModalAddCommentOpen: true });
+    showPostComments.instance().closeModalAddComment();
+
+    expect(showPostComments.state('isModalAddCommentOpen')).toBe(false);
+  });
+
+
+  it('renders a button to open the add post modal when a post is available', () => {
+    const postData = getDefaultPostData();
+    const { showPostComments } = setup({ postData });
+
+    const button = showPostComments.find('.btn-fixed');
+
+    expect(button.length).toBe(1);
+    expect(button.prop('onClick')).toBe(showPostComments.instance().openModalAddComment);
+  });
+
   describe('Post', () => {
     it('renders a Post component when postData is available', () => {
       const postData = getDefaultPostData();
@@ -368,5 +408,19 @@ describe('mapDispatchToProps', () => {
 
     mappedProps.onCommentUpdate(commentData, updatedCommentData);
     expect(fetchUpdateComment).toHaveBeenCalledWith(commentData, updatedCommentData);
+  });
+
+  it('sets the onCommentAdd prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const postData = getDefaultPostData();
+    const commentToAdd = {
+      author: 'test author',
+      body: 'test comment body',
+    };
+
+    expect(mappedProps.onCommentAdd).toBeDefined();
+
+    mappedProps.onCommentAdd(postData.id, commentToAdd);
+    expect(fetchAddComment).toHaveBeenCalledWith(postData.id, commentToAdd);
   });
 });

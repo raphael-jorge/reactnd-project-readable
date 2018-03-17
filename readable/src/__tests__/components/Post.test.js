@@ -11,6 +11,7 @@ const setup = (propOverrides) => {
     onRemove: jest.fn(),
     onUpdate: jest.fn(),
     linkMode: undefined,
+    readMode: undefined,
   }, propOverrides);
 
   const post = shallow(
@@ -112,6 +113,21 @@ describe('<Post />', () => {
 
       expect(link.length).toBe(1);
       expect(link.prop('to')).toBe(`/${postData.category}/${postData.id}`);
+    });
+  });
+
+  describe('read mode', () => {
+    it('does not render the Operations component', () => {
+      const { post } = setup({ readMode: true });
+
+      expect(post.find('Operations').length).toBe(0);
+      expect(post.find('.post-operations').length).toBe(0);
+    });
+
+    it('does not render the comments info', () => {
+      const { post } = setup({ readMode: true });
+
+      expect(post.find('.post-comments-info').length).toBe(0);
     });
   });
 

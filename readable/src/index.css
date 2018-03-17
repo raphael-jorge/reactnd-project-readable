@@ -72,18 +72,28 @@ a {
   height: 45px;
   width: 45px;
   font-size: 0;
-  color: #f8f8f8;
-  background: #222f5a;
+  background: #fff;
   border: none;
   border-radius: 50%;
-  box-shadow: 0 0 5px #222f5a;
   outline: none;
   cursor: pointer;
   z-index: 40;
 }
-.btn-fixed:hover,
-.btn-fixed:focus {
-  box-shadow: 0 0 5px 2px #222f5a;
+.btn-blue {
+  color: #222f5a;
+  box-shadow: 0 0 5px 1px #222f5a;
+}
+.btn-blue:hover,
+.btn-blue:focus {
+  box-shadow: 0 0 5px 3px #222f5a;
+}
+.btn-magenta {
+  color: #a40fc1;
+  box-shadow: 0 0 5px 1px #a40fc1;
+}
+.btn-magenta:hover,
+.btn-magenta:focus {
+  box-shadow: 0 0 5px 3px #a40fc1;
 }
 
 
@@ -211,7 +221,7 @@ a {
 /* Comments */
 .comment {
   position: relative;
-  margin: 15px 10px 15px 40px;
+  margin: 15px 40px;
   padding: 10px 20px;
   background-color: #f8f8f8;
   box-shadow: 0 2px 4px #222f5a;
@@ -384,20 +394,9 @@ a {
   right: 0;
   bottom: 0;
   left: 0;
-  background-color: rgba(255, 255, 255, 0.75);
+  background-color: rgba(255, 255, 255, 0.85);
   overflow-y: scroll;
   z-index: 100;
-}
-/* Create Post */
-.modal-create-post {
-  position: relative;
-  margin: 70px auto;
-  padding: 30px;
-  max-width: 650px;
-  width: 80%;
-  background: #f8f8f8;
-  box-shadow: 0 0 5px #222f5a;
-  outline: none;
 }
 .form label,
 .form legend {
@@ -442,4 +441,38 @@ a {
   display: inline-block;
   margin: 10px 20px;
   min-width: 75px;
+}
+.modal-create-post,
+.modal-create-comment {
+  position: relative;
+  margin: 70px auto;
+  max-width: 650px;
+  outline: none;
+}
+/* Create Post */
+.modal-create-post {
+  padding: 30px;
+  width: 80%;
+  background: #f8f8f8;
+  box-shadow: 0 0 5px #222f5a;
+}
+/* Create Comment */
+.modal-create-comment {
+  padding: 15px;
+  width: 90%;
+  background: #fff;
+  box-shadow: 0 0 3px -1px #a40fc1;
+}
+.modal-create-comment hr {
+  margin: 30px 0;
+  border: 0;
+  height: 1px;
+  background-image: linear-gradient(to right,
+    rgba(164, 15, 193, 0),
+    rgba(164, 15, 193, 0.75),
+    rgba(164, 15, 193, 1),
+    rgba(164, 15, 193, 1),
+    rgba(164, 15, 193, 1),
+    rgba(164, 15, 193, 0.75),
+    rgba(164, 15, 193, 0));
 }

@@ -14,6 +14,7 @@ export default class Post extends Component {
     onRemove: PropTypes.func,
     onUpdate: PropTypes.func,
     linkMode: PropTypes.bool,
+    readMode: PropTypes.bool,
   }
 
   state = {
@@ -94,10 +95,11 @@ export default class Post extends Component {
       onVote,
       onRemove,
       linkMode,
+      readMode,
     } = this.props;
 
     return (
-      <article className="post post-operations">
+      <article className={`post ${readMode ? '' : 'post-operations'}`}>
 
         <Placeholder
           isReady={!postData.processing}
@@ -143,24 +145,28 @@ export default class Post extends Component {
           )
         )}
 
-        <div className="post-comments-info">
-          <span className="info-data">{postData.commentCount}</span>
-          <CommentsIcon size={20} />
-        </div>
+        {!readMode &&
+          <div>
+            <div className="post-comments-info">
+              <span className="info-data">{postData.commentCount}</span>
+              <CommentsIcon size={20} />
+            </div>
 
-        <Operations
-          voteData={{
-            voteCount: postData.voteScore,
-            onVoteUp: () => onVote(postData, 1),
-            onVoteDown: () => onVote(postData, -1),
-          }}
-          onEdit={{
-            onRequest: this.handleEditModeEnter,
-            onAbort: this.handleEditModeLeave,
-            onSubmit: this.handleEditSubmit,
-          }}
-          onRemove={{ onSubmit: () => onRemove(postData) }}
-        />
+            <Operations
+              voteData={{
+                voteCount: postData.voteScore,
+                onVoteUp: () => onVote(postData, 1),
+                onVoteDown: () => onVote(postData, -1),
+              }}
+              onEdit={{
+                onRequest: this.handleEditModeEnter,
+                onAbort: this.handleEditModeLeave,
+                onSubmit: this.handleEditSubmit,
+              }}
+              onRemove={{ onSubmit: () => onRemove(postData) }}
+            />
+          </div>
+        }
 
       </article>
     );
