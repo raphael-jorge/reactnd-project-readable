@@ -36,10 +36,6 @@ const getDefaultPostData = () => ({
   commentCount: 0,
 });
 
-const getDefaultEvent = () => ({
-  preventDefault: jest.fn(),
-});
-
 afterEach(() => {
   jest.clearAllMocks();
 });
@@ -57,7 +53,7 @@ describe('<Post />', () => {
   });
 
 
-  it('renders a Operations component', () => {
+  it('renders an Operations component', () => {
     const { post } = setup();
     expect(post.find('Operations').length).toBe(1);
     expect(post.find('.post-operations').length).toBe(1);
@@ -95,9 +91,9 @@ describe('<Post />', () => {
       const operations = post.find('Operations');
       const operationEdit = operations.prop('onEdit');
 
-      expect(operationEdit.onRequest).toBe(post.instance().handleUpdateRequest);
-      expect(operationEdit.onSubmit).toBe(post.instance().handleUpdateSubmit);
-      expect(operationEdit.onAbort).toBe(post.instance().handleUpdateAbort);
+      expect(operationEdit.onRequest).toBe(post.instance().handleEditModeEnter);
+      expect(operationEdit.onSubmit).toBe(post.instance().handleEditSubmit);
+      expect(operationEdit.onAbort).toBe(post.instance().handleEditModeLeave);
     });
   });
 
@@ -121,72 +117,103 @@ describe('<Post />', () => {
 
 
   describe('edit mode', () => {
-    describe('inputs', () => {
-      it('are rendered to edit the post title and body', () => {
+    describe('input', () => {
+      it('is rendered to edit the post title', () => {
         const { post } = setup();
         post.setState({ editMode: true });
 
         const titleInput = post.find('.post-title.input-edit');
-        const bodyInput = post.find('.post-body.input-edit');
 
         expect(titleInput.length).toBe(1);
+        expect(titleInput.prop('onChange')).toBe(post.instance().handleTitleInputChange);
+      });
+
+      it('is rendered to edit the post body', () => {
+        const { post } = setup();
+        post.setState({ editMode: true });
+
+        const bodyInput = post.find('.post-body.input-edit');
+
         expect(bodyInput.length).toBe(1);
+        expect(bodyInput.prop('onChange')).toBe(post.instance().handleBodyInputChange);
       });
 
-      it('blocks click events', () => {
+      it('updates titleInput state on title value change', () => {
         const { post } = setup();
         post.setState({ editMode: true });
-
-        const titleInput = post.find('.post-title.input-edit');
-        const bodyInput = post.find('.post-body.input-edit');
-
-        const event = getDefaultEvent();
-        titleInput.simulate('click', event);
-        expect(event.preventDefault).toHaveBeenCalled();
-
-        event.preventDefault.mockClear();
-        bodyInput.simulate('click', event);
-        expect(event.preventDefault).toHaveBeenCalled();
-      });
-
-      it('update state on value change', () => {
-        const { post } = setup();
-        post.setState({ editMode: true });
-
-        const titleInput = post.find('.post-title.input-edit');
-        const bodyInput = post.find('.post-body.input-edit');
 
         const newTitleValue = 'new post title';
         const titleChangeEvent = {
           target: { value: newTitleValue },
         };
-        titleInput.simulate('change', titleChangeEvent);
-        expect(post.state('titleInputValue')).toBe(newTitleValue);
+        post.instance().handleTitleInputChange(titleChangeEvent);
+
+        expect(post.state('titleInput')).toBe(newTitleValue);
+      });
+
+      it('updates bodyInput state on body value change', () => {
+        const { post } = setup();
+        post.setState({ editMode: true });
 
         const newBodyValue = 'new post body';
         const bodyChangeEvent = {
           target: { value: newBodyValue },
         };
-        bodyInput.simulate('change', bodyChangeEvent);
-        expect(post.state('bodyInputValue')).toBe(newBodyValue);
+        post.instance().handleBodyInputChange(bodyChangeEvent);
+
+        expect(post.state('bodyInput')).toBe(newBodyValue);
+      });
+
+      it('sets titleInputErrorClass state on an empty title value change', () => {
+        const { post } = setup();
+        post.setState({
+          editMode: true,
+          titleInput: 'post title',
+        });
+
+        const newTitleValue = '';
+        const titleChangeEvent = {
+          target: { value: newTitleValue },
+        };
+        post.instance().handleTitleInputChange(titleChangeEvent);
+
+        expect(post.state('titleInput')).toBe(newTitleValue);
+        expect(post.state('titleInputErrorClass')).toBe('input-error');
+      });
+
+      it('sets bodyInputErrorClass state on an empty body value change', () => {
+        const { post } = setup();
+        post.setState({
+          editMode: true,
+          bodyInput: 'post body',
+        });
+
+        const newBodyValue = '';
+        const bodyChangeEvent = {
+          target: { value: newBodyValue },
+        };
+        post.instance().handleBodyInputChange(bodyChangeEvent);
+
+        expect(post.state('bodyInput')).toBe(newBodyValue);
+        expect(post.state('bodyInputErrorClass')).toBe('input-error');
       });
     });
 
     describe('methods', () => {
-      it('initializes the edit mode', () => {
+      it('enters the edit mode', () => {
         const postData = getDefaultPostData();
         postData.title = 'test post title';
         postData.body = 'test post body';
         const { post } = setup({ postData });
 
-        post.instance().handleUpdateRequest();
+        post.instance().handleEditModeEnter();
 
         expect(post.state('editMode')).toBe(true);
-        expect(post.state('titleInputValue')).toBe(postData.title);
-        expect(post.state('bodyInputValue')).toBe(postData.body);
+        expect(post.state('titleInput')).toBe(postData.title);
+        expect(post.state('bodyInput')).toBe(postData.body);
       });
 
-      it('aborts the edit operation', () => {
+      it('leaves the edit mode', () => {
         const postData = getDefaultPostData();
         postData.title = 'test post title';
         postData.body = 'test post body';
@@ -194,18 +221,18 @@ describe('<Post />', () => {
 
         post.setState({
           editMode: true,
-          titleInputValue: postData.title,
-          bodyInputValue: postData.body,
+          titleInput: postData.title,
+          bodyInput: postData.body,
         });
 
-        post.instance().handleUpdateAbort();
+        post.instance().handleEditModeLeave();
 
         expect(post.state('editMode')).toBe(false);
-        expect(post.state('titleInputValue')).toBe('');
-        expect(post.state('bodyInputValue')).toBe('');
+        expect(post.state('titleInput')).toBe('');
+        expect(post.state('bodyInput')).toBe('');
       });
 
-      it('submits the edit operation when valid and different', async () => {
+      it('submits the edit operation when data is valid and different', async () => {
         const { post, props } = setup();
         const updatedPostData = {
           title: 'updated post title',
@@ -214,15 +241,15 @@ describe('<Post />', () => {
 
         post.setState({
           editMode: true,
-          titleInputValue: updatedPostData.title,
-          bodyInputValue: updatedPostData.body,
+          titleInput: updatedPostData.title,
+          bodyInput: updatedPostData.body,
         });
 
-        await post.instance().handleUpdateSubmit();
+        await post.instance().handleEditSubmit();
 
         expect(post.state('editMode')).toBe(false);
-        expect(post.state('titleInputValue')).toBe('');
-        expect(post.state('bodyInputValue')).toBe('');
+        expect(post.state('titleInput')).toBe('');
+        expect(post.state('bodyInput')).toBe('');
         expect(props.onUpdate).toHaveBeenCalledWith(props.postData, updatedPostData);
       });
 
@@ -234,14 +261,14 @@ describe('<Post />', () => {
 
         post.setState({
           editMode: true,
-          titleInputValue: postData.title,
-          bodyInputValue: postData.body,
+          titleInput: postData.title,
+          bodyInput: postData.body,
         });
 
-        await post.instance().handleUpdateSubmit();
+        await post.instance().handleEditSubmit();
 
         expect(post.state('editMode')).toBe(false);
-        expect(post.state('bodyInputValue')).toBe('');
+        expect(post.state('bodyInput')).toBe('');
         expect(props.onUpdate).not.toHaveBeenCalled();
       });
 
@@ -250,13 +277,12 @@ describe('<Post />', () => {
 
         post.setState({
           editMode: true,
-          titleInputValue: '',
+          titleInput: '',
         });
 
-        await post.instance().handleUpdateSubmit();
+        await post.instance().handleEditSubmit();
 
         expect(post.state('editMode')).toBe(true);
-        expect(post.state('titleInputErrorClass')).toBe('input-error');
         expect(props.onUpdate).not.toHaveBeenCalled();
       });
 
@@ -265,13 +291,12 @@ describe('<Post />', () => {
 
         post.setState({
           editMode: true,
-          bodyInputValue: '',
+          bodyInput: '',
         });
 
-        await post.instance().handleUpdateSubmit();
+        await post.instance().handleEditSubmit();
 
         expect(post.state('editMode')).toBe(true);
-        expect(post.state('bodyInputErrorClass')).toBe('input-error');
         expect(props.onUpdate).not.toHaveBeenCalled();
       });
     });

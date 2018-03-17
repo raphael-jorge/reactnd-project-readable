@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
-import { capitalize } from '../util/utils';
+import { capitalize, areAllEntriesProvided } from '../util/utils';
 import Loading from './Loading';
 import OperationConfirm from './OperationConfirm';
 import Placeholder from './Placeholder';
@@ -42,10 +42,52 @@ export default class ModalAddPost extends Component {
     }
   }
 
+  handleTitleChange = (event) => {
+    const newTitle = event.target.value;
+    const errorClass = newTitle ? '' : 'input-error';
+
+    this.setState({
+      title: newTitle,
+      titleErrorClass: errorClass,
+    });
+  }
+
+  handleBodyChange = (event) => {
+    const newBody = event.target.value;
+    const errorClass = newBody ? '' : 'input-error';
+
+    this.setState({
+      body: newBody,
+      bodyErrorClass: errorClass,
+    });
+  }
+
+  handleAuthorChange = (event) => {
+    const newAuthor = event.target.value;
+    const errorClass = newAuthor ? '' : 'input-error';
+
+    this.setState({
+      author: newAuthor,
+      authorErrorClass: errorClass,
+    });
+  }
+
+  handleCategoryChange = (event) => {
+    const newCategory = event.target.value;
+    const errorClass = newCategory ? '' : 'input-error';
+
+    this.setState({
+      category: newCategory,
+      categoryErrorClass: errorClass,
+    });
+  }
+
   /**
-   * Configura os estados do modal para seus valores inicias
+   * Realiza os procedimentos necessários para fechar o modal. Para isso,
+   * reinicia o estado do modal para os valores iniciais e chama a função
+   * onModalClose, fornecida via props.
    */
-  resetState = () => {
+  handleModalClose = () => {
     this.setState({
       isProcessing: false,
       title: '',
@@ -57,52 +99,8 @@ export default class ModalAddPost extends Component {
       authorErrorClass: '',
       categoryErrorClass: '',
     });
-  }
 
-  /**
-   * Verifica se uma determinada entrada, cujo valor é armazenado
-   * no state, foi devidamente fornecida pelo usuário. Caso contrário,
-   * configura o respectivo estado ErrorClass, que acusará a existência
-   * de um erro referente à entrada especificada.
-   * @param  {String}  entry O nome da entrada, à ser verificada, no state.
-   * @return {Boolean}       Indica se a entrada foi devidamente fornecida.
-   */
-  isEntryProvided = (entry) => {
-    let valid = true;
-    if (this.state[entry] === '') {
-      valid = false;
-      this.setState({ [`${entry}ErrorClass`]: 'input-error' });
-    } else {
-      this.setState({ [`${entry}ErrorClass`]: '' });
-    }
-    return valid;
-  }
-
-  /**
-   * Verifia se todas as entradas necessários para a criação de um post
-   * foram devidamente especificadas pelo usuário. Para cada uma delas
-   * o método isEntryValid será chamado, configurando assim os respectivos
-   * estados ErrorClass quando necessário.
-   * @param  {Array}   entries Os nomes das entradas a serem verificadas.
-   * @return {Boolean}         Indica se todas as entradas especificadas foram
-   *                           devidamente fornecidas.
-   */
-  areAllEntriesProvided = (entries) => {
-    let valid = true;
-    entries.forEach((entry) => {
-      valid = this.isEntryProvided(entry) && valid;
-    });
-    return valid;
-  }
-
-  /**
-   * Realiza os procedimentos necessários para fechar o modal sem criar o
-   * post. Para isso, reinicia o estado do modal para os valores iniciais
-   * e chama a função onModalClose, fornecida via props.
-   */
-  handleModalClose = () => {
     this.props.onModalClose();
-    this.resetState();
   }
 
   /**
@@ -117,7 +115,7 @@ export default class ModalAddPost extends Component {
   handleSubmit = async () => {
     const requiredEntries = ['title', 'body', 'author', 'category'];
 
-    if (this.areAllEntriesProvided(requiredEntries)) {
+    if (areAllEntriesProvided(requiredEntries, this.state)) {
       this.setState({ isProcessing: true });
 
       const postData = {
@@ -164,7 +162,7 @@ export default class ModalAddPost extends Component {
               type="text"
               placeholder="Author"
               value={this.state.author}
-              onChange={(event) => this.setState({ author: event.target.value })}
+              onChange={this.handleAuthorChange}
             />
           </label>
 
@@ -177,7 +175,7 @@ export default class ModalAddPost extends Component {
               type="text"
               placeholder="Title"
               value={this.state.title}
-              onChange={(event) => this.setState({ title: event.target.value })}
+              onChange={this.handleTitleChange}
             />
           </label>
 
@@ -189,13 +187,14 @@ export default class ModalAddPost extends Component {
               id="input-body"
               placeholder="Post Message"
               value={this.state.body}
-              onChange={(event) => this.setState({ body: event.target.value })}
+              onChange={this.handleBodyChange}
             />
           </label>
 
           {/* Entrada da categoria do post */}
           <fieldset className={`options ${this.state.categoryErrorClass}`}>
             <legend>Category</legend>
+
             {categories.map((category) => (
               <label className="option" key={category.path} htmlFor={category.path}>
                 <input
@@ -204,11 +203,12 @@ export default class ModalAddPost extends Component {
                   value={category.path}
                   name="category"
                   checked={category.path === this.state.category}
-                  onChange={(event) => this.setState({ category: event.target.value })}
+                  onChange={this.handleCategoryChange}
                 />
                 {capitalize(category.name)}
               </label>
             ))}
+
           </fieldset>
 
         </form>

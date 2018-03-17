@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import CommentsIcon from 'react-icons/lib/md/comment';
-import { formatDate } from '../util/utils';
+import { formatDate, areAllEntriesProvided, areKeysDifferent } from '../util/utils';
 import Operations from './Operations';
 import Loading from './Loading';
 import Placeholder from './Placeholder';
@@ -10,89 +10,82 @@ import Placeholder from './Placeholder';
 export default class Post extends Component {
   static propTypes = {
     postData: PropTypes.object.isRequired,
-    onVote: PropTypes.func.isRequired,
-    onRemove: PropTypes.func.isRequired,
-    onUpdate: PropTypes.func.isRequired,
+    onVote: PropTypes.func,
+    onRemove: PropTypes.func,
+    onUpdate: PropTypes.func,
     linkMode: PropTypes.bool,
   }
 
   state = {
     editMode: false,
-    bodyInputValue: '',
-    titleInputValue: '',
+    bodyInput: '',
+    titleInput: '',
     bodyInputErrorClass: '',
     titleInputErrorClass: '',
   }
 
-  handleUpdateRequest = () => {
+  handleTitleInputChange = (event) => {
+    const newTitle = event.target.value;
+    const errorClass = newTitle ? '' : 'input-error';
+
     this.setState({
-      editMode: true,
-      bodyInputValue: this.props.postData.body,
-      titleInputValue: this.props.postData.title,
+      titleInput: newTitle,
+      titleInputErrorClass: errorClass,
     });
   }
 
-  handleUpdateAbort = () => {
+  handleBodyInputChange = (event) => {
+    const newBody = event.target.value;
+    const errorClass = newBody ? '' : 'input-error';
+
+    this.setState({
+      bodyInput: newBody,
+      bodyInputErrorClass: errorClass,
+    });
+  }
+
+  handleEditModeEnter = () => {
+    this.setState({
+      editMode: true,
+      bodyInput: this.props.postData.body,
+      titleInput: this.props.postData.title,
+    });
+  }
+
+  handleEditModeLeave = () => {
     this.setState({
       editMode: false,
-      bodyInputValue: '',
-      titleInputValue: '',
+      bodyInput: '',
+      titleInput: '',
       bodyInputErrorClass: '',
       titleInputErrorClass: '',
     });
   }
 
-  handleUpdateSubmit = async () => {
+  handleEditSubmit = async () => {
     let done = true;
-    if (this.isUpdateValid()) {
-      if (this.updateRequiresSubmit()) {
-        const updatedData = {
-          body: this.state.bodyInputValue,
-          title: this.state.titleInputValue,
-        };
+    const requiredEntries = ['bodyInput', 'titleInput'];
 
+    if (areAllEntriesProvided(requiredEntries, this.state)) {
+      const oldData = {
+        body: this.props.postData.body,
+        title: this.props.postData.title,
+      };
+      const updatedData = {
+        body: this.state.bodyInput,
+        title: this.state.titleInput,
+      };
+
+      if (areKeysDifferent(oldData, updatedData)) {
         await this.props.onUpdate(this.props.postData, updatedData);
       }
 
-      this.setState({
-        editMode: false,
-        bodyInputValue: '',
-        titleInputValue: '',
-        bodyInputErrorClass: '',
-        titleInputErrorClass: '',
-      });
-
+      this.handleEditModeLeave();
     } else {
       done = false;
     }
 
     return done;
-  }
-
-  isUpdateValid = () => {
-    let valid = true;
-    if (this.state.bodyInputValue === '') {
-      valid = false;
-      this.setState({ bodyInputErrorClass: 'input-error' });
-    } else {
-      this.setState({ bodyInputErrorClass: '' });
-    }
-    if (this.state.titleInputValue === '') {
-      valid = false;
-      this.setState({ titleInputErrorClass: 'input-error' });
-    } else {
-      this.setState({ titleInputErrorClass: '' });
-    }
-    return valid;
-  }
-
-  updateRequiresSubmit = () => {
-    let submitRequired = true;
-    if (this.state.bodyInputValue === this.props.postData.body
-        && this.state.titleInputValue === this.props.postData.title) {
-      submitRequired = false;
-    }
-    return submitRequired;
   }
 
   render() {
@@ -123,17 +116,15 @@ export default class Post extends Component {
             <input
               className={`post-title input-edit ${this.state.titleInputErrorClass}`}
               placeholder="Post Title"
-              value={this.state.titleInputValue}
-              onClick={(event) => event.preventDefault()}
-              onChange={(event) => this.setState({ titleInputValue: event.target.value })}
+              value={this.state.titleInput}
+              onChange={this.handleTitleInputChange}
             />
 
             <textarea
               className={`post-body input-edit ${this.state.bodyInputErrorClass}`}
               placeholder="Post Body"
-              value={this.state.bodyInputValue}
-              onClick={(event) => event.preventDefault()}
-              onChange={(event) => this.setState({ bodyInputValue: event.target.value })}
+              value={this.state.bodyInput}
+              onChange={this.handleBodyInputChange}
             />
           </div>
         ) : (
@@ -164,9 +155,9 @@ export default class Post extends Component {
             onVoteDown: () => onVote(postData, -1),
           }}
           onEdit={{
-            onRequest: this.handleUpdateRequest,
-            onAbort: this.handleUpdateAbort,
-            onSubmit: this.handleUpdateSubmit,
+            onRequest: this.handleEditModeEnter,
+            onAbort: this.handleEditModeLeave,
+            onSubmit: this.handleEditSubmit,
           }}
           onRemove={{ onSubmit: () => onRemove(postData) }}
         />

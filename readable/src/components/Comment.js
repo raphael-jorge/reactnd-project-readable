@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { formatDate } from '../util/utils';
+import { formatDate, areAllEntriesProvided, areKeysDifferent } from '../util/utils';
 import Operations from './Operations';
 import Loading from './Loading';
 import Placeholder from './Placeholder';
@@ -15,65 +15,55 @@ export default class Comment extends Component {
 
   state = {
     editMode: false,
-    bodyInputValue: '',
+    bodyInput: '',
     bodyInputErrorClass: '',
   }
 
-  handleUpdateRequest = () => {
+  handleBodyInputChange = (event) => {
+    const newBody = event.target.value;
+    const errorClass = newBody ? '' : 'input-error';
+
     this.setState({
-      editMode: true,
-      bodyInputValue: this.props.commentData.body,
+      bodyInput: newBody,
+      bodyInputErrorClass: errorClass,
     });
   }
 
-  handleUpdateAbort = () => {
+  handleEditModeEnter = () => {
+    this.setState({
+      editMode: true,
+      bodyInput: this.props.commentData.body,
+    });
+  }
+
+  handleEditModeLeave = () => {
     this.setState({
       editMode: false,
-      bodyInputValue: '',
+      bodyInput: '',
       bodyInputErrorClass: '',
     });
   }
 
-  handleUpdateSubmit = async () => {
+  handleEditSubmit = async () => {
     let done = true;
-    if (this.isUpdateValid()) {
-      if (this.updateRequiresSubmit()) {
-        const updatedData = {
-          body: this.state.bodyInputValue,
-        };
 
+    const requiredEntries = ['bodyInput'];
+
+    if (areAllEntriesProvided(requiredEntries, this.state)) {
+      const oldData = { body: this.props.commentData.body };
+      const updatedData = { body: this.state.bodyInput };
+
+      if (areKeysDifferent(oldData, updatedData)) {
         await this.props.onUpdate(this.props.commentData, updatedData);
       }
 
-      this.setState({
-        editMode: false,
-        bodyInputValue: '',
-        bodyInputErrorClass: '',
-      });
+      this.handleEditModeLeave();
+
     } else {
       done = false;
     }
 
     return done;
-  }
-
-  isUpdateValid = () => {
-    let valid = true;
-    if (this.state.bodyInputValue === '') {
-      valid = false;
-      this.setState({ bodyInputErrorClass: 'input-error' });
-    } else {
-      this.setState({ bodyInputErrorClass: '' });
-    }
-    return valid;
-  }
-
-  updateRequiresSubmit = () => {
-    let submitRequired = true;
-    if (this.state.bodyInputValue === this.props.commentData.body) {
-      submitRequired = false;
-    }
-    return submitRequired;
   }
 
   render() {
@@ -102,9 +92,8 @@ export default class Comment extends Component {
           <textarea
             className={`comment-body input-edit ${this.state.bodyInputErrorClass}`}
             placeholder="Comment Body"
-            value={this.state.bodyInputValue}
-            onClick={(event) => event.preventDefault()}
-            onChange={(event) => this.setState({ bodyInputValue: event.target.value })}
+            value={this.state.bodyInput}
+            onChange={this.handleBodyInputChange}
           />
         ) : (
           <p className="comment-body">
@@ -119,9 +108,9 @@ export default class Comment extends Component {
             onVoteDown: () => onVote(commentData, -1),
           }}
           onEdit={{
-            onRequest: this.handleUpdateRequest,
-            onAbort: this.handleUpdateAbort,
-            onSubmit: this.handleUpdateSubmit,
+            onRequest: this.handleEditModeEnter,
+            onAbort: this.handleEditModeLeave,
+            onSubmit: this.handleEditSubmit,
           }}
           onRemove={{ onSubmit: () => onRemove(commentData) }}
         />
