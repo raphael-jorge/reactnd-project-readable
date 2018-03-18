@@ -6,6 +6,7 @@ import {
   POSTS_VOTE,
   POSTS_SET_LOADING_STATE,
   POSTS_SET_PROCESSING_STATE,
+  POSTS_SET_SORT_OPTION,
 } from '../actions/posts';
 
 import {
@@ -20,6 +21,7 @@ const initialState = {
     hasErrored: false,
   },
   posts: {},
+  sortOption: null,
 };
 
 export default function posts(state = initialState, action) {
@@ -129,6 +131,12 @@ export default function posts(state = initialState, action) {
             processing: action.processingState,
           },
         },
+      };
+
+    case POSTS_SET_SORT_OPTION:
+      return {
+        ...state,
+        sortOption: action.sortOption,
       };
 
     case COMMENTS_ADD:

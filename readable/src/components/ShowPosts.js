@@ -1,29 +1,34 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import sortBy from 'sort-by';
 import AddIcon from 'react-icons/lib/fa/plus';
 import {
+  setSortOption,
   fetchVoteOnPost,
   fetchRemovePost,
   fetchUpdatePost,
   fetchAddPost,
 } from '../actions/posts';
-import ModalAddPost from './ModalAddPost';
 import Loading from './Loading';
+import Menu from './Menu';
 import Message from './Message';
+import ModalAddPost from './ModalAddPost';
 import Placeholder from './Placeholder';
 import Post from './Post';
 
 export class ShowPosts extends Component {
   static propTypes = {
     categories: PropTypes.array.isRequired,
+    activeCategoryPath: PropTypes.string,
     posts: PropTypes.array.isRequired,
+    postsSortOption: PropTypes.object,
+    onSortOptionChange: PropTypes.func.isRequired,
     onPostVote: PropTypes.func.isRequired,
     onPostRemove: PropTypes.func.isRequired,
     onPostUpdate: PropTypes.func.isRequired,
     isLoading: PropTypes.bool,
     hasErrored: PropTypes.bool,
-    activeCategoryPath: PropTypes.string,
   }
 
   MESSAGE_LOAD_ERROR = 'There was an error while loading posts from the server'
@@ -31,6 +36,10 @@ export class ShowPosts extends Component {
 
   state = {
     isModalAddPostOpen: false,
+  }
+
+  handleSortOptionChange = (selectedOption) => {
+    this.props.onSortOptionChange(selectedOption);
   }
 
   openModalAddPost = () => {
@@ -44,6 +53,7 @@ export class ShowPosts extends Component {
   render() {
     const {
       posts,
+      postsSortOption,
       onPostVote,
       onPostRemove,
       onPostUpdate,
@@ -76,16 +86,28 @@ export class ShowPosts extends Component {
             <Message msg={this.MESSAGE_LOAD_ERROR} />
           }
 
-          {!hasErrored && posts.length > 0 && posts.map((postData) => (
-            <Post
-              key={postData.id}
-              postData={postData}
-              onVote={onPostVote}
-              onRemove={onPostRemove}
-              onUpdate={onPostUpdate}
-              linkMode={true}
-            />
-          ))}
+          {!hasErrored && posts.length > 0 &&
+            <div>
+              <Menu
+                sortMenu={{
+                  selectedSortOption: postsSortOption,
+                  onSortOptionChange: this.handleSortOptionChange,
+                }}
+              />
+
+              {posts.map((postData) => (
+                <Post
+                  key={postData.id}
+                  postData={postData}
+                  onVote={onPostVote}
+                  onRemove={onPostRemove}
+                  onUpdate={onPostUpdate}
+                  linkMode={true}
+                />
+              ))}
+
+            </div>
+          }
 
           {!hasErrored && !posts.length &&
             <Message msg={this.MESSAGE_NO_POSTS} />
@@ -122,10 +144,15 @@ export const mapStateToProps = ({ posts, categories }, props) => {
     postsToProps = postsArr.filter((post) => post.category === activeCategoryPath);
   }
 
+  if (posts.sortOption) {
+    postsToProps = postsToProps.sort(sortBy(posts.sortOption.value));
+  }
+
   return {
     isLoading: posts.loading.isLoading,
     hasErrored: posts.loading.hasErrored,
     posts: postsToProps,
+    postsSortOption: posts.sortOption,
     categories: categoriesArr,
     activeCategoryPath,
   };
@@ -137,6 +164,7 @@ export const mapDispatchToProps = (dispatch, props) => {
     onPostRemove: (post) => dispatch(fetchRemovePost(post)),
     onPostUpdate: (post, updatedData) => dispatch(fetchUpdatePost(post, updatedData)),
     onPostAdd: (postData) => dispatch(fetchAddPost(postData)),
+    onSortOptionChange: (sortOption) => dispatch(setSortOption(sortOption)),
   };
 };
 

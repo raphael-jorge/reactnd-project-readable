@@ -180,6 +180,39 @@ a {
 }
 
 
+/* Menu */
+.menu-row {
+  margin: 20px 10px;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+}
+.select-menu {
+  text-align: center;
+  width: 100%;
+  max-width: 210px;
+}
+.select-menu .Select-control,
+.select-menu.is-focused .Select-control,
+.select-menu .Select-menu-outer {
+  border: 1px solid #222f5a;
+}
+.select-menu .Select-menu-outer {
+  z-index: 40;
+}
+.select-menu .Select-option.is-selected {
+  background-color: rgba(34, 47, 90, 0.07);
+}
+.select-menu .Select-option.is-focused {
+  background-color: rgba(34, 47, 90, 0.17);
+}
+.select-menu.is-focused:not(.is-open) > .Select-control {
+  border: 1px solid #222f5a;
+  outline: none;
+  box-shadow: none;
+}
+
+
 /* Posts */
 .post {
   position: relative;

@@ -144,6 +144,17 @@ describe('actions', () => {
 
       expect(actions.voteOnPost(postToVote, vote)).toEqual(expectedAction);
     });
+
+    it('should create an action to set the sort option', () => {
+      const sortOption = { value: 'testSortOption', label: 'test sort option' };
+
+      const expectedAction = {
+        type: actions.POSTS_SET_SORT_OPTION,
+        sortOption,
+      };
+
+      expect(actions.setSortOption(sortOption)).toEqual(expectedAction);
+    });
   });
 
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import { shallow } from 'enzyme';
+import sortBy from 'sort-by';
 import {
+  setSortOption,
   fetchVoteOnPost,
   fetchRemovePost,
   fetchUpdatePost,
@@ -14,6 +16,7 @@ import {
 
 // Mock posts actions
 jest.mock('../../actions/posts', () => ({
+  setSortOption: jest.fn(),
   fetchVoteOnPost: jest.fn(),
   fetchRemovePost: jest.fn(),
   fetchUpdatePost: jest.fn(),
@@ -27,14 +30,16 @@ const dispatchMock = () => {};
 const setup = (propOverrides) => {
   const props = Object.assign({
     categories: [],
+    activeCategoryPath: undefined,
     posts: [],
+    postsSortOption: undefined,
+    onSortOptionChange: () => {},
     onPostVote: () => {},
     onPostRemove: () => {},
     onPostUpdate: () => {},
     onPostAdd: () => {},
     isLoading: undefined,
     hasErrored: undefined,
-    activeCategoryPath: undefined,
   }, propOverrides);
 
   const showPosts= shallow(<ShowPosts {...props} />);
@@ -86,6 +91,7 @@ const getDefaultState = () => ({
       hasErrored: false,
     },
     posts: {},
+    sortOption: null,
   },
   categories: {
     activePath: null,
@@ -97,6 +103,7 @@ const getDefaultExpectedProps = () => ({
   isLoading: false,
   hasErrored: false,
   posts: [],
+  postsSortOption: null,
   categories: [],
   activeCategoryPath: null,
 });
@@ -142,6 +149,35 @@ describe('<ShowPosts />', () => {
     });
   });
 
+  it('renders a Menu component when posts are available', () => {
+    const testPosts = getDefaultPosts();
+    const { showPosts } = setup({ posts: testPosts.postsArray });
+
+    const menu = showPosts.find('Menu');
+
+    expect(menu.length).toBe(1);
+  });
+
+  it('provides a method to handle sort option change', () => {
+    const testPosts = getDefaultPosts();
+    const onSortOptionChange = jest.fn();
+    const { showPosts, props } = setup({ posts: testPosts.postsArray, onSortOptionChange });
+
+    showPosts.instance().handleSortOptionChange();
+
+    expect(props.onSortOptionChange).toHaveBeenCalled();
+  });
+
+  it('sets the Menu component sort configuration', () => {
+    const testPosts = getDefaultPosts();
+    const { showPosts, props } = setup({ posts: testPosts.postsArray });
+
+    const menu = showPosts.find('Menu');
+    const sortMenu = menu.prop('sortMenu');
+
+    expect(sortMenu.selectedSortOption).toBe(props.postsSortOption);
+    expect(sortMenu.onSortOptionChange).toBe(showPosts.instance().handleSortOptionChange);
+  });
 
   it('renders a Message component when posts is empty', () => {
     const { showPosts } = setup();
@@ -248,6 +284,24 @@ describe('mapStateToProps', () => {
     expect(mapStateToProps(testState)).toEqual(expectedProps);
   });
 
+  it('returns the sorted posts when posts.sortOption is set', () => {
+    const testPosts = getDefaultPosts();
+    const testState = getDefaultState();
+    const expectedProps = getDefaultExpectedProps();
+
+    const sortOption = { value: 'id', label: 'test sort label' };
+    testState.posts.sortOption = sortOption;
+    testState.posts.posts = testPosts.postsNormalized;
+
+    expectedProps.posts = testPosts.postsArray.sort(sortBy(sortOption.value));
+    expectedProps.postsSortOption = sortOption;
+
+    const arraySortMethod = jest.spyOn(Array.prototype, 'sort');
+
+    expect(mapStateToProps(testState)).toEqual(expectedProps);
+    expect(arraySortMethod).toHaveBeenCalled();
+  });
+
   it('returns the expected categories props', () => {
     const testCategories = getDefaultCategories();
     const testState = getDefaultState();
@@ -321,5 +375,15 @@ describe('mapDispatchToProps', () => {
 
     mappedProps.onPostAdd(postDataToAdd);
     expect(fetchAddPost).toHaveBeenCalledWith(postDataToAdd);
+  });
+
+  it('sets the onSortOptionChange prop correctly', () => {
+    const mappedProps = mapDispatchToProps(dispatchMock);
+    const sortOption = { value: 'testSortValue', label: 'test sort label' };
+
+    expect(mappedProps.onSortOptionChange).toBeDefined();
+
+    mappedProps.onSortOptionChange(sortOption);
+    expect(setSortOption).toHaveBeenCalledWith(sortOption);
   });
 });

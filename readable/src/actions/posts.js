@@ -8,6 +8,7 @@ export const POSTS_UPDATE = 'POSTS_UPDATE';
 export const POSTS_VOTE = 'POSTS_VOTE';
 export const POSTS_SET_LOADING_STATE = 'POSTS_SET_LOADING_STATE';
 export const POSTS_SET_PROCESSING_STATE = 'POSTS_SET_PROCESSING_STATE';
+export const POSTS_SET_SORT_OPTION = 'POSTS_SET_SORT_VALUE';
 
 // Action creators
 
@@ -51,6 +52,11 @@ export const setProcessingState = (post, processingState) => ({
   type: POSTS_SET_PROCESSING_STATE,
   post,
   processingState,
+});
+
+export const setSortOption = (sortOption) => ({
+  type: POSTS_SET_SORT_OPTION,
+  sortOption,
 });
 
 // Async action creators
