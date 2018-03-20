@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import AddIcon from 'react-icons/lib/fa/plus';
+import routes from '../routes';
 import {
   fetchVoteOnPost,
   fetchRemovePost,
@@ -17,6 +19,7 @@ import Comment from './Comment';
 import Loading from './Loading';
 import Message from './Message';
 import ModalAddComment from './ModalAddComment';
+import NotFound from './NotFound';
 import Placeholder from './Placeholder';
 import Post from './Post';
 
@@ -39,6 +42,16 @@ export class ShowPostComments extends Component {
 
   state = {
     isModalAddCommentOpen: false,
+    redirectToRoot: false,
+  }
+
+  wasPostFound = () => {
+    return (Object.keys(this.props.postData).length > 0);
+  }
+
+  handlePostRemove = (post) => {
+    return this.props.onPostRemove(post)
+      .then(() => this.setState({ redirectToRoot: true }));
   }
 
   openModalAddComment = () => {
@@ -50,7 +63,6 @@ export class ShowPostComments extends Component {
   }
 
   MESSAGE_LOAD_ERROR = 'There was an error while loading data from the server'
-  MESSAGE_NO_POST = 'It was not possible to find the requested post'
   MESSAGE_NO_COMMENTS = 'No comments yet'
 
   render() {
@@ -59,7 +71,6 @@ export class ShowPostComments extends Component {
       comments,
       onPostVote,
       onCommentVote,
-      onPostRemove,
       onCommentRemove,
       onPostUpdate,
       onCommentUpdate,
@@ -70,79 +81,83 @@ export class ShowPostComments extends Component {
       hasErroredComments,
     } = this.props;
 
+    const pageFound = this.wasPostFound();
+
     return (
-      <div className="show-post-comments">
+      this.state.redirectToRoot ? (
+        <Redirect push to={routes.root} />
+      ) : (
+        <div className="show-post-comments">
 
-        {/* Verifica se os dados do post estão sendo carregados */}
-        <Placeholder
-          isReady={!isLoadingPost}
-          fallback={<Loading type={'icon-squares'} />}
-          delay={250}
-        >
-          {hasErroredPost &&
-            <Message msg={this.MESSAGE_LOAD_ERROR} />
-          }
-
-          {!hasErroredPost && Object.keys(postData).length > 0 &&
-            <div>
-              <Post
-                postData={postData}
-                onVote={onPostVote}
-                onRemove={onPostRemove}
-                onUpdate={onPostUpdate}
-              />
-
-              <button
-                className="btn-fixed btn-magenta"
-                title="Add Comment"
-                onClick={this.openModalAddComment}
-              >
-                Add Post
-                <AddIcon size={20} />
-              </button>
-            </div>
-          }
-
-          {!hasErroredPost && !Object.keys(postData).length &&
-            <Message msg={this.MESSAGE_NO_POST} />
-          }
-        </Placeholder>
-
-        {/* Se o post foi carregado com sucesso os comentários podem ser analisados */}
-        {!isLoadingPost && !hasErroredPost && Object.keys(postData).length > 0 &&
+          {/* Verifica se os dados do post estão sendo carregados */}
           <Placeholder
-            isReady={!isLoadingComments}
+            isReady={!isLoadingPost}
             fallback={<Loading type={'icon-squares'} />}
             delay={250}
           >
-            {hasErroredComments &&
+            {hasErroredPost ? (
               <Message msg={this.MESSAGE_LOAD_ERROR} />
-            }
+            ) : (
+              !pageFound ? (
+                <NotFound />
+              ) : (
+                <div>
+                  <button
+                    className="btn-fixed btn-magenta"
+                    title="Add Comment"
+                    onClick={this.openModalAddComment}
+                  >
+                    Add Post
+                    <AddIcon size={20} />
+                  </button>
 
-            {!hasErroredComments && comments.length > 0 && comments.map((commentData) => (
-              <Comment
-                key={commentData.id}
-                commentData={commentData}
-                onVote={onCommentVote}
-                onRemove={onCommentRemove}
-                onUpdate={onCommentUpdate}
-              />
-            ))}
+                  <Post
+                    postData={postData}
+                    onVote={onPostVote}
+                    onRemove={this.handlePostRemove}
+                    onUpdate={onPostUpdate}
+                  />
 
-            {!hasErroredComments && !comments.length &&
-              <Message msg={this.MESSAGE_NO_COMMENTS} />
-            }
+                  <ModalAddComment
+                    isOpen={this.state.isModalAddCommentOpen}
+                    onModalClose={this.closeModalAddComment}
+                    onCommentAdd={onCommentAdd}
+                    postData={postData}
+                  />
+
+                </div>
+              ))}
+
           </Placeholder>
-        }
 
-        <ModalAddComment
-          isOpen={this.state.isModalAddCommentOpen}
-          onModalClose={this.closeModalAddComment}
-          onCommentAdd={onCommentAdd}
-          postData={postData}
-        />
-
-      </div>
+          {/* Se o post foi carregado com sucesso os comentários podem ser analisados */}
+          {!isLoadingPost && pageFound && !hasErroredPost &&
+            <Placeholder
+              isReady={!isLoadingComments}
+              fallback={<Loading type={'icon-squares'} />}
+              delay={250}
+            >
+              {hasErroredComments ? (
+                <Message msg={this.MESSAGE_LOAD_ERROR} />
+              ) : (
+                !comments.length ? (
+                  <Message msg={this.MESSAGE_NO_COMMENTS} />
+                ) : (
+                  comments.map((commentData) => (
+                    <Comment
+                      key={commentData.id}
+                      commentData={commentData}
+                      onVote={onCommentVote}
+                      onRemove={onCommentRemove}
+                      onUpdate={onCommentUpdate}
+                    />
+                  ))
+                )
+              )}
+            </Placeholder>
+          }
+        </div>
+      )
     );
   }
 }

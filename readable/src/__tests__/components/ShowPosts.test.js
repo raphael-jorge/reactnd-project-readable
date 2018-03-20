@@ -94,26 +94,45 @@ const getDefaultState = () => ({
     sortOption: null,
   },
   categories: {
+    loading: {
+      isLoading: false,
+      hasErrored: false,
+    },
     activePath: null,
     categories: {},
   },
 });
 
-const getDefaultExpectedProps = () => ({
-  isLoading: false,
-  hasErrored: false,
-  posts: [],
-  postsSortOption: null,
-  categories: [],
-  activeCategoryPath: null,
+const getDefaultOwnProps = () => ({
+  activeCategoryPath: undefined,
 });
 
 
 // Tests
 describe('<ShowPosts />', () => {
-  it('renders without crashing', () => {
-    const { showPosts } = setup();
-    expect(showPosts.find('.show-posts').length).toBe(1);
+  it('renders a NotFound component if activeCategoryPath is not found in categories', () => {
+    const categories = getDefaultCategories().categoriesArray;
+    const activeCategoryPath = 'noMatchCategoryPath';
+    const { showPosts } = setup({ categories, activeCategoryPath });
+
+    expect(showPosts.find('NotFound').length).toBe(1);
+  });
+
+
+  it('does not render a NotFound component if activeCategoryPath is found in categories', () => {
+    const categories = getDefaultCategories().categoriesArray;
+    const activeCategoryPath = categories[0].path;
+    const { showPosts } = setup({ categories, activeCategoryPath });
+
+    expect(showPosts.find('NotFound').length).toBe(0);
+  });
+
+
+  it('does not render a NotFound component if activeCategoryPath is not set', () => {
+    const categories = getDefaultCategories().categoriesArray;
+    const { showPosts } = setup({ categories });
+
+    expect(showPosts.find('NotFound').length).toBe(0);
   });
 
 
@@ -232,96 +251,137 @@ describe('<ShowPosts />', () => {
 
 
 describe('mapStateToProps', () => {
-  it('returns the expected isLoading and hasErrored props', () => {
+  it('sets isLoading prop to false when categories and posts are not being loaded', () => {
     const testState = getDefaultState();
-    const expectedProps = getDefaultExpectedProps();
+    const testOwnProps = getDefaultOwnProps();
 
-    expectedProps.isLoading = testState.posts.loading.isLoading;
-    expectedProps.hasErrored = testState.posts.loading.hasErrored;
+    const mappedProps = mapStateToProps(testState, testOwnProps);
 
-    expect(mapStateToProps(testState)).toEqual(expectedProps);
+    expect(mappedProps.isLoading).toBe(false);
+  });
+
+
+  it('sets isLoading prop to true when posts are loading', () => {
+    const testState = getDefaultState();
+    const testOwnProps = getDefaultOwnProps();
 
     testState.posts.loading.isLoading = true;
+    const mappedProps = mapStateToProps(testState, testOwnProps);
+
+    expect(mappedProps.isLoading).toBe(true);
+  });
+
+
+  it('sets isLoading prop to true when categories are loading', () => {
+    const testState = getDefaultState();
+    const testOwnProps = getDefaultOwnProps();
+
+    testState.categories.loading.isLoading = true;
+    const mappedProps = mapStateToProps(testState, testOwnProps);
+
+    expect(mappedProps.isLoading).toBe(true);
+  });
+
+
+  it('sets hasErrored prop to false when categories and posts load has not errored', () => {
+    const testState = getDefaultState();
+    const testOwnProps = getDefaultOwnProps();
+
+    const mappedProps = mapStateToProps(testState, testOwnProps);
+
+    expect(mappedProps.hasErrored).toBe(false);
+  });
+
+
+  it('sets hasErrored prop to true when posts load has errored', () => {
+    const testState = getDefaultState();
+    const testOwnProps = getDefaultOwnProps();
+
     testState.posts.loading.hasErrored = true;
+    const mappedProps = mapStateToProps(testState, testOwnProps);
 
-    expectedProps.isLoading = testState.posts.loading.isLoading;
-    expectedProps.hasErrored = testState.posts.loading.hasErrored;
-
-    expect(mapStateToProps(testState)).toEqual(expectedProps);
+    expect(mappedProps.hasErrored).toBe(true);
   });
 
 
-  it('returns all posts when categories.activePath is not set', () => {
-    const testPosts = getDefaultPosts();
+  it('sets hasErrored prop to true when categories load has errored', () => {
     const testState = getDefaultState();
-    const expectedProps = getDefaultExpectedProps();
-    testState.posts.posts = testPosts.postsNormalized;
+    const testOwnProps = getDefaultOwnProps();
 
-    expectedProps.isLoading = testState.posts.loading.isLoading;
-    expectedProps.hasErrored = testState.posts.loading.hasErrored;
-    expectedProps.posts = testPosts.postsArray;
+    testState.categories.loading.hasErrored = true;
+    const mappedProps = mapStateToProps(testState, testOwnProps);
 
-    expect(mapStateToProps(testState)).toEqual(expectedProps);
+    expect(mappedProps.hasErrored).toBe(true);
   });
 
 
-  it('returns only the matching posts when categories.activePath is set', () => {
+  it('sets posts prop to all posts when ownProps.activeCategoryPath is not set', () => {
     const testPosts = getDefaultPosts();
     const testState = getDefaultState();
-    const expectedProps = getDefaultExpectedProps();
+    const testOwnProps = getDefaultOwnProps();
 
-    const activeCategoryPath = 'testCategory1';
-    testState.categories.activePath = activeCategoryPath;
     testState.posts.posts = testPosts.postsNormalized;
+    const mappedProps = mapStateToProps(testState, testOwnProps);
 
-    expectedProps.activeCategoryPath = activeCategoryPath;
-    expectedProps.isLoading = testState.posts.loading.isLoading;
-    expectedProps.hasErrored = testState.posts.loading.hasErrored;
-    expectedProps.posts = testPosts.postsArray.filter((post) => (
+    expect(mappedProps.posts).toEqual(testPosts.postsArray);
+  });
+
+
+  it('sets posts prop to matching posts when ownProps.activeCategoryPath is set', () => {
+    const testPosts = getDefaultPosts();
+    const testState = getDefaultState();
+    const testOwnProps = getDefaultOwnProps();
+    const activeCategoryPath = testPosts.postsArray[0].category;
+
+    testOwnProps.activeCategoryPath = activeCategoryPath;
+    testState.posts.posts = testPosts.postsNormalized;
+    const mappedProps = mapStateToProps(testState, testOwnProps);
+
+    const expectedPosts = testPosts.postsArray.filter((post) => (
       post.category === activeCategoryPath
     ));
 
-    expect(mapStateToProps(testState)).toEqual(expectedProps);
+    expect(mappedProps.posts).toEqual(expectedPosts);
   });
 
-  it('returns the sorted posts when posts.sortOption is set', () => {
+
+  it('sets posts prop to the sorted posts when posts.sortOption is set', () => {
     const testPosts = getDefaultPosts();
     const testState = getDefaultState();
-    const expectedProps = getDefaultExpectedProps();
-
+    const testOwnProps = getDefaultOwnProps();
     const sortOption = { value: 'id', label: 'test sort label' };
+
     testState.posts.sortOption = sortOption;
     testState.posts.posts = testPosts.postsNormalized;
+    const mappedProps = mapStateToProps(testState, testOwnProps);
 
-    expectedProps.posts = testPosts.postsArray.sort(sortBy(sortOption.value));
-    expectedProps.postsSortOption = sortOption;
+    const expectedPosts = testPosts.postsArray.sort(sortBy(sortOption.value));
 
-    const arraySortMethod = jest.spyOn(Array.prototype, 'sort');
-
-    expect(mapStateToProps(testState)).toEqual(expectedProps);
-    expect(arraySortMethod).toHaveBeenCalled();
+    expect(mappedProps.posts).toEqual(expectedPosts);
   });
+
 
   it('returns the expected categories props', () => {
     const testCategories = getDefaultCategories();
     const testState = getDefaultState();
-    const expectedProps = getDefaultExpectedProps();
+    const testOwnProps = getDefaultOwnProps();
 
     testState.categories.categories = testCategories.categoriesNormalized;
-    expectedProps.categories = testCategories.categoriesArray;
+    const mappedProps = mapStateToProps(testState, testOwnProps);
 
-    expect(mapStateToProps(testState)).toEqual(expectedProps);
+    expect(mappedProps.categories).toEqual(testCategories.categoriesArray);
   });
+
 
   it('returns the expected activeCategoryPath prop', () => {
     const testState = getDefaultState();
-    const expectedProps = getDefaultExpectedProps();
+    const testOwnProps = getDefaultOwnProps();
     const activeCategoryPath = 'test category';
 
-    testState.categories.activePath = activeCategoryPath;
-    expectedProps.activeCategoryPath = activeCategoryPath;
+    testOwnProps.activeCategoryPath = activeCategoryPath;
+    const mappedProps = mapStateToProps(testState, testOwnProps);
 
-    expect(mapStateToProps(testState)).toEqual(expectedProps);
+    expect(mappedProps.activeCategoryPath).toBe(activeCategoryPath);
   });
 });
 

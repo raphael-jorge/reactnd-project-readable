@@ -14,6 +14,7 @@ import Loading from './Loading';
 import Menu from './Menu';
 import Message from './Message';
 import ModalAddPost from './ModalAddPost';
+import NotFound from './NotFound';
 import Placeholder from './Placeholder';
 import Post from './Post';
 
@@ -36,6 +37,26 @@ export class ShowPosts extends Component {
 
   state = {
     isModalAddPostOpen: false,
+  }
+
+  wasCategoryFound = () => {
+    const {
+      categories,
+      activeCategoryPath,
+    } = this.props;
+
+    let categoryFound = true;
+    if (activeCategoryPath) {
+      const matchingCategory = categories.filter((category) => (
+        category.path === activeCategoryPath
+      ));
+
+      if (!matchingCategory.length) {
+        categoryFound = false;
+      }
+    }
+
+    return categoryFound;
   }
 
   handleSortOptionChange = (selectedOption) => {
@@ -64,17 +85,10 @@ export class ShowPosts extends Component {
       activeCategoryPath,
     } = this.props;
 
+    const pageFound = this.wasCategoryFound();
+
     return (
       <div className="show-posts">
-
-        <button
-          className="btn-fixed btn-blue"
-          title="Add Post"
-          onClick={this.openModalAddPost}
-        >
-          Add Post
-          <AddIcon size={20} />
-        </button>
 
         {/* Verifica se os posts estão sendo carregados */}
         <Placeholder
@@ -82,52 +96,64 @@ export class ShowPosts extends Component {
           fallback={<Loading type="icon-squares" />}
           delay={250}
         >
-          {hasErrored &&
+          {hasErrored ? (
             <Message msg={this.MESSAGE_LOAD_ERROR} />
-          }
+          ) : (
+            !pageFound ? (
+              <NotFound />
+            ) : (
+              <div>
+                <button
+                  className="btn-fixed btn-blue"
+                  title="Add Post"
+                  onClick={this.openModalAddPost}
+                >
+                  Add Post
+                  <AddIcon size={20} />
+                </button>
 
-          {!hasErrored && posts.length > 0 &&
-            <div>
-              <Menu
-                sortMenu={{
-                  selectedSortOption: postsSortOption,
-                  onSortOptionChange: this.handleSortOptionChange,
-                }}
-              />
+                {!posts.length ? (
+                  <Message msg={this.MESSAGE_NO_POSTS} />
+                ) : (
+                  <div>
+                    <Menu
+                      sortMenu={{
+                        selectedSortOption: postsSortOption,
+                        onSortOptionChange: this.handleSortOptionChange,
+                      }}
+                    />
 
-              {posts.map((postData) => (
-                <Post
-                  key={postData.id}
-                  postData={postData}
-                  onVote={onPostVote}
-                  onRemove={onPostRemove}
-                  onUpdate={onPostUpdate}
-                  linkMode={true}
+                    {posts.map((postData) => (
+                      <Post
+                        key={postData.id}
+                        postData={postData}
+                        onVote={onPostVote}
+                        onRemove={onPostRemove}
+                        onUpdate={onPostUpdate}
+                        linkMode={true}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                <ModalAddPost
+                  isOpen={this.state.isModalAddPostOpen}
+                  onModalClose={this.closeModalAddPost}
+                  onPostAdd={onPostAdd}
+                  categories={categories}
+                  activeCategoryPath={activeCategoryPath}
                 />
-              ))}
 
-            </div>
-          }
-
-          {!hasErrored && !posts.length &&
-            <Message msg={this.MESSAGE_NO_POSTS} />
-          }
+              </div>
+            ))}
         </Placeholder>
-
-        <ModalAddPost
-          isOpen={this.state.isModalAddPostOpen}
-          onModalClose={this.closeModalAddPost}
-          onPostAdd={onPostAdd}
-          categories={categories}
-          activeCategoryPath={activeCategoryPath}
-        />
 
       </div>
     );
   }
 }
 
-export const mapStateToProps = ({ posts, categories }, props) => {
+export const mapStateToProps = ({ posts, categories }, ownProps) => {
   const postsObj = posts.posts;
   const postsIds = Object.keys(postsObj);
   const postsArr = postsIds.map((postId) => (postsObj[postId]));
@@ -136,12 +162,12 @@ export const mapStateToProps = ({ posts, categories }, props) => {
   const categoriesPaths = Object.keys(categoriesObj);
   const categoriesArr = categoriesPaths.map((path) => categoriesObj[path]);
 
-  const activeCategoryPath = categories.activePath;
+  const activeCategoryPath = ownProps.activeCategoryPath;
   let postsToProps;
-  if (activeCategoryPath === null) {
-    postsToProps = postsArr;
-  } else {
+  if (activeCategoryPath) {
     postsToProps = postsArr.filter((post) => post.category === activeCategoryPath);
+  } else {
+    postsToProps = postsArr;
   }
 
   if (posts.sortOption) {
@@ -149,8 +175,8 @@ export const mapStateToProps = ({ posts, categories }, props) => {
   }
 
   return {
-    isLoading: posts.loading.isLoading,
-    hasErrored: posts.loading.hasErrored,
+    isLoading: posts.loading.isLoading || categories.loading.isLoading,
+    hasErrored: posts.loading.hasErrored || categories.loading.hasErrored,
     posts: postsToProps,
     postsSortOption: posts.sortOption,
     categories: categoriesArr,

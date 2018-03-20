@@ -1,5 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
+import routes from '../../routes';
 import {
   fetchVoteOnPost,
   fetchRemovePost,
@@ -118,7 +119,8 @@ const getDefaultProps = () => ({ postId: getDefaultPostData().id });
 // Tests
 describe('<ShowPostComments />', () => {
   it('renders a ModalAddComment component', () => {
-    const { showPostComments } = setup();
+    const postData = getDefaultPostData();
+    const { showPostComments } = setup({ postData });
 
     expect(showPostComments.find('ModalAddComment').length).toBe(1);
   });
@@ -134,7 +136,7 @@ describe('<ShowPostComments />', () => {
   });
 
 
-  it('provides a method to open the add comment modal', () => {
+  it('provides a method to close the add comment modal', () => {
     const { showPostComments } = setup();
 
     showPostComments.setState({ isModalAddCommentOpen: true });
@@ -144,7 +146,7 @@ describe('<ShowPostComments />', () => {
   });
 
 
-  it('renders a button to open the add post modal when a post is available', () => {
+  it('renders a button to open the add comment modal when a post is available', () => {
     const postData = getDefaultPostData();
     const { showPostComments } = setup({ postData });
 
@@ -157,14 +159,35 @@ describe('<ShowPostComments />', () => {
   describe('Post', () => {
     it('renders a Post component when postData is available', () => {
       const postData = getDefaultPostData();
-      const { showPostComments, props } = setup({ postData });
+      const { showPostComments } = setup({ postData });
+
+      expect(showPostComments.find('Post').length).toBe(1);
+    });
+
+    it('sets the Post onRemove prop correctly', () => {
+      const postData = getDefaultPostData();
+      const { showPostComments } = setup({ postData });
 
       const renderedPost = showPostComments.find('Post');
-      expect(renderedPost.length).toBe(1);
-      expect(renderedPost.prop('postData')).toEqual(postData);
-      expect(renderedPost.prop('onVote')).toEqual(props.onPostVote);
-      expect(renderedPost.prop('onRemove')).toEqual(props.onPostRemove);
-      expect(renderedPost.prop('onUpdate')).toEqual(props.onPostUpdate);
+
+      expect(renderedPost.prop('onRemove'))
+        .toBe(showPostComments.instance().handlePostRemove);
+    });
+
+    it('redirects to the root page once a post is deleted', async () => {
+      const postData = getDefaultPostData();
+      const onPostRemove = jest.fn(() => Promise.resolve());
+      const { showPostComments } = setup({ postData, onPostRemove });
+
+      await showPostComments.instance().handlePostRemove();
+      showPostComments.update();
+
+      const redirect = showPostComments.find('Redirect');
+
+      expect(onPostRemove).toHaveBeenCalled();
+      expect(showPostComments.state('redirectToRoot')).toBe(true);
+      expect(redirect.length).toBe(1);
+      expect(redirect.prop('to')).toBe(routes.root);
     });
 
     it('renders an error Message component when post load has errored', () => {
@@ -181,17 +204,11 @@ describe('<ShowPostComments />', () => {
       expect(renderedMessage.prop('msg')).toBe(expectedMessage);
     });
 
-    it('renders a no data Message component when postData is empty', () => {
+    it('renders a NotFound component when postData is empty', () => {
       const { showPostComments } = setup();
 
-      const renderedPost = showPostComments.find('Post');
-      const renderedMessage = showPostComments.find('Message');
-
-      const expectedMessage = showPostComments.instance().MESSAGE_NO_POST;
-
-      expect(renderedPost.length).toBe(0);
-      expect(renderedMessage.length).toBe(1);
-      expect(renderedMessage.prop('msg')).toBe(expectedMessage);
+      expect(showPostComments.find('Post').length).toBe(0);
+      expect(showPostComments.find('NotFound').length).toBe(1);
     });
   });
 

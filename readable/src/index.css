@@ -28,6 +28,12 @@ a {
   text-align: center;
   color: #999;
 }
+.icon {
+  margin: 20px;
+  padding: 0;
+  color: #bbb;
+  text-align: center;
+}
 
 /* Loadings */
 .loading-icon {
