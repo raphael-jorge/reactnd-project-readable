@@ -1,6 +1,5 @@
 import configurePathMatch from 'path-match';
 import routes from '../routes';
-import * as categoriesActions from './categories';
 import * as commentsActions from './comments';
 
 const pathMatch = configurePathMatch();
@@ -28,49 +27,14 @@ export const shouldFetchComments = (state, postId) => {
 };
 
 
-/**
- * Verifica se a categoria ativa deve ser atualizada. Para isso,
- * o valor da categoria ativa no estado é comparado com o valor
- * esperado.
- * @param  {object} state         O estado com a categoria ativa.
- * @param  {string} expectedValue O valor esperado para a categoria ativa.
- * @return {bool}                 true se a atualização for necessária e
- *                                false caso contrário.
- */
-export const shouldSetActiveCategory = (state, expectedValue) => {
-  const currentActiveCategory = state.categories.activePath;
-  return currentActiveCategory !== expectedValue;
-};
-
-
 const setRouteState = (location) => ((dispatch, getState) => {
   const pathname = location.pathname;
-
-  const rootMatch = pathMatch(routes.root)(pathname);
-  const categoryMatch = pathMatch(routes.category)(pathname);
   const postMatch = pathMatch(routes.post)(pathname);
 
-  let activeCategory;
-  if (rootMatch) {
-    activeCategory = null;
-
-  } else if (categoryMatch) {
-    activeCategory = categoryMatch.category;
-
-  } else if (postMatch) {
-    activeCategory = null;
-    if (shouldFetchComments(getState(), postMatch.postId)) {
-      dispatch(commentsActions.fetchComments(postMatch.postId));
-    }
-
-  } else {
-    activeCategory = null;
-
+  if (postMatch && shouldFetchComments(getState(), postMatch.postId)) {
+    dispatch(commentsActions.fetchComments(postMatch.postId));
   }
 
-  if (shouldSetActiveCategory(getState(), activeCategory)) {
-    dispatch(categoriesActions.setActiveCategory(activeCategory));
-  }
 });
 
 export default setRouteState;

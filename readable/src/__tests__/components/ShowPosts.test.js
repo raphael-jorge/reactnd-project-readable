@@ -110,6 +110,13 @@ const getDefaultOwnProps = () => ({
 
 // Tests
 describe('<ShowPosts />', () => {
+  it('renders a Header component', () => {
+    const { showPosts } = setup();
+
+    expect(showPosts.find('Header').length).toBe(1);
+  });
+
+
   it('renders a NotFound component if activeCategoryPath is not found in categories', () => {
     const categories = getDefaultCategories().categoriesArray;
     const activeCategoryPath = 'noMatchCategoryPath';

@@ -110,6 +110,7 @@ a {
   background: #f8f8f8;
   box-shadow: 0 2px 5px #222f5a;
   height: 60px;
+  transition: box-shadow 0.3s;
 }
 .header h1 {
   margin: 0 20px;
@@ -131,7 +132,7 @@ a {
 }
 .header-nav li {
   display: inline-block;
-  margin: 0 10px;
+  margin: 0 5px;
   padding: 0;
 }
 .header-nav a {
@@ -139,18 +140,38 @@ a {
   margin: 0;
   padding: 0 3px;
   line-height: 30px;
-  color: #999;
+  color: #777;
   text-shadow: 1px 1px 1px #bbb;
-  border-bottom: 1px solid #f8f8f8;
-  border-radius: 3px;
-  transition: border-color 0.3s, color 0.3s;
+  transition: color 0.3s;
 }
-.header-nav li.active a {
-  color: #222f5a;
-}
+.header-nav li a.active,
 .header-nav a:hover {
-  border-color: #222f5a;
   color: #222f5a;
+  text-shadow: 1px 1px 1px #777;
+}
+/* React custom style */
+.header.react {
+  box-shadow: 0 2px 5px #2ba2c6;
+}
+.header.react .header-nav li a.active,
+.header-nav a.react:hover {
+  color: #2ba2c6;
+}
+/* Redux custom style */
+.header.redux {
+  box-shadow: 0 2px 5px #744cbc;
+}
+.header.redux .header-nav li a.active,
+.header-nav a.redux:hover {
+  color: #744cbc;
+}
+/* Udacity custom style */
+.header.udacity {
+  box-shadow: 0 2px 5px #e0711d;
+}
+.header.udacity .header-nav li a.active,
+.header-nav a.udacity:hover {
+  color: #e0711d;
 }
 @media screen and (max-width: 530px) {
   .header {

@@ -16,6 +16,7 @@ import {
   fetchAddComment,
 } from '../actions/comments';
 import Comment from './Comment';
+import Header from './Header';
 import Loading from './Loading';
 import Message from './Message';
 import ModalAddComment from './ModalAddComment';
@@ -27,6 +28,7 @@ export class ShowPostComments extends Component {
   static propTypes = {
     postData: PropTypes.object.isRequired,
     comments: PropTypes.array.isRequired,
+    categories: PropTypes.array.isRequired,
     onPostVote: PropTypes.func.isRequired,
     onCommentVote: PropTypes.func.isRequired,
     onPostRemove: PropTypes.func.isRequired,
@@ -69,6 +71,7 @@ export class ShowPostComments extends Component {
     const {
       postData,
       comments,
+      categories,
       onPostVote,
       onCommentVote,
       onCommentRemove,
@@ -87,7 +90,9 @@ export class ShowPostComments extends Component {
       this.state.redirectToRoot ? (
         <Redirect push to={routes.root} />
       ) : (
-        <div className="show-post-comments">
+        <div>
+
+          <Header categories={categories} />
 
           {/* Verifica se os dados do post estão sendo carregados */}
           <Placeholder
@@ -162,16 +167,20 @@ export class ShowPostComments extends Component {
   }
 }
 
-export const mapStateToProps = ({ posts, comments }, props) => {
+export const mapStateToProps = ({ posts, comments, categories }, ownProps) => {
   const commentsObj = comments.comments;
   const commentsIds = Object.keys(commentsObj);
 
   const postsObj = posts.posts;
-  const postData = postsObj[props.postId] || {};
+  const postData = postsObj[ownProps.postId] || {};
+
+  const categoriesObj = categories.categories;
+  const categoriesPaths = Object.keys(categoriesObj);
 
   return {
     postData,
     comments: commentsIds.map((commentId) => commentsObj[commentId]),
+    categories: categoriesPaths.map((categoryPath) => categoriesObj[categoryPath]),
     isLoadingPost: posts.loading.isLoading,
     isLoadingComments: comments.loading.isLoading,
     hasErroredPost: posts.loading.hasErrored,

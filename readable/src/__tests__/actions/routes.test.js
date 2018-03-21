@@ -1,16 +1,8 @@
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import routes from '../../routes';
-import categoriesActions from '../../actions/categories';
 import commentsActions from '../../actions/comments';
 import setRouteState from '../../actions/routes';
-
-// Mock categories actions
-jest.mock('../../actions/categories', () => ({
-  setActiveCategory: jest.fn(
-    () => ({ type: 'TEST_ACTION' }),
-  ),
-}));
 
 // Mock comments actions
 jest.mock('../../actions/comments', () => ({
@@ -25,9 +17,6 @@ const mockStore = configureMockStore(middlewares);
 
 // Utils
 const getDefaultState = () => ({
-  categories: {
-    activePath: null,
-  },
   comments: {
     comments: {},
     loading: { isLoading: false },
@@ -78,66 +67,7 @@ afterEach(() => {
 // Tests
 describe('actions', () => {
   describe('setRouteState()', () => {
-    describe(`root path [ ${routes.root} ]`, () => {
-      it('sets categories activePath when needed', () => {
-        const testLocation = getDefaultLocation('root');
-        const testState = getDefaultState();
-
-        let store = mockStore(testState);
-        store.dispatch(setRouteState(testLocation.locationStr));
-
-        expect(categoriesActions.setActiveCategory).not.toHaveBeenCalled();
-
-        categoriesActions.setActiveCategory.mockClear();
-        testState.categories.activePath = 'testPath';
-
-        store = mockStore(testState);
-        store.dispatch(setRouteState(testLocation.locationStr));
-
-        expect(categoriesActions.setActiveCategory).toHaveBeenCalledWith(null);
-      });
-    });
-
-    describe(`category path [ ${routes.category} ]`, () => {
-      it('sets categories activePath when needed', () => {
-        const testLocation = getDefaultLocation('category');
-        const testState = getDefaultState();
-
-        let store = mockStore(testState);
-        store.dispatch(setRouteState(testLocation.locationStr));
-
-        expect(categoriesActions.setActiveCategory)
-          .toHaveBeenCalledWith(testLocation.category);
-
-        categoriesActions.setActiveCategory.mockClear();
-        testState.categories.activePath = testLocation.category;
-
-        store = mockStore(testState);
-        store.dispatch(setRouteState(testLocation.locationStr));
-
-        expect(categoriesActions.setActiveCategory).not.toHaveBeenCalled();
-      });
-    });
-
     describe(`post comments path [ ${routes.post} ]`, () => {
-      it('sets categories activePath when needed', () => {
-        const testLocation = getDefaultLocation('post');
-        const testState = getDefaultState();
-
-        let store = mockStore(testState);
-        store.dispatch(setRouteState(testLocation.locationStr));
-
-        expect(categoriesActions.setActiveCategory).not.toHaveBeenCalled();
-
-        categoriesActions.setActiveCategory.mockClear();
-        testState.categories.activePath = 'testPath';
-
-        store = mockStore(testState);
-        store.dispatch(setRouteState(testLocation.locationStr));
-
-        expect(categoriesActions.setActiveCategory).toHaveBeenCalledWith(null);
-      });
-
       it('fetches comments if there are no comments', () => {
         const testLocation = getDefaultLocation('post');
         const testState = getDefaultState();
@@ -198,26 +128,6 @@ describe('actions', () => {
         store.dispatch(setRouteState(testLocation.locationStr));
 
         expect(commentsActions.fetchComments).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('other routes', () => {
-      it('sets categories activePath when needed', () => {
-        const testLocation = getDefaultLocation();
-        const testState = getDefaultState();
-
-        let store = mockStore(testState);
-        store.dispatch(setRouteState(testLocation.locationStr));
-
-        expect(categoriesActions.setActiveCategory).not.toHaveBeenCalled();
-
-        categoriesActions.setActiveCategory.mockClear();
-        testState.categories.activePath = 'testPath';
-
-        store = mockStore(testState);
-        store.dispatch(setRouteState(testLocation.locationStr));
-
-        expect(categoriesActions.setActiveCategory).toHaveBeenCalledWith(null);
       });
     });
   });

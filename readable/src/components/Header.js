@@ -1,38 +1,49 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import routes from '../routes';
 import { capitalize } from '../util/utils';
 
 export default function Header(props) {
   const {
     categories,
-    activePath,
+    activeCategoryPath,
   } = props;
+
   return (
-    <header className="header">
+    <header className={`header ${activeCategoryPath}`}>
       <div className="container">
 
-        <Link to="/">
+        <Link to={routes.root}>
           <h1>Readable</h1>
         </Link>
 
-        {categories.length > 0 &&
-          <nav className="header-nav">
-            <ul>
-              {categories.map((category) => (
-                <li
-                  key={category.name}
-                  className={`category-item ${category.path === activePath ? 'active' : ''}`}
-                >
-                  <Link to={`/${category.path}`}>
-                    {capitalize(category.name)}
-                  </Link>
-                </li>
+        <nav className="header-nav">
+          <ul>
 
-              ))}
-            </ul>
-          </nav>
-        }
+            {/* Link para a homepage */}
+            <li className="category-item">
+              <NavLink activeClassName="active" exact to={routes.root}>
+                Home
+              </NavLink>
+            </li>
+
+            {/* Links para as categorias */}
+            {categories.length > 0 && categories.map((category) => (
+              <li key={category.name} className="category-item">
+                <NavLink
+                  className={category.path}
+                  activeClassName="active"
+                  to={`/${category.path}`}
+                  exact
+                >
+                  {capitalize(category.name)}
+                </NavLink>
+              </li>
+            ))}
+
+          </ul>
+        </nav>
 
       </div>
     </header>

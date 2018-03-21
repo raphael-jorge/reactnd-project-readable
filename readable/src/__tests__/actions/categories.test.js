@@ -73,17 +73,6 @@ describe('actions', () => {
   });
 
 
-  it('should create an action to set the activePath', () => {
-    const activePath = 'testPath';
-    const expectedAction = {
-      type: categoriesActions.CATEGORIES_SET_ACTIVE,
-      activePath,
-    };
-
-    expect(categoriesActions.setActiveCategory(activePath)).toEqual(expectedAction);
-  });
-
-
   it('should fetch data from the api and dispatch actions on success', () => {
     const testCategories = getDefaultCategories();
 

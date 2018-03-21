@@ -24,7 +24,6 @@ const getDefaultCategories = () => {
 describe('reducer', () => {
   it('should return the initial state', () => {
     const expectedState = {
-      activePath: null,
       loading: {
         isLoading: false,
         hasErrored: false,
@@ -41,16 +40,6 @@ describe('reducer', () => {
     const testAction = actions.setCategories(testCategories.categoriesArray);
 
     const expectedState = { categories: testCategories.categoriesNormalized };
-
-    expect(reducer({}, testAction)).toEqual(expectedState);
-  });
-
-
-  it('should handle CATEGORIES_SET_ACTIVE', () => {
-    const activePath = 'testActivePath';
-    const testAction = actions.setActiveCategory(activePath);
-
-    const expectedState = { activePath };
 
     expect(reducer({}, testAction)).toEqual(expectedState);
   });

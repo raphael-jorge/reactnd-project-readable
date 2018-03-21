@@ -41,6 +41,7 @@ const setup = (propOverrides) => {
   const props = Object.assign({
     postData: {},
     comments: [],
+    categories: [],
     onPostVote: () => {},
     onCommentVote: () => {},
     onPostRemove: () => {},
@@ -70,6 +71,23 @@ const getDefaultPostData = () => ({
   timestamp: 0,
 });
 
+const getDefaultCategories = () => {
+  const categoriesArray = [
+    { name: 'testCategory1', path: 'testCategory1' },
+    { name: 'testCategory2', path: 'testCategory2' },
+  ];
+
+  const categoriesNormalized = categoriesArray.reduce((categoriesObj, category) => {
+    categoriesObj[category.path] = { ...category };
+    return categoriesObj;
+  }, {});
+
+  return {
+    categoriesArray,
+    categoriesNormalized,
+  };
+};
+
 const getDefaultComments = () => {
   const commentsArray = [
     { id: 'testId1', body: '', author: '', timestamp: 0 },
@@ -88,6 +106,9 @@ const getDefaultComments = () => {
 };
 
 const getDefaultState = () => ({
+  categories: {
+    categories: {},
+  },
   posts: {
     loading: {
       isLoading: false,
@@ -107,6 +128,7 @@ const getDefaultState = () => ({
 const getDefaultExpectedState = () => ({
   postData: {},
   comments: [],
+  categories: [],
   isLoadingPost: false,
   isLoadingComments: false,
   hasErroredPost: false,
@@ -118,6 +140,13 @@ const getDefaultProps = () => ({ postId: getDefaultPostData().id });
 
 // Tests
 describe('<ShowPostComments />', () => {
+  it('renders a Header component', () => {
+    const { showPostComments } = setup();
+
+    expect(showPostComments.find('Header').length).toBe(1);
+  });
+
+
   it('renders a ModalAddComment component', () => {
     const postData = getDefaultPostData();
     const { showPostComments } = setup({ postData });
@@ -298,6 +327,19 @@ describe('<ShowPostComments />', () => {
 
 
 describe('mapStateToProps', () => {
+  it('sets the categories related props', () => {
+    const testState = getDefaultState();
+    const expectedState = getDefaultExpectedState();
+    const categories = getDefaultCategories();
+
+    testState.categories.categories = categories.categoriesNormalized;
+
+    expectedState.categories = categories.categoriesArray;
+
+    expect(mapStateToProps(testState, getDefaultProps())).toEqual(expectedState);
+  });
+
+
   it('sets the post related props', () => {
     const testState = getDefaultState();
     const expectedState = getDefaultExpectedState();

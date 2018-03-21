@@ -11,6 +11,7 @@ import {
   fetchAddPost,
 } from '../actions/posts';
 import Loading from './Loading';
+import Header from './Header';
 import Menu from './Menu';
 import Message from './Message';
 import ModalAddPost from './ModalAddPost';
@@ -88,7 +89,9 @@ export class ShowPosts extends Component {
     const pageFound = this.wasCategoryFound();
 
     return (
-      <div className="show-posts">
+      <div>
+
+        <Header categories={categories} activeCategoryPath={activeCategoryPath}/>
 
         {/* Verifica se os posts estão sendo carregados */}
         <Placeholder

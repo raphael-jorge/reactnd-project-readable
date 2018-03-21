@@ -1,11 +1,9 @@
 import {
   CATEGORIES_SET,
-  CATEGORIES_SET_ACTIVE,
   CATEGORIES_SET_LOADING_STATE,
 } from '../actions/categories';
 
 const initialState = {
-  activePath: null,
   loading: {
     isLoading: false,
     hasErrored: false,
@@ -34,12 +32,6 @@ export default function categories(state = initialState, action) {
           };
           return categories;
         }, {}),
-      };
-
-    case CATEGORIES_SET_ACTIVE:
-      return {
-        ...state,
-        activePath: action.activePath,
       };
 
     default:
