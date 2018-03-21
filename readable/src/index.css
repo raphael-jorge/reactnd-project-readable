@@ -21,6 +21,10 @@ a {
   max-width: 890px;
   margin: 0 auto;
 }
+.container-md {
+  max-width: 680px;
+  margin: 0 auto;
+}
 .status-msg {
   margin: 20px 0;
   padding: 20px 0;

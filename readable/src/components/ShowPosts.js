@@ -93,63 +93,65 @@ export class ShowPosts extends Component {
 
         <Header categories={categories} activeCategoryPath={activeCategoryPath}/>
 
-        {/* Verifica se os posts estão sendo carregados */}
-        <Placeholder
-          isReady={!isLoading}
-          fallback={<Loading type="icon-squares" />}
-          delay={250}
-        >
-          {hasErrored ? (
-            <Message msg={this.MESSAGE_LOAD_ERROR} />
-          ) : (
-            !pageFound ? (
-              <NotFound />
+        <main className="container-md">
+          {/* Verifica se os posts estão sendo carregados */}
+          <Placeholder
+            isReady={!isLoading}
+            fallback={<Loading type="icon-squares" />}
+            delay={250}
+          >
+            {hasErrored ? (
+              <Message msg={this.MESSAGE_LOAD_ERROR} />
             ) : (
-              <div>
-                <button
-                  className="btn-fixed btn-blue"
-                  title="Add Post"
-                  onClick={this.openModalAddPost}
-                >
-                  Add Post
-                  <AddIcon size={20} />
-                </button>
+              !pageFound ? (
+                <NotFound />
+              ) : (
+                <div>
+                  <button
+                    className="btn-fixed btn-blue"
+                    title="Add Post"
+                    onClick={this.openModalAddPost}
+                  >
+                    Add Post
+                    <AddIcon size={20} />
+                  </button>
 
-                {!posts.length ? (
-                  <Message msg={this.MESSAGE_NO_POSTS} />
-                ) : (
-                  <div>
-                    <Menu
-                      sortMenu={{
-                        selectedSortOption: postsSortOption,
-                        onSortOptionChange: this.handleSortOptionChange,
-                      }}
-                    />
-
-                    {posts.map((postData) => (
-                      <Post
-                        key={postData.id}
-                        postData={postData}
-                        onVote={onPostVote}
-                        onRemove={onPostRemove}
-                        onUpdate={onPostUpdate}
-                        linkMode={true}
+                  {!posts.length ? (
+                    <Message msg={this.MESSAGE_NO_POSTS} />
+                  ) : (
+                    <div>
+                      <Menu
+                        sortMenu={{
+                          selectedSortOption: postsSortOption,
+                          onSortOptionChange: this.handleSortOptionChange,
+                        }}
                       />
-                    ))}
-                  </div>
-                )}
 
-                <ModalAddPost
-                  isOpen={this.state.isModalAddPostOpen}
-                  onModalClose={this.closeModalAddPost}
-                  onPostAdd={onPostAdd}
-                  categories={categories}
-                  activeCategoryPath={activeCategoryPath}
-                />
+                      {posts.map((postData) => (
+                        <Post
+                          key={postData.id}
+                          postData={postData}
+                          onVote={onPostVote}
+                          onRemove={onPostRemove}
+                          onUpdate={onPostUpdate}
+                          linkMode={true}
+                        />
+                      ))}
+                    </div>
+                  )}
 
-              </div>
-            ))}
-        </Placeholder>
+                  <ModalAddPost
+                    isOpen={this.state.isModalAddPostOpen}
+                    onModalClose={this.closeModalAddPost}
+                    onPostAdd={onPostAdd}
+                    categories={categories}
+                    activeCategoryPath={activeCategoryPath}
+                  />
+
+                </div>
+              ))}
+          </Placeholder>
+        </main>
 
       </div>
     );

@@ -94,73 +94,76 @@ export class ShowPostComments extends Component {
 
           <Header categories={categories} />
 
-          {/* Verifica se os dados do post estão sendo carregados */}
-          <Placeholder
-            isReady={!isLoadingPost}
-            fallback={<Loading type={'icon-squares'} />}
-            delay={250}
-          >
-            {hasErroredPost ? (
-              <Message msg={this.MESSAGE_LOAD_ERROR} />
-            ) : (
-              !pageFound ? (
-                <NotFound />
-              ) : (
-                <div>
-                  <button
-                    className="btn-fixed btn-magenta"
-                    title="Add Comment"
-                    onClick={this.openModalAddComment}
-                  >
-                    Add Post
-                    <AddIcon size={20} />
-                  </button>
-
-                  <Post
-                    postData={postData}
-                    onVote={onPostVote}
-                    onRemove={this.handlePostRemove}
-                    onUpdate={onPostUpdate}
-                  />
-
-                  <ModalAddComment
-                    isOpen={this.state.isModalAddCommentOpen}
-                    onModalClose={this.closeModalAddComment}
-                    onCommentAdd={onCommentAdd}
-                    postData={postData}
-                  />
-
-                </div>
-              ))}
-
-          </Placeholder>
-
-          {/* Se o post foi carregado com sucesso os comentários podem ser analisados */}
-          {!isLoadingPost && pageFound && !hasErroredPost &&
+          <main className="container-md">
+            {/* Verifica se os dados do post estão sendo carregados */}
             <Placeholder
-              isReady={!isLoadingComments}
+              isReady={!isLoadingPost}
               fallback={<Loading type={'icon-squares'} />}
               delay={250}
             >
-              {hasErroredComments ? (
+              {hasErroredPost ? (
                 <Message msg={this.MESSAGE_LOAD_ERROR} />
               ) : (
-                !comments.length ? (
-                  <Message msg={this.MESSAGE_NO_COMMENTS} />
+                !pageFound ? (
+                  <NotFound />
                 ) : (
-                  comments.map((commentData) => (
-                    <Comment
-                      key={commentData.id}
-                      commentData={commentData}
-                      onVote={onCommentVote}
-                      onRemove={onCommentRemove}
-                      onUpdate={onCommentUpdate}
+                  <div>
+                    <button
+                      className="btn-fixed btn-magenta"
+                      title="Add Comment"
+                      onClick={this.openModalAddComment}
+                    >
+                      Add Post
+                      <AddIcon size={20} />
+                    </button>
+
+                    <Post
+                      postData={postData}
+                      onVote={onPostVote}
+                      onRemove={this.handlePostRemove}
+                      onUpdate={onPostUpdate}
                     />
-                  ))
-                )
-              )}
+
+                    <ModalAddComment
+                      isOpen={this.state.isModalAddCommentOpen}
+                      onModalClose={this.closeModalAddComment}
+                      onCommentAdd={onCommentAdd}
+                      postData={postData}
+                    />
+
+                  </div>
+                ))}
+
             </Placeholder>
-          }
+
+            {/* Se o post foi carregado com sucesso os comentários podem ser analisados */}
+            {!isLoadingPost && pageFound && !hasErroredPost &&
+              <Placeholder
+                isReady={!isLoadingComments}
+                fallback={<Loading type={'icon-squares'} />}
+                delay={250}
+              >
+                {hasErroredComments ? (
+                  <Message msg={this.MESSAGE_LOAD_ERROR} />
+                ) : (
+                  !comments.length ? (
+                    <Message msg={this.MESSAGE_NO_COMMENTS} />
+                  ) : (
+                    comments.map((commentData) => (
+                      <Comment
+                        key={commentData.id}
+                        commentData={commentData}
+                        onVote={onCommentVote}
+                        onRemove={onCommentRemove}
+                        onUpdate={onCommentUpdate}
+                      />
+                    ))
+                  )
+                )}
+              </Placeholder>
+            }
+
+          </main>
         </div>
       )
     );
