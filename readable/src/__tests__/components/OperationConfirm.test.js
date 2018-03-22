@@ -5,8 +5,8 @@ import OperationConfirm from '../../components/OperationConfirm';
 // Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
-    onConfirm: jest.fn(),
-    onCancel: jest.fn(),
+    onConfirm: () => {},
+    onCancel: () => {},
   }, propOverrides);
 
   const operationConfirm = shallow(<OperationConfirm {...props} />);
@@ -27,10 +27,6 @@ const setup = (propOverrides) => {
     selectButton,
   };
 };
-
-const getDefaultEvent = () => ({
-  preventDefault: jest.fn(),
-});
 
 
 describe('<OperationConfirm />', () => {
@@ -53,12 +49,15 @@ describe('<OperationConfirm />', () => {
 
 
   it('calls onConfirm prop once confirm button is clicked', () => {
-    const { selectButton, props } = setup();
+    const onConfirm = jest.fn();
+    const { selectButton, props } = setup({ onConfirm });
 
     const confirmButton = selectButton('Confirm');
 
-    const event = getDefaultEvent();
-    confirmButton.simulate('click', event);
+    const event = global.testUtils.getDefaultEvent();
+    event.preventDefault = jest.fn();
+
+    confirmButton.prop('onClick')(event);
 
     expect(event.preventDefault).toHaveBeenCalled();
     expect(props.onConfirm).toHaveBeenCalled();
@@ -66,12 +65,15 @@ describe('<OperationConfirm />', () => {
 
 
   it('calls onCancel prop once cancel button is clicked', () => {
-    const { selectButton, props } = setup();
+    const onCancel = jest.fn();
+    const { selectButton, props } = setup({ onCancel });
 
     const cancelButton = selectButton('Cancel');
 
-    const event = getDefaultEvent();
-    cancelButton.simulate('click', event);
+    const event = global.testUtils.getDefaultEvent();
+    event.preventDefault = jest.fn();
+
+    cancelButton.prop('onClick')(event);
 
     expect(event.preventDefault).toHaveBeenCalled();
     expect(props.onCancel).toHaveBeenCalled();

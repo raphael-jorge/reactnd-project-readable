@@ -2,71 +2,40 @@ import * as postsActions from '../../actions/posts';
 import * as commentsActions from '../../actions/comments';
 import reducer from '../../reducers/posts';
 
-// Utils
-const getDefaultPostsArray = () => {
-  const postsArray = [
-    { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
-    { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
-  ];
-  return postsArray;
-
-
-};
-
-const getExpectedPostsOnState = (postsArray = getDefaultPostsArray()) => {
-  const postsNormalized = postsArray.reduce((postsObj, post) => {
-    postsObj[post.id] = { ...post };
-    postsObj[post.id].processing = false;
-    return postsObj;
-  }, {});
-
-  return postsNormalized;
-};
-
 
 // Tests
 describe('reducer', () => {
   describe('posts actions', () => {
     it('should return the initial state', () => {
-      const expectedState = {
-        loading: {
-          id: null,
-          isLoading: false,
-          hasErrored: false,
-        },
-        posts: {},
-        sortOption: null,
-      };
+      const expectedState = global.testUtils.getDefaultReduxState().posts;
 
       expect(reducer(undefined, {})).toEqual(expectedState);
     });
 
     describe('should handle POSTS_SET', () => {
       it('updates posts if the operation id matches', () => {
-        const testPostsArray = getDefaultPostsArray();
-        const operationId = 'testoperationId';
+        const posts = global.testUtils.getDefaultPostsArray();
+        const operationId = 'testOperationId';
 
         const initialState = {
           loading: { id: operationId },
           posts: {},
         };
 
-        const testAction = postsActions.setPosts({
-          posts: testPostsArray,
-          operationId,
-        });
+        const testAction = postsActions.setPosts({ posts, operationId });
 
-        const expectedPostsOnState = getExpectedPostsOnState();
         const expectedState = {
           loading: { id: operationId },
-          posts: expectedPostsOnState,
+          posts: global.testUtils.convertArrayToNormalizedObject(
+            posts, 'id', { processing: false }
+          ),
         };
 
         expect(reducer(initialState, testAction)).toEqual(expectedState);
       });
 
       it('does not update posts if operation id does not match', () => {
-        const testPostsArray = getDefaultPostsArray();
+        const posts = global.testUtils.getDefaultPostsArray();
         const operationIdState = 'testOldOperationId';
         const operationIdAction = 'testNewOperationId';
 
@@ -75,10 +44,7 @@ describe('reducer', () => {
           posts: {},
         };
 
-        const testAction = postsActions.setPosts({
-          posts: testPostsArray,
-          operationId: operationIdAction,
-        });
+        const testAction = postsActions.setPosts({ posts, operationId: operationIdAction });
 
         const expectedState = initialState;
 
@@ -99,13 +65,13 @@ describe('reducer', () => {
     });
 
     it('should handle POSTS_REMOVE', () => {
-      const postToRemove = { id: 'testId1' };
-      const postToKeep = { id: 'testId2' };
+      const posts = global.testUtils.getDefaultPostsArray();
+      const postToRemove = posts[0];
+      const postToKeep = posts[1];
 
-      const initialState = { posts: {
-        [postToRemove.id]: postToRemove,
-        [postToKeep.id]: postToKeep,
-      } };
+      const initialState = {
+        posts: global.testUtils.convertArrayToNormalizedObject(posts, 'id'),
+      };
 
       const testAction = postsActions.removePost(postToRemove);
 
@@ -117,35 +83,30 @@ describe('reducer', () => {
     });
 
     it('should handle POSTS_UPDATE', () => {
-      const postToUpdate = { id: 'testId', title: 'testTitle', body: 'testBody' };
+      const postToUpdate = global.testUtils.getDefaultPostData();
       const updatedPostData = { title: 'testUpdatedTitle', body: 'testUpdatedBody' };
 
       const initialState = {
-        posts: {
-          [postToUpdate.id]: postToUpdate,
-        },
+        posts: { [postToUpdate.id]: postToUpdate },
       };
 
       const testAction = postsActions.updatePost(postToUpdate, updatedPostData);
 
       const expectedState = {
-        posts: {
-          [postToUpdate.id]: { ...updatedPostData, id: postToUpdate.id },
-        },
+        posts: { [postToUpdate.id]: { ...postToUpdate, ...updatedPostData } },
       };
 
       expect(reducer(initialState, testAction)).toEqual(expectedState);
     });
 
     it('should handle POSTS_VOTE', () => {
-      const currentVoteScore = 3;
-      const postToVote = { id: 'testId', voteScore: currentVoteScore };
+      const postToVote = global.testUtils.getDefaultPostData();
       const vote = 1;
+      const currentVoteScore = 3;
+      postToVote.voteScore = currentVoteScore;
 
       const initialState = {
-        posts: {
-          [postToVote.id]: postToVote,
-        },
+        posts: { [postToVote.id]: postToVote },
       };
 
       const testAction = postsActions.voteOnPost(postToVote, vote);
@@ -155,39 +116,6 @@ describe('reducer', () => {
           [postToVote.id]: { ...postToVote, voteScore: currentVoteScore + 1 },
         },
       };
-
-      expect(reducer(initialState, testAction)).toEqual(expectedState);
-    });
-
-    it('should handle POSTS_SET_PROCESSING_STATE', () => {
-      const processingState = true;
-      const postToSet = { id: 'testId', processing: false };
-
-      const initialState = {
-        posts: {
-          [postToSet.id]: postToSet,
-        },
-      };
-
-      const testAction = postsActions.setProcessingState(postToSet, processingState);
-
-      const expectedState = {
-        posts: {
-          [postToSet.id]: { ...postToSet, processing: processingState },
-        },
-      };
-
-      expect(reducer(initialState, testAction)).toEqual(expectedState);
-    });
-
-    it('should handle POSTS_SET_SORT_OPTION', () => {
-      const sortOption = { value: 'testSortOption', label: 'test sort option' };
-
-      const initialState = { sortOption: null };
-
-      const testAction = postsActions.setSortOption(sortOption);
-
-      const expectedState = { sortOption };
 
       expect(reducer(initialState, testAction)).toEqual(expectedState);
     });
@@ -253,6 +181,36 @@ describe('reducer', () => {
           expect(reducer(initialState, testAction)).toEqual(expectedState);
         });
       });
+    });
+
+    it('should handle POSTS_SET_PROCESSING_STATE', () => {
+      const postToSet = global.testUtils.getDefaultPostData();
+      postToSet.processing = false;
+      const processingState = true;
+
+      const initialState = {
+        posts: { [postToSet.id]: postToSet },
+      };
+
+      const testAction = postsActions.setProcessingState(postToSet, processingState);
+
+      const expectedState = {
+        posts: { [postToSet.id]: { ...postToSet, processing: processingState } },
+      };
+
+      expect(reducer(initialState, testAction)).toEqual(expectedState);
+    });
+
+    it('should handle POSTS_SET_SORT_OPTION', () => {
+      const sortOption = { value: 'testSortOption', label: 'test sort option' };
+
+      const initialState = { sortOption: null };
+
+      const testAction = postsActions.setSortOption(sortOption);
+
+      const expectedState = { sortOption };
+
+      expect(reducer(initialState, testAction)).toEqual(expectedState);
     });
   });
 

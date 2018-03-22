@@ -1,6 +1,5 @@
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import routes from '../../routes';
 import commentsActions from '../../actions/comments';
 import setRouteState from '../../actions/routes';
 
@@ -16,14 +15,6 @@ const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
 
 // Utils
-const getDefaultState = () => ({
-  comments: {
-    comments: {},
-    loading: { isLoading: false },
-    parentPostId: null,
-  },
-});
-
 const getDefaultLocation = (location) => {
   switch (location) {
     case 'root':
@@ -67,13 +58,15 @@ afterEach(() => {
 // Tests
 describe('actions', () => {
   describe('setRouteState()', () => {
-    describe(`post comments path [ ${routes.post} ]`, () => {
+    describe('post comments path', () => {
       it('fetches comments if there are no comments', () => {
         const testLocation = getDefaultLocation('post');
-        const testState = getDefaultState();
+        const testState = global.testUtils.getDefaultReduxState();
+
         // Ajusta parâmetros para que não ativem a chamada ao fetch
         testState.comments.loading.isLoading = false;
         testState.comments.parentPostId = testLocation.postId;
+
         // Parâmetro que deve ativar a chamada
         testState.comments.comments = {};
 
@@ -85,11 +78,13 @@ describe('actions', () => {
 
       it('fetches comments if it is a new parentPostId', () => {
         const testLocation = getDefaultLocation('post');
-        const testState = getDefaultState();
+        const testState = global.testUtils.getDefaultReduxState();
+
         // Ajusta parâmetros para que não ativem a chamada ao fetch
         const testCommentId = 'testCommentId';
         testState.comments.comments = { [testCommentId]: { id: testCommentId } };
         testState.comments.loading.isLoading = false;
+
         // Parâmetro que deve ativar a chamada
         testState.comments.parentPostId = 'oldTestPostId';
 
@@ -101,11 +96,13 @@ describe('actions', () => {
 
       it('fetches comments if there is comments being loaded already', () => {
         const testLocation = getDefaultLocation('post');
-        const testState = getDefaultState();
+        const testState = global.testUtils.getDefaultReduxState();
+
         // Ajusta parâmetros para que não ativem a chamada ao fetch
         const testCommentId = 'testCommentId';
         testState.comments.comments = { [testCommentId]: { id: testCommentId } };
         testState.comments.parentPostId = testLocation.postId;
+
         // Parâmetro que deve ativar a chamada
         testState.comments.loading.isLoading = true;
 
@@ -117,7 +114,8 @@ describe('actions', () => {
 
       it('does not fetch comments if it is not necessary', () => {
         const testLocation = getDefaultLocation('post');
-        const testState = getDefaultState();
+        const testState = global.testUtils.getDefaultReduxState();
+
         // Ajusta parâmetros para que não ativem a chamada ao fetch
         const testCommentId = 'testCommentId';
         testState.comments.comments = { [testCommentId]: { id: testCommentId } };

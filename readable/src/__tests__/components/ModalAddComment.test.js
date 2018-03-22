@@ -21,12 +21,6 @@ const setup = (propOverrides) => {
   };
 };
 
-const getDefaultEvent = () => ({
-  target: {
-    value: null,
-  },
-});
-
 
 // Tests
 describe('<ModalAddPost />', () => {
@@ -75,8 +69,7 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
 
       const newAuthor = 'new author value';
-      const changeAuthorEvent = getDefaultEvent();
-      changeAuthorEvent.target.value = newAuthor;
+      const changeAuthorEvent = global.testUtils.getDefaultEvent({ targetValue: newAuthor });
 
       modal.instance().handleAuthorChange(changeAuthorEvent);
 
@@ -87,8 +80,7 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
 
       const newBody = 'new body value';
-      const changeBodyEvent = getDefaultEvent();
-      changeBodyEvent.target.value = newBody;
+      const changeBodyEvent = global.testUtils.getDefaultEvent({ targetValue: newBody });
 
       modal.instance().handleBodyChange(changeBodyEvent);
 
@@ -99,12 +91,12 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
       modal.setState({ author: 'post author' });
 
-      const newAuthorValue = '';
-      const changeAuthorEvent = getDefaultEvent();
-      changeAuthorEvent.target.value = newAuthorValue;
+      const newAuthor = '';
+      const changeAuthorEvent = global.testUtils.getDefaultEvent({ targetValue: newAuthor });
+
       modal.instance().handleAuthorChange(changeAuthorEvent);
 
-      expect(modal.state('author')).toBe(newAuthorValue);
+      expect(modal.state('author')).toBe(newAuthor);
       expect(modal.state('authorErrorClass')).toBe('input-error');
     });
 
@@ -112,12 +104,12 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
       modal.setState({ body: 'post body' });
 
-      const newBodyValue = '';
-      const changeBodyEvent = getDefaultEvent();
-      changeBodyEvent.target.value = newBodyValue;
+      const newBody = '';
+      const changeBodyEvent = global.testUtils.getDefaultEvent({ targetValue: newBody });
+
       modal.instance().handleBodyChange(changeBodyEvent);
 
-      expect(modal.state('body')).toBe(newBodyValue);
+      expect(modal.state('body')).toBe(newBody);
       expect(modal.state('bodyErrorClass')).toBe('input-error');
     });
   });
@@ -134,7 +126,7 @@ describe('<ModalAddPost />', () => {
 
     it('handles a valid submit', async () => {
       const onCommentAdd = jest.fn();
-      const postData = { id: 'testPostId' };
+      const postData = global.testUtils.getDefaultPostData();
       const { modal, props } = setup({ postData, onCommentAdd });
 
       jest.spyOn(modal.instance(), 'handleModalClose');

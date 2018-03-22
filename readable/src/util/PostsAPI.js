@@ -1,11 +1,12 @@
 /** @module PostsAPI */
 import uuid from 'uuid/v4';
+import { createId } from './utils';
 
 const api = 'http://localhost:3001';
 
 let token = localStorage.token;
 if (!token) {
-  token = Math.random().toString(36).substr(-8);
+  token = createId();
   localStorage.token = token;
 }
 

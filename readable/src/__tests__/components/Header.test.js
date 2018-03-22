@@ -23,17 +23,6 @@ const setup = (propOverrides) => {
   };
 };
 
-const getDefaultCategories = () => {
-  const categoriesArray = [
-    { name: 'category1', path: 'categoryPath1' },
-    { name: 'category2', path: 'categoryPath2' },
-  ];
-
-  return {
-    categoriesArray,
-  };
-};
-
 
 // Tests
 describe('<Header />', () => {
@@ -56,11 +45,12 @@ describe('<Header />', () => {
 
 
   it('renders a NavLink to each category page for each category on categories', () => {
-    const categories = getDefaultCategories();
-    const { header } = setup({ categories: categories.categoriesArray });
+    const categories = global.testUtils.getDefaultCategoriesArray();
+    const { header } = setup({ categories });
+
     const renderedCategories = header.find('.category-item');
 
-    categories.categoriesArray.forEach((testCategory) => {
+    categories.forEach((testCategory) => {
       const matchingRenderedCategory = renderedCategories.filterWhere((category) => {
         return category.key() === testCategory.name;
       });

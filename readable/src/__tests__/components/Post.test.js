@@ -6,10 +6,10 @@ import Post from '../../components/Post';
 // Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
-    postData: getDefaultPostData(),
-    onVote: jest.fn(),
-    onRemove: jest.fn(),
-    onUpdate: jest.fn(),
+    postData: global.testUtils.getDefaultPostData(),
+    onVote: () => {},
+    onRemove: () => {},
+    onUpdate: () => {},
     linkMode: undefined,
     readMode: undefined,
   }, propOverrides);
@@ -26,58 +26,49 @@ const setup = (propOverrides) => {
   };
 };
 
-const getDefaultPostData = () => ({
-  id: 'testId',
-  category: 'testCategory',
-  timestamp: Date.now(),
-  title: '',
-  author: '',
-  body: '',
-  voteScore: 0,
-  commentCount: 0,
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
-});
-
 
 // Tests
 describe('<Post />', () => {
-  it('renders without crashing', () => {
+  it('renders a post article', () => {
     const { post } = setup();
-    expect(post.find('.post').length).toBe(1);
-    expect(post.find('.post-info').length).toBe(1);
-    expect(post.find('.post-title').length).toBe(1);
-    expect(post.find('.post-body').length).toBe(1);
-    expect(post.find('.post-comments-info').length).toBe(1);
-  });
 
-
-  it('renders an Operations component', () => {
-    const { post } = setup();
-    expect(post.find('Operations').length).toBe(1);
-    expect(post.find('.post-operations').length).toBe(1);
+    expect(post.find('article.post').length).toBe(1);
   });
 
 
   describe('operations', () => {
-    it('sets vote operations to vote up and down on the post', () => {
-      const { post, props } = setup();
+    it('renders an Operations component', () => {
+      const { post } = setup();
+
+      expect(post.find('Operations').length).toBe(1);
+      expect(post.find('.post-operations').length).toBe(1);
+    });
+
+    it('sets vote operations to vote up on the post', () => {
+      const onVote = jest.fn();
+      const { post, props } = setup({ onVote });
 
       const operations = post.find('Operations');
       const operationVote = operations.prop('voteData');
 
       operationVote.onVoteUp();
       expect(props.onVote).toHaveBeenCalledWith(props.postData, 1);
+    });
 
-      props.onVote.mockClear();
+    it('sets vote operations to vote down on the post', () => {
+      const onVote = jest.fn();
+      const { post, props } = setup({ onVote });
+
+      const operations = post.find('Operations');
+      const operationVote = operations.prop('voteData');
+
       operationVote.onVoteDown();
       expect(props.onVote).toHaveBeenCalledWith(props.postData, -1);
     });
 
     it('sets remove operation submit to remove the post', () => {
-      const { post, props } = setup();
+      const onRemove = jest.fn();
+      const { post, props } = setup({ onRemove });
 
       const operations = post.find('Operations');
       const operationRemove = operations.prop('onRemove');
@@ -102,6 +93,7 @@ describe('<Post />', () => {
   describe('link mode', () => {
     it('does not render the post body', () => {
       const { post } = setup({ linkMode: true });
+
       expect(post.find('post-body').length).toBe(0);
     });
 
@@ -158,26 +150,22 @@ describe('<Post />', () => {
         const { post } = setup();
         post.setState({ editMode: true });
 
-        const newTitleValue = 'new post title';
-        const titleChangeEvent = {
-          target: { value: newTitleValue },
-        };
+        const newTitle = 'new post title';
+        const titleChangeEvent = global.testUtils.getDefaultEvent({ targetValue: newTitle });
         post.instance().handleTitleInputChange(titleChangeEvent);
 
-        expect(post.state('titleInput')).toBe(newTitleValue);
+        expect(post.state('titleInput')).toBe(newTitle);
       });
 
       it('updates bodyInput state on body value change', () => {
         const { post } = setup();
         post.setState({ editMode: true });
 
-        const newBodyValue = 'new post body';
-        const bodyChangeEvent = {
-          target: { value: newBodyValue },
-        };
+        const newBody = 'new post body';
+        const bodyChangeEvent = global.testUtils.getDefaultEvent({ targetValue: newBody });
         post.instance().handleBodyInputChange(bodyChangeEvent);
 
-        expect(post.state('bodyInput')).toBe(newBodyValue);
+        expect(post.state('bodyInput')).toBe(newBody);
       });
 
       it('sets titleInputErrorClass state on an empty title value change', () => {
@@ -187,13 +175,11 @@ describe('<Post />', () => {
           titleInput: 'post title',
         });
 
-        const newTitleValue = '';
-        const titleChangeEvent = {
-          target: { value: newTitleValue },
-        };
+        const newTitle = '';
+        const titleChangeEvent = global.testUtils.getDefaultEvent({ targetValue: newTitle });
         post.instance().handleTitleInputChange(titleChangeEvent);
 
-        expect(post.state('titleInput')).toBe(newTitleValue);
+        expect(post.state('titleInput')).toBe(newTitle);
         expect(post.state('titleInputErrorClass')).toBe('input-error');
       });
 
@@ -204,20 +190,18 @@ describe('<Post />', () => {
           bodyInput: 'post body',
         });
 
-        const newBodyValue = '';
-        const bodyChangeEvent = {
-          target: { value: newBodyValue },
-        };
+        const newBody = '';
+        const bodyChangeEvent = global.testUtils.getDefaultEvent({ targetValue: newBody });
         post.instance().handleBodyInputChange(bodyChangeEvent);
 
-        expect(post.state('bodyInput')).toBe(newBodyValue);
+        expect(post.state('bodyInput')).toBe(newBody);
         expect(post.state('bodyInputErrorClass')).toBe('input-error');
       });
     });
 
     describe('methods', () => {
       it('enters the edit mode', () => {
-        const postData = getDefaultPostData();
+        const postData = global.testUtils.getDefaultPostData();
         postData.title = 'test post title';
         postData.body = 'test post body';
         const { post } = setup({ postData });
@@ -230,7 +214,7 @@ describe('<Post />', () => {
       });
 
       it('leaves the edit mode', () => {
-        const postData = getDefaultPostData();
+        const postData = global.testUtils.getDefaultPostData();
         postData.title = 'test post title';
         postData.body = 'test post body';
         const { post } = setup({ postData });
@@ -249,7 +233,8 @@ describe('<Post />', () => {
       });
 
       it('submits the edit operation when data is valid and different', async () => {
-        const { post, props } = setup();
+        const onUpdate = jest.fn();
+        const { post, props } = setup({ onUpdate });
         const updatedPostData = {
           title: 'updated post title',
           body: 'updated post body',
@@ -270,10 +255,11 @@ describe('<Post />', () => {
       });
 
       it('leaves the edit mode when submitted data is equal to current data', async () => {
-        const postData = getDefaultPostData();
+        const onUpdate = jest.fn();
+        const postData = global.testUtils.getDefaultPostData();
         postData.title = 'test post title';
         postData.body = 'test post body';
-        const { post, props } = setup({ postData });
+        const { post, props } = setup({ postData, onUpdate });
 
         post.setState({
           editMode: true,
@@ -289,7 +275,8 @@ describe('<Post />', () => {
       });
 
       it('stops submit operation if no title is provided', async () => {
-        const { post, props } = setup();
+        const onUpdate = jest.fn();
+        const { post, props } = setup({ onUpdate });
 
         post.setState({
           editMode: true,
@@ -303,7 +290,8 @@ describe('<Post />', () => {
       });
 
       it('stops submit operation if no body is provided', async () => {
-        const { post, props } = setup();
+        const onUpdate = jest.fn();
+        const { post, props } = setup({ onUpdate });
 
         post.setState({
           editMode: true,

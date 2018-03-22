@@ -1,14 +1,11 @@
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import * as PostsAPI from '../../util/PostsAPI';
-import * as actions from '../../actions/comments';
+import * as commentsActions from '../../actions/comments';
 
 // Mock PostsAPI
 jest.mock('../../util/PostsAPI', () => {
-  const comments = [
-    { id: 'testId1', body: 'testBody1', author: 'testAuthor1' },
-    { id: 'testId2', body: 'testBody2', author: 'testAuthor2' },
-  ];
+  const comments = global.testUtils.getDefaultCommentsArray();
 
   return {
     get: { postComments: jest.fn(() => Promise.resolve(comments)) },
@@ -35,16 +32,6 @@ jest.mock('../../util/utils', () => {
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
 
-// Utils
-const getDefaultCommentsArray = () => {
-  const commentsArray = [
-    { id: 'testId1', body: 'testBody1', author: 'testAuthor1' },
-    { id: 'testId2', body: 'testBody2', author: 'testAuthor2' },
-  ];
-
-  return commentsArray;
-};
-
 afterEach(() => {
   jest.clearAllMocks();
 });
@@ -53,125 +40,126 @@ afterEach(() => {
 // Tests
 describe('actions', () => {
   describe('action creators', () => {
-    it('should create an action to set the loading state', () => {
-      const operationId = 'testOperationId';
-
-      let loadingState = {
-        id: operationId,
-        isLoading: true,
-      };
-      let expectedAction = {
-        type: actions.COMMENTS_SET_LOADING_STATE,
-        loading: { ...loadingState, hasErrored: false },
-      };
-
-      expect(actions.setLoadingState(loadingState)).toEqual(expectedAction);
-
-      loadingState = {
-        id: operationId,
-        isLoading: false,
-        hasErrored: true,
-      };
-      expectedAction = {
-        type: actions.COMMENTS_SET_LOADING_STATE,
-        loading: loadingState,
-      };
-
-      expect(actions.setLoadingState(loadingState)).toEqual(expectedAction);
-    });
-
     it('should create an action to set comments', () => {
-      const testCommentsArray = getDefaultCommentsArray();
+      const comments = global.testUtils.getDefaultCommentsArray();
       const operationId = 'testOperationId';
       const parentPostId = 'testParentPostId';
 
       const testActionInput = {
-        comments: testCommentsArray,
+        comments,
         operationId,
         parentPostId,
       };
 
       const expectedAction = {
-        type: actions.COMMENTS_SET,
+        type: commentsActions.COMMENTS_SET,
         ...testActionInput,
       };
 
-      expect(actions.setComments(testActionInput)).toEqual(expectedAction);
+      expect(commentsActions.setComments(testActionInput)).toEqual(expectedAction);
     });
 
     it('should create an action to add a new comment', () => {
       const commentToAdd = { id: 'testId' };
 
       const expectedAction = {
-        type: actions.COMMENTS_ADD,
+        type: commentsActions.COMMENTS_ADD,
         comment: commentToAdd,
       };
 
-      expect(actions.addComment(commentToAdd)).toEqual(expectedAction);
+      expect(commentsActions.addComment(commentToAdd)).toEqual(expectedAction);
     });
 
     it('should create an action to remove a comment', () => {
-      const commentToRemove = { id: 'testId' };
+      const commentToRemove = global.testUtils.getDefaultCommentData();
 
       const expectedAction = {
-        type: actions.COMMENTS_REMOVE,
+        type: commentsActions.COMMENTS_REMOVE,
         comment: commentToRemove,
       };
 
-      expect(actions.removeComment(commentToRemove)).toEqual(expectedAction);
+      expect(commentsActions.removeComment(commentToRemove)).toEqual(expectedAction);
     });
 
     it('should create an action to update a comment', () => {
-      const commentToUpdate = { id: 'testId' };
+      const commentToUpdate = global.testUtils.getDefaultCommentData();
       const updatedCommentData = { body: 'testBody' };
 
       const expectedAction = {
-        type: actions.COMMENTS_UPDATE,
+        type: commentsActions.COMMENTS_UPDATE,
         comment: commentToUpdate,
         newData: updatedCommentData,
       };
 
-      expect(actions.updateComment(commentToUpdate, updatedCommentData))
+      expect(commentsActions.updateComment(commentToUpdate, updatedCommentData))
         .toEqual(expectedAction);
     });
 
     it('should create an action to vote on a comment', () => {
-      const commentToVote = { id: 'testId' };
+      const commentToVote = global.testUtils.getDefaultCommentData();
+
       let vote = 4;
       let expectedVote = 1;
-
       const expectedAction = {
-        type: actions.COMMENTS_VOTE,
+        type: commentsActions.COMMENTS_VOTE,
         comment: commentToVote,
         vote: expectedVote,
       };
 
-      expect(actions.voteOnComment(commentToVote, vote)).toEqual(expectedAction);
+      expect(commentsActions.voteOnComment(commentToVote, vote)).toEqual(expectedAction);
 
       vote = -4;
       expectedVote = -1;
       expectedAction.vote = expectedVote;
 
-      expect(actions.voteOnComment(commentToVote, vote)).toEqual(expectedAction);
+      expect(commentsActions.voteOnComment(commentToVote, vote)).toEqual(expectedAction);
+    });
+
+    it('should create an action to set the loading state', () => {
+      const operationId = 'testOperationId';
+      let loadingState = {
+        id: operationId,
+        isLoading: true,
+      };
+
+      let expectedAction = {
+        type: commentsActions.COMMENTS_SET_LOADING_STATE,
+        loading: { ...loadingState, hasErrored: false },
+      };
+
+      expect(commentsActions.setLoadingState(loadingState)).toEqual(expectedAction);
+
+      loadingState = {
+        id: operationId,
+        isLoading: false,
+        hasErrored: true,
+      };
+
+      expectedAction = {
+        type: commentsActions.COMMENTS_SET_LOADING_STATE,
+        loading: loadingState,
+      };
+
+      expect(commentsActions.setLoadingState(loadingState)).toEqual(expectedAction);
     });
 
     it('should create an action to set the processing state of a comment', () => {
-      const commentToSet = { id: 'testId' };
+      const commentToSet = global.testUtils.getDefaultCommentData();
 
       let processingState = false;
       const expectedAction = {
-        type: actions.COMMENTS_SET_PROCESSING_STATE,
+        type: commentsActions.COMMENTS_SET_PROCESSING_STATE,
         comment: commentToSet,
         processingState,
       };
 
-      expect(actions.setProcessingState(commentToSet, processingState))
+      expect(commentsActions.setProcessingState(commentToSet, processingState))
         .toEqual(expectedAction);
 
       processingState = true;
       expectedAction.processingState = processingState;
 
-      expect(actions.setProcessingState(commentToSet, processingState))
+      expect(commentsActions.setProcessingState(commentToSet, processingState))
         .toEqual(expectedAction);
     });
   });
@@ -179,18 +167,24 @@ describe('actions', () => {
 
   describe('async actions', () => {
     it('should fetch comments from the api and dispatch actions on success', async () => {
-      const testCommentsArray = getDefaultCommentsArray();
+      const testCommentsArray = global.testUtils.getDefaultCommentsArray();
       const operationId = 'testOperationId';
       const parentPostId = 'testParentPostId';
 
       const expectedActions = [
-        actions.setLoadingState({ id: operationId, isLoading: true, hasErrored: false }),
-        actions.setComments({ comments: testCommentsArray, operationId, parentPostId }),
-        actions.setLoadingState({ id: operationId, isLoading: false, hasErrored: false }),
+        commentsActions.setLoadingState(
+          { id: operationId, isLoading: true, hasErrored: false }
+        ),
+        commentsActions.setComments(
+          { comments: testCommentsArray, operationId, parentPostId }
+        ),
+        commentsActions.setLoadingState(
+          { id: operationId, isLoading: false, hasErrored: false }
+        ),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchComments(parentPostId));
+      await store.dispatch(commentsActions.fetchComments(parentPostId));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -203,13 +197,19 @@ describe('actions', () => {
       const parentPostId = 'testParentPostId';
 
       const expectedActions = [
-        actions.setLoadingState({ id: operationId, isLoading: true, hasErrored: false }),
-        actions.setComments({ comments: [], operationId, parentPostId: null }),
-        actions.setLoadingState({ id: operationId, isLoading: false, hasErrored: true }),
+        commentsActions.setLoadingState(
+          { id: operationId, isLoading: true, hasErrored: false }
+        ),
+        commentsActions.setComments(
+          { comments: [], operationId, parentPostId: null }
+        ),
+        commentsActions.setLoadingState(
+          { id: operationId, isLoading: false, hasErrored: true }
+        ),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchComments(parentPostId));
+      await store.dispatch(commentsActions.fetchComments(parentPostId));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -223,11 +223,11 @@ describe('actions', () => {
       const expectedAddedComment = { ...commentToAdd, id: 'testCreatedCommentId' };
 
       const expectedActions = [
-        actions.addComment(expectedAddedComment),
+        commentsActions.addComment(expectedAddedComment),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchAddComment(parentPostId, commentToAdd));
+      await store.dispatch(commentsActions.fetchAddComment(parentPostId, commentToAdd));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -236,15 +236,15 @@ describe('actions', () => {
     });
 
     it('should remove a comment from the api and dispatch actions on success', async () => {
-      const commentToRemove = { id: 'testId' };
+      const commentToRemove = global.testUtils.getDefaultCommentData();
 
       const expectedActions = [
-        actions.setProcessingState(commentToRemove, true),
-        actions.removeComment(commentToRemove),
+        commentsActions.setProcessingState(commentToRemove, true),
+        commentsActions.removeComment(commentToRemove),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchRemoveComment(commentToRemove));
+      await store.dispatch(commentsActions.fetchRemoveComment(commentToRemove));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -253,15 +253,15 @@ describe('actions', () => {
 
     it('should remove a comment from the api and dispatch actions on failure', async () => {
       PostsAPI.del.comment.mockImplementationOnce(() => Promise.reject());
-      const commentToRemove = { id: 'testId' };
+      const commentToRemove = global.testUtils.getDefaultCommentData();
 
       const expectedActions = [
-        actions.setProcessingState(commentToRemove, true),
-        actions.setProcessingState(commentToRemove, false),
+        commentsActions.setProcessingState(commentToRemove, true),
+        commentsActions.setProcessingState(commentToRemove, false),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchRemoveComment(commentToRemove));
+      await store.dispatch(commentsActions.fetchRemoveComment(commentToRemove));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -269,17 +269,19 @@ describe('actions', () => {
     });
 
     it('should update a comment on the api and dispatch actions on success', async () => {
-      const commentToUpdate = { id: 'testId', body: 'testBody' };
+      const commentToUpdate = global.testUtils.getDefaultCommentData();
       const updatedCommentData = { body: 'updatedTestBody' };
 
       const expectedActions = [
-        actions.setProcessingState(commentToUpdate, true),
-        actions.updateComment(commentToUpdate, updatedCommentData),
-        actions.setProcessingState(commentToUpdate, false),
+        commentsActions.setProcessingState(commentToUpdate, true),
+        commentsActions.updateComment(commentToUpdate, updatedCommentData),
+        commentsActions.setProcessingState(commentToUpdate, false),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchUpdateComment(commentToUpdate, updatedCommentData));
+      await store.dispatch(
+        commentsActions.fetchUpdateComment(commentToUpdate, updatedCommentData)
+      );
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -289,16 +291,18 @@ describe('actions', () => {
 
     it('should update a comment on the api and dispatch actions on failure', async () => {
       PostsAPI.update.comment.mockImplementationOnce(() => Promise.reject());
-      const commentToUpdate = { id: 'testId', body: 'testBody' };
+      const commentToUpdate = global.testUtils.getDefaultCommentData();
       const updatedCommentData = { body: 'updatedTestBody' };
 
       const expectedActions = [
-        actions.setProcessingState(commentToUpdate, true),
-        actions.setProcessingState(commentToUpdate, false),
+        commentsActions.setProcessingState(commentToUpdate, true),
+        commentsActions.setProcessingState(commentToUpdate, false),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchUpdateComment(commentToUpdate, updatedCommentData));
+      await store.dispatch(
+        commentsActions.fetchUpdateComment(commentToUpdate, updatedCommentData)
+      );
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -307,17 +311,17 @@ describe('actions', () => {
     });
 
     it('should vote on a comment on the api and dispatch actions on success', async () => {
-      const commentToVote = { id: 'testId' };
+      const commentToVote = global.testUtils.getDefaultCommentData();
       const vote = 1;
 
       const expectedActions = [
-        actions.setProcessingState(commentToVote, true),
-        actions.voteOnComment(commentToVote, vote),
-        actions.setProcessingState(commentToVote, false),
+        commentsActions.setProcessingState(commentToVote, true),
+        commentsActions.voteOnComment(commentToVote, vote),
+        commentsActions.setProcessingState(commentToVote, false),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchVoteOnComment(commentToVote, vote));
+      await store.dispatch(commentsActions.fetchVoteOnComment(commentToVote, vote));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -326,16 +330,16 @@ describe('actions', () => {
 
     it('should vote on a comment on the api and dispatch actions on failure', async () => {
       PostsAPI.create.voteOnComment.mockImplementationOnce(() => Promise.reject());
-      const commentToVote = { id: 'testId' };
+      const commentToVote = global.testUtils.getDefaultCommentData();
       const vote = 1;
 
       const expectedActions = [
-        actions.setProcessingState(commentToVote, true),
-        actions.setProcessingState(commentToVote, false),
+        commentsActions.setProcessingState(commentToVote, true),
+        commentsActions.setProcessingState(commentToVote, false),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchVoteOnComment(commentToVote, vote));
+      await store.dispatch(commentsActions.fetchVoteOnComment(commentToVote, vote));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);

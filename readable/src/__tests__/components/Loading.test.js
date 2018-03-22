@@ -16,10 +16,6 @@ const setup = (propOverrides) => {
   };
 };
 
-const getDefaultEvent = () => ({
-  preventDefault: jest.fn(),
-})
-
 
 // Tests
 describe('<Loading />', () => {
@@ -39,6 +35,7 @@ describe('<Loading />', () => {
     expect(loading.find('.loading-icon.loading-squares').length).toBe(1);
   });
 
+
   describe('cover-squares type', () => {
     it('renders a loading squares cover', () => {
       const type = 'cover-squares';
@@ -54,8 +51,10 @@ describe('<Loading />', () => {
 
       const cover = loading.find('.loading-cover');
 
-      const event = getDefaultEvent();
-      cover.simulate('click', event);
+      const event = global.testUtils.getDefaultEvent();
+      event.preventDefault = jest.fn();
+      cover.prop('onClick')(event);
+
       expect(event.preventDefault).toHaveBeenCalled();
     });
   });

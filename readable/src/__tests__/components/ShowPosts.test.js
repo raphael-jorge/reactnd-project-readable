@@ -1,13 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import sortBy from 'sort-by';
-import {
-  setSortOption,
-  fetchVoteOnPost,
-  fetchRemovePost,
-  fetchUpdatePost,
-  fetchAddPost,
-} from '../../actions/posts';
+import * as postsActions from '../../actions/posts';
 import {
   ShowPosts,
   mapStateToProps,
@@ -50,59 +44,6 @@ const setup = (propOverrides) => {
   };
 };
 
-const getDefaultPosts = () => {
-  const postsArray = [
-    { id: 'testId1', title: '', body: '', author: '', timestamp: 0, category: 'testCategory1' },
-    { id: 'testId2', title: '', body: '', author: '', timestamp: 0, category: 'testCategory2' },
-  ];
-
-  const postsNormalized = postsArray.reduce((postsObj, post) => {
-    postsObj[post.id] = post;
-    return postsObj;
-  }, {});
-
-  return {
-    postsArray,
-    postsNormalized,
-  };
-};
-
-const getDefaultCategories = () => {
-  const categoriesArray = [
-    { name: 'category1', path: 'categoryPath1' },
-    { name: 'category2', path: 'categoryPath2' },
-  ];
-
-  const categoriesNormalized = categoriesArray.reduce((categoriesObj, category) => {
-    categoriesObj[category.path] = { ...category };
-    return categoriesObj;
-  }, {});
-
-  return {
-    categoriesArray,
-    categoriesNormalized,
-  };
-};
-
-const getDefaultState = () => ({
-  posts: {
-    loading: {
-      isLoading: false,
-      hasErrored: false,
-    },
-    posts: {},
-    sortOption: null,
-  },
-  categories: {
-    loading: {
-      isLoading: false,
-      hasErrored: false,
-    },
-    activePath: null,
-    categories: {},
-  },
-});
-
 const getDefaultOwnProps = () => ({
   activeCategoryPath: undefined,
 });
@@ -118,7 +59,7 @@ describe('<ShowPosts />', () => {
 
 
   it('renders a NotFound component if activeCategoryPath is not found in categories', () => {
-    const categories = getDefaultCategories().categoriesArray;
+    const categories = global.testUtils.getDefaultCategoriesArray();
     const activeCategoryPath = 'noMatchCategoryPath';
     const { showPosts } = setup({ categories, activeCategoryPath });
 
@@ -127,7 +68,7 @@ describe('<ShowPosts />', () => {
 
 
   it('does not render a NotFound component if activeCategoryPath is found in categories', () => {
-    const categories = getDefaultCategories().categoriesArray;
+    const categories = global.testUtils.getDefaultCategoriesArray();
     const activeCategoryPath = categories[0].path;
     const { showPosts } = setup({ categories, activeCategoryPath });
 
@@ -136,7 +77,7 @@ describe('<ShowPosts />', () => {
 
 
   it('does not render a NotFound component if activeCategoryPath is not set', () => {
-    const categories = getDefaultCategories().categoriesArray;
+    const categories = global.testUtils.getDefaultCategoriesArray();
     const { showPosts } = setup({ categories });
 
     expect(showPosts.find('NotFound').length).toBe(0);
@@ -150,44 +91,40 @@ describe('<ShowPosts />', () => {
     const renderedMessage = showPosts.find('Message');
     const renderedPost = showPosts.find('Post');
 
-    const expectedMessage = showPosts.instance().MESSAGE_LOAD_ERROR;
+    const expectedMessageContent = showPosts.instance().MESSAGE_LOAD_ERROR;
 
     expect(renderedPost.length).toBe(0);
     expect(renderedMessage.length).toBe(1);
-    expect(renderedMessage.prop('msg')).toBe(expectedMessage);
+    expect(renderedMessage.prop('msg')).toBe(expectedMessageContent);
   });
 
 
   it('renders one Post component for each post in posts', () => {
-    const testPosts = getDefaultPosts();
-    const { showPosts, props } = setup({ posts: testPosts.postsArray });
+    const posts = global.testUtils.getDefaultPostsArray();
+    const { showPosts } = setup({ posts });
 
     const renderedPosts = showPosts.find('Post');
 
-    testPosts.postsArray.forEach((testPost) => {
+    posts.forEach((testPost) => {
       const matchingRenderedPost = renderedPosts.filterWhere((post) => (
         post.prop('postData').id === testPost.id
       ));
+
       expect(matchingRenderedPost.prop('postData')).toEqual(testPost);
-      expect(matchingRenderedPost.prop('onVote')).toBe(props.onPostVote);
-      expect(matchingRenderedPost.prop('onRemove')).toBe(props.onPostRemove);
-      expect(matchingRenderedPost.prop('onUpdate')).toBe(props.onPostUpdate);
     });
   });
 
   it('renders a Menu component when posts are available', () => {
-    const testPosts = getDefaultPosts();
-    const { showPosts } = setup({ posts: testPosts.postsArray });
+    const posts = global.testUtils.getDefaultPostsArray();
+    const { showPosts } = setup({ posts });
 
-    const menu = showPosts.find('Menu');
-
-    expect(menu.length).toBe(1);
+    expect(showPosts.find('Menu').length).toBe(1);
   });
 
   it('provides a method to handle sort option change', () => {
-    const testPosts = getDefaultPosts();
+    const posts = global.testUtils.getDefaultPostsArray();
     const onSortOptionChange = jest.fn();
-    const { showPosts, props } = setup({ posts: testPosts.postsArray, onSortOptionChange });
+    const { showPosts, props } = setup({ posts, onSortOptionChange });
 
     showPosts.instance().handleSortOptionChange();
 
@@ -195,8 +132,8 @@ describe('<ShowPosts />', () => {
   });
 
   it('sets the Menu component sort configuration', () => {
-    const testPosts = getDefaultPosts();
-    const { showPosts, props } = setup({ posts: testPosts.postsArray });
+    const posts = global.testUtils.getDefaultPostsArray();
+    const { showPosts, props } = setup({ posts });
 
     const menu = showPosts.find('Menu');
     const sortMenu = menu.prop('sortMenu');
@@ -211,11 +148,11 @@ describe('<ShowPosts />', () => {
     const renderedMessage = showPosts.find('Message');
     const renderedPost = showPosts.find('Post');
 
-    const expectedMessage = showPosts.instance().MESSAGE_NO_POSTS;
+    const expectedMessageContent = showPosts.instance().MESSAGE_NO_POSTS;
 
     expect(renderedPost.length).toBe(0);
     expect(renderedMessage.length).toBe(1);
-    expect(renderedMessage.prop('msg')).toBe(expectedMessage);
+    expect(renderedMessage.prop('msg')).toBe(expectedMessageContent);
   });
 
 
@@ -259,134 +196,137 @@ describe('<ShowPosts />', () => {
 
 describe('mapStateToProps', () => {
   it('sets isLoading prop to false when categories and posts are not being loaded', () => {
-    const testState = getDefaultState();
-    const testOwnProps = getDefaultOwnProps();
+    const state = global.testUtils.getDefaultReduxState();
+    const ownProps = getDefaultOwnProps();
 
-    const mappedProps = mapStateToProps(testState, testOwnProps);
+    const mappedProps = mapStateToProps(state, ownProps);
 
     expect(mappedProps.isLoading).toBe(false);
   });
 
 
   it('sets isLoading prop to true when posts are loading', () => {
-    const testState = getDefaultState();
-    const testOwnProps = getDefaultOwnProps();
+    const state = global.testUtils.getDefaultReduxState();
+    const ownProps = getDefaultOwnProps();
 
-    testState.posts.loading.isLoading = true;
-    const mappedProps = mapStateToProps(testState, testOwnProps);
+    const isLoadingPosts = true;
+    state.posts.loading.isLoading = isLoadingPosts;
+    const mappedProps = mapStateToProps(state, ownProps);
 
-    expect(mappedProps.isLoading).toBe(true);
+    expect(mappedProps.isLoading).toBe(isLoadingPosts);
   });
 
 
   it('sets isLoading prop to true when categories are loading', () => {
-    const testState = getDefaultState();
-    const testOwnProps = getDefaultOwnProps();
+    const state = global.testUtils.getDefaultReduxState();
+    const ownProps = getDefaultOwnProps();
 
-    testState.categories.loading.isLoading = true;
-    const mappedProps = mapStateToProps(testState, testOwnProps);
+    const isLoadingCategories = true;
+    state.categories.loading.isLoading = isLoadingCategories;
+    const mappedProps = mapStateToProps(state, ownProps);
 
-    expect(mappedProps.isLoading).toBe(true);
+    expect(mappedProps.isLoading).toBe(isLoadingCategories);
   });
 
 
   it('sets hasErrored prop to false when categories and posts load has not errored', () => {
-    const testState = getDefaultState();
-    const testOwnProps = getDefaultOwnProps();
+    const state = global.testUtils.getDefaultReduxState();
+    const ownProps = getDefaultOwnProps();
 
-    const mappedProps = mapStateToProps(testState, testOwnProps);
+    const mappedProps = mapStateToProps(state, ownProps);
 
     expect(mappedProps.hasErrored).toBe(false);
   });
 
 
   it('sets hasErrored prop to true when posts load has errored', () => {
-    const testState = getDefaultState();
-    const testOwnProps = getDefaultOwnProps();
+    const state = global.testUtils.getDefaultReduxState();
+    const ownProps = getDefaultOwnProps();
 
-    testState.posts.loading.hasErrored = true;
-    const mappedProps = mapStateToProps(testState, testOwnProps);
+    const hasErroredPosts = true;
+    state.posts.loading.hasErrored = hasErroredPosts;
+    const mappedProps = mapStateToProps(state, ownProps);
 
-    expect(mappedProps.hasErrored).toBe(true);
+    expect(mappedProps.hasErrored).toBe(hasErroredPosts);
   });
 
 
   it('sets hasErrored prop to true when categories load has errored', () => {
-    const testState = getDefaultState();
-    const testOwnProps = getDefaultOwnProps();
+    const state = global.testUtils.getDefaultReduxState();
+    const ownProps = getDefaultOwnProps();
 
-    testState.categories.loading.hasErrored = true;
-    const mappedProps = mapStateToProps(testState, testOwnProps);
+    const hasErroredCategories = true;
+    state.categories.loading.hasErrored = hasErroredCategories;
+    const mappedProps = mapStateToProps(state, ownProps);
 
-    expect(mappedProps.hasErrored).toBe(true);
+    expect(mappedProps.hasErrored).toBe(hasErroredCategories);
   });
 
 
   it('sets posts prop to all posts when ownProps.activeCategoryPath is not set', () => {
-    const testPosts = getDefaultPosts();
-    const testState = getDefaultState();
-    const testOwnProps = getDefaultOwnProps();
+    const posts = global.testUtils.getDefaultPostsArray();
+    const state = global.testUtils.getDefaultReduxState();
+    const ownProps = getDefaultOwnProps();
 
-    testState.posts.posts = testPosts.postsNormalized;
-    const mappedProps = mapStateToProps(testState, testOwnProps);
+    state.posts.posts = global.testUtils.convertArrayToNormalizedObject(posts, 'id');
+    const mappedProps = mapStateToProps(state, ownProps);
 
-    expect(mappedProps.posts).toEqual(testPosts.postsArray);
+    expect(mappedProps.posts).toEqual(posts);
   });
 
 
   it('sets posts prop to matching posts when ownProps.activeCategoryPath is set', () => {
-    const testPosts = getDefaultPosts();
-    const testState = getDefaultState();
-    const testOwnProps = getDefaultOwnProps();
-    const activeCategoryPath = testPosts.postsArray[0].category;
+    const posts = global.testUtils.getDefaultPostsArray();
+    const state = global.testUtils.getDefaultReduxState();
+    const ownProps = getDefaultOwnProps();
+    const activeCategoryPath = posts[0].category;
 
-    testOwnProps.activeCategoryPath = activeCategoryPath;
-    testState.posts.posts = testPosts.postsNormalized;
-    const mappedProps = mapStateToProps(testState, testOwnProps);
+    ownProps.activeCategoryPath = activeCategoryPath;
+    state.posts.posts = global.testUtils.convertArrayToNormalizedObject(posts, 'id');
+    const mappedProps = mapStateToProps(state, ownProps);
 
-    const expectedPosts = testPosts.postsArray.filter((post) => (
-      post.category === activeCategoryPath
-    ));
+    const expectedPosts = posts.filter((post) => post.category === activeCategoryPath);
 
     expect(mappedProps.posts).toEqual(expectedPosts);
   });
 
 
   it('sets posts prop to the sorted posts when posts.sortOption is set', () => {
-    const testPosts = getDefaultPosts();
-    const testState = getDefaultState();
-    const testOwnProps = getDefaultOwnProps();
+    const posts = global.testUtils.getDefaultPostsArray();
+    const state = global.testUtils.getDefaultReduxState();
+    const ownProps = getDefaultOwnProps();
     const sortOption = { value: 'id', label: 'test sort label' };
 
-    testState.posts.sortOption = sortOption;
-    testState.posts.posts = testPosts.postsNormalized;
-    const mappedProps = mapStateToProps(testState, testOwnProps);
+    state.posts.sortOption = sortOption;
+    state.posts.posts = global.testUtils.convertArrayToNormalizedObject(posts, 'id');
+    const mappedProps = mapStateToProps(state, ownProps);
 
-    const expectedPosts = testPosts.postsArray.sort(sortBy(sortOption.value));
+    const expectedPosts = posts.sort(sortBy(sortOption.value));
 
     expect(mappedProps.posts).toEqual(expectedPosts);
   });
 
 
   it('returns the expected categories props', () => {
-    const testCategories = getDefaultCategories();
-    const testState = getDefaultState();
-    const testOwnProps = getDefaultOwnProps();
+    const categories = global.testUtils.getDefaultCategoriesArray();
+    const state = global.testUtils.getDefaultReduxState();
+    const ownProps = getDefaultOwnProps();
 
-    testState.categories.categories = testCategories.categoriesNormalized;
-    const mappedProps = mapStateToProps(testState, testOwnProps);
+    state.categories.categories = global.testUtils
+      .convertArrayToNormalizedObject(categories, 'path');
+    const mappedProps = mapStateToProps(state, ownProps);
 
-    expect(mappedProps.categories).toEqual(testCategories.categoriesArray);
+    expect(mappedProps.categories).toEqual(categories);
   });
 
 
   it('returns the expected activeCategoryPath prop', () => {
-    const testState = getDefaultState();
-    const testOwnProps = getDefaultOwnProps();
-    const activeCategoryPath = 'test category';
+    const state = global.testUtils.getDefaultReduxState();
+    const ownProps = getDefaultOwnProps();
+    const activeCategoryPath = 'testCategoryPath';
 
-    testOwnProps.activeCategoryPath = activeCategoryPath;
-    const mappedProps = mapStateToProps(testState, testOwnProps);
+    ownProps.activeCategoryPath = activeCategoryPath;
+    const mappedProps = mapStateToProps(state, ownProps);
 
     expect(mappedProps.activeCategoryPath).toBe(activeCategoryPath);
   });
@@ -394,30 +334,30 @@ describe('mapStateToProps', () => {
 
 
 describe('mapDispatchToProps', () => {
-  it('sets the onPostVote prop correctly', () => {
+  it('sets the onPostVote prop to dispatch the fetchVoteOnPost action', () => {
     const mappedProps = mapDispatchToProps(dispatchMock);
-    const postData = getDefaultPosts().postsArray[0];
+    const postData = global.testUtils.getDefaultPostData();
     const vote = 1;
 
     expect(mappedProps.onPostVote).toBeDefined();
 
     mappedProps.onPostVote(postData, vote);
-    expect(fetchVoteOnPost).toHaveBeenCalledWith(postData, vote);
+    expect(postsActions.fetchVoteOnPost).toHaveBeenCalledWith(postData, vote);
   });
 
-  it('sets the onPostRemove prop correctly', () => {
+  it('sets the onPostRemove prop to dispatch the fetchRemovePost action', () => {
     const mappedProps = mapDispatchToProps(dispatchMock);
-    const postData = getDefaultPosts().postsArray[0];
+    const postData = global.testUtils.getDefaultPostData();
 
     expect(mappedProps.onPostRemove).toBeDefined();
 
     mappedProps.onPostRemove(postData);
-    expect(fetchRemovePost).toHaveBeenCalledWith(postData);
+    expect(postsActions.fetchRemovePost).toHaveBeenCalledWith(postData);
   });
 
-  it('sets the onPostUpdate prop correctly', () => {
+  it('sets the onPostUpdate prop to dispatch the fetchUpdatePost action', () => {
     const mappedProps = mapDispatchToProps(dispatchMock);
-    const postData = getDefaultPosts().postsArray[0];
+    const postData = global.testUtils.getDefaultPostData();
     const updatedPostData = {
       title: 'test updated title',
       body: 'test updated body',
@@ -426,10 +366,10 @@ describe('mapDispatchToProps', () => {
     expect(mappedProps.onPostUpdate).toBeDefined();
 
     mappedProps.onPostUpdate(postData, updatedPostData);
-    expect(fetchUpdatePost).toHaveBeenCalledWith(postData, updatedPostData);
+    expect(postsActions.fetchUpdatePost).toHaveBeenCalledWith(postData, updatedPostData);
   });
 
-  it('sets the onPostAdd prop correctly', () => {
+  it('sets the onPostAdd prop to dispatch the fetchAddPost action', () => {
     const mappedProps = mapDispatchToProps(dispatchMock);
     const postDataToAdd = {
       title: 'test title',
@@ -441,16 +381,16 @@ describe('mapDispatchToProps', () => {
     expect(mappedProps.onPostAdd).toBeDefined();
 
     mappedProps.onPostAdd(postDataToAdd);
-    expect(fetchAddPost).toHaveBeenCalledWith(postDataToAdd);
+    expect(postsActions.fetchAddPost).toHaveBeenCalledWith(postDataToAdd);
   });
 
-  it('sets the onSortOptionChange prop correctly', () => {
+  it('sets the onSortOptionChange prop to dispatch the setSortOption action', () => {
     const mappedProps = mapDispatchToProps(dispatchMock);
     const sortOption = { value: 'testSortValue', label: 'test sort label' };
 
     expect(mappedProps.onSortOptionChange).toBeDefined();
 
     mappedProps.onSortOptionChange(sortOption);
-    expect(setSortOption).toHaveBeenCalledWith(sortOption);
+    expect(postsActions.setSortOption).toHaveBeenCalledWith(sortOption);
   });
 });

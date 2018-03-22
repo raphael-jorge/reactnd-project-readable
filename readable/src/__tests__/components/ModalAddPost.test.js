@@ -22,21 +22,6 @@ const setup = (propOverrides) => {
   };
 };
 
-const getDefaultEvent = () => ({
-  target: {
-    value: null,
-  },
-});
-
-const getDefaultCategoriesArray = () => {
-  const categoriesArray = [
-    { name: 'category1', path: 'categoryPath1' },
-    { name: 'category2', path: 'categoryPath2' },
-  ];
-
-  return categoriesArray;
-};
-
 
 // Tests
 describe('<ModalAddPost />', () => {
@@ -80,7 +65,7 @@ describe('<ModalAddPost />', () => {
     });
 
     it('renders a radio input for each category', () => {
-      const categories = getDefaultCategoriesArray();
+      const categories = global.testUtils.getDefaultCategoriesArray();
       const { modal } = setup({ categories });
 
       const renderedRadioInputs = modal.find('.option input[type="radio"]');
@@ -99,8 +84,7 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
 
       const newAuthor = 'new author value';
-      const changeAuthorEvent = getDefaultEvent();
-      changeAuthorEvent.target.value = newAuthor;
+      const changeAuthorEvent = global.testUtils.getDefaultEvent({ targetValue: newAuthor });
 
       modal.instance().handleAuthorChange(changeAuthorEvent);
 
@@ -111,8 +95,7 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
 
       const newTitle = 'new title value';
-      const changeTitleEvent = getDefaultEvent();
-      changeTitleEvent.target.value = newTitle;
+      const changeTitleEvent = global.testUtils.getDefaultEvent({ targetValue: newTitle });
 
       modal.instance().handleTitleChange(changeTitleEvent);
 
@@ -123,8 +106,7 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
 
       const newBody = 'new body value';
-      const changeBodyEvent = getDefaultEvent();
-      changeBodyEvent.target.value = newBody;
+      const changeBodyEvent = global.testUtils.getDefaultEvent({ targetValue: newBody });
 
       modal.instance().handleBodyChange(changeBodyEvent);
 
@@ -135,8 +117,7 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
 
       const newCategory = 'new category value';
-      const changeCategoryEvent = getDefaultEvent();
-      changeCategoryEvent.target.value = newCategory;
+      const changeCategoryEvent = global.testUtils.getDefaultEvent({ targetValue: newCategory });
 
       modal.instance().handleCategoryChange(changeCategoryEvent);
 
@@ -147,12 +128,12 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
       modal.setState({ author: 'post author' });
 
-      const newAuthorValue = '';
-      const changeAuthorEvent = getDefaultEvent();
-      changeAuthorEvent.target.value = newAuthorValue;
+      const newAuthor = '';
+      const changeAuthorEvent = global.testUtils.getDefaultEvent({ targetValue: newAuthor });
+
       modal.instance().handleAuthorChange(changeAuthorEvent);
 
-      expect(modal.state('author')).toBe(newAuthorValue);
+      expect(modal.state('author')).toBe(newAuthor);
       expect(modal.state('authorErrorClass')).toBe('input-error');
     });
 
@@ -160,12 +141,12 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
       modal.setState({ title: 'post title' });
 
-      const newTitleValue = '';
-      const changeTitleEvent = getDefaultEvent();
-      changeTitleEvent.target.value = newTitleValue;
+      const newTitle = '';
+      const changeTitleEvent = global.testUtils.getDefaultEvent({ targetValue: newTitle });
+
       modal.instance().handleTitleChange(changeTitleEvent);
 
-      expect(modal.state('title')).toBe(newTitleValue);
+      expect(modal.state('title')).toBe(newTitle);
       expect(modal.state('titleErrorClass')).toBe('input-error');
     });
 
@@ -173,12 +154,12 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
       modal.setState({ body: 'post body' });
 
-      const newBodyValue = '';
-      const changeBodyEvent = getDefaultEvent();
-      changeBodyEvent.target.value = newBodyValue;
+      const newBody = '';
+      const changeBodyEvent = global.testUtils.getDefaultEvent({ targetValue: newBody });
+
       modal.instance().handleBodyChange(changeBodyEvent);
 
-      expect(modal.state('body')).toBe(newBodyValue);
+      expect(modal.state('body')).toBe(newBody);
       expect(modal.state('bodyErrorClass')).toBe('input-error');
     });
 
@@ -186,12 +167,12 @@ describe('<ModalAddPost />', () => {
       const { modal } = setup();
       modal.setState({ category: 'post category' });
 
-      const newCategoryValue = '';
-      const changeCategoryEvent = getDefaultEvent();
-      changeCategoryEvent.target.value = newCategoryValue;
+      const newCategory = '';
+      const changeCategoryEvent = global.testUtils.getDefaultEvent({ targetValue: newCategory });
+
       modal.instance().handleCategoryChange(changeCategoryEvent);
 
-      expect(modal.state('category')).toBe(newCategoryValue);
+      expect(modal.state('category')).toBe(newCategory);
       expect(modal.state('categoryErrorClass')).toBe('input-error');
     });
 

@@ -6,30 +6,33 @@ import Operations from '../../components/Operations';
 const setup = (propOverrides) => {
   const props = Object.assign({
     voteData: getDefaultVoteData(),
-    onEdit: { onSubmit: jest.fn() },
-    onRemove: { onSubmit: jest.fn() },
+    onEdit: { onSubmit: () => {} },
+    onRemove: { onSubmit: () => {} },
   }, propOverrides);
 
   const operations = shallow(<Operations {...props} />);
 
+  const selectButton = (title) => {
+    const renderedButtons = operations.find('button');
+
+    const selectedButton = renderedButtons.filterWhere((button) => (
+      button.prop('title') === title
+    ));
+
+    return selectedButton;
+  };
+
   return {
     props,
     operations,
+    selectButton,
   };
 };
 
 const getDefaultVoteData = () => ({
   voteCount: 0,
-  onVoteUp: jest.fn(),
-  onVoteDown: jest.fn(),
-});
-
-const getDefaultEvent = () => ({
-  preventDefault: jest.fn(),
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
+  onVoteUp: () => {},
+  onVoteDown: () => {},
 });
 
 
@@ -37,26 +40,25 @@ afterEach(() => {
 describe('<Operations />', () => {
   describe('vote score control', () => {
     it('renders the voteScore', () => {
-      const voteData = getDefaultVoteData();
-      const { operations } = setup();
+      const { operations, props } = setup();
 
       const renderedVoteCount = operations.find('.vote-count');
 
       expect(renderedVoteCount.length).toBe(1);
-      expect(renderedVoteCount.text()).toBe(voteData.voteCount.toString());
+      expect(renderedVoteCount.text()).toBe(props.voteData.voteCount.toString());
     });
 
     it('renders a button to increase the vote score', () => {
-      const { operations, props } = setup();
+      const voteData = getDefaultVoteData();
+      voteData.onVoteUp = jest.fn();
+      const { props, selectButton } = setup({ voteData });
 
-      const renderedButtons = operations.find('button');
+      const voteUpRenderedButton = selectButton('Vote Up');
 
-      const voteUpRenderedButton = renderedButtons.filterWhere((button) => (
-        button.prop('title') === 'Vote Up'
-      ));
+      const event = global.testUtils.getDefaultEvent();
+      event.preventDefault = jest.fn();
 
-      const event = getDefaultEvent();
-      voteUpRenderedButton.simulate('click', event);
+      voteUpRenderedButton.prop('onClick')(event);
 
       expect(voteUpRenderedButton.length).toBe(1);
       expect(event.preventDefault).toHaveBeenCalled();
@@ -64,16 +66,16 @@ describe('<Operations />', () => {
     });
 
     it('renders a button to decrease the vote score', () => {
-      const { operations, props } = setup();
+      const voteData = getDefaultVoteData();
+      voteData.onVoteDown = jest.fn();
+      const { props, selectButton } = setup({ voteData });
 
-      const renderedButtons = operations.find('button');
+      const voteDownRenderedButton = selectButton('Vote Down');
 
-      const voteDownRenderedButton = renderedButtons.filterWhere((button) => (
-        button.prop('title') === 'Vote Down'
-      ));
+      const event = global.testUtils.getDefaultEvent();
+      event.preventDefault = jest.fn();
 
-      const event = getDefaultEvent();
-      voteDownRenderedButton.simulate('click', event);
+      voteDownRenderedButton.prop('onClick')(event);
 
       expect(voteDownRenderedButton.length).toBe(1);
       expect(event.preventDefault).toHaveBeenCalled();
@@ -82,48 +84,42 @@ describe('<Operations />', () => {
   });
 
 
-  describe('operations control', () => {
+  describe('edit/remove control', () => {
     it('renders a button to edit', () => {
-      const { operations, props } = setup();
-      const handleRequestSpy = jest.spyOn(operations.instance(), 'handleRequest');
+      const { operations, props, selectButton } = setup();
+      jest.spyOn(operations.instance(), 'handleRequest');
 
-      const renderedButtons = operations.find('button');
+      const editRenderedButton = selectButton('Edit');
 
-      const editRenderedButton = renderedButtons.filterWhere((button) => (
-        button.prop('title') === 'Edit'
-      ));
+      const event = global.testUtils.getDefaultEvent();
+      event.preventDefault = jest.fn();
 
-      const event = getDefaultEvent();
-      editRenderedButton.simulate('click', event);
+      editRenderedButton.prop('onClick')(event);
 
       expect(editRenderedButton.length).toBe(1);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(handleRequestSpy).toHaveBeenCalledWith(event, props.onEdit);
+      expect(operations.instance().handleRequest).toHaveBeenCalledWith(event, props.onEdit);
     });
 
     it('renders a button to remove', () => {
-      const { operations, props } = setup();
-      const handleRequestSpy = jest.spyOn(operations.instance(), 'handleRequest');
+      const { operations, props, selectButton } = setup();
+      jest.spyOn(operations.instance(), 'handleRequest');
 
-      const renderedButtons = operations.find('button');
+      const removeRenderedButton = selectButton('Delete');
 
-      const removeRenderedButton = renderedButtons.filterWhere((button) => (
-        button.prop('title') === 'Delete'
-      ));
+      const event = global.testUtils.getDefaultEvent();
+      event.preventDefault = jest.fn();
 
-      const event = getDefaultEvent();
-      removeRenderedButton.simulate('click', event);
+      removeRenderedButton.prop('onClick')(event);
 
       expect(removeRenderedButton.length).toBe(1);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(handleRequestSpy).toHaveBeenCalledWith(event, props.onRemove);
+      expect(operations.instance().handleRequest).toHaveBeenCalledWith(event, props.onRemove);
     });
 
-    it('renders a OperationConfirm component when an operation is requested', () => {
+    it('renders an OperationConfirm component when an operation is requested', () => {
       const { operations } = setup();
-      const operationHandler = {
-        onSubmit: jest.fn(),
-      };
+      const operationHandler = { onSubmit: () => {} };
 
       operations.setState({ operationHandler });
 
@@ -134,11 +130,9 @@ describe('<Operations />', () => {
 
     it('sets the operationHandler state once an operation is triggered', () => {
       const { operations } = setup();
-      const operationHandler = {
-        onSubmit: () => {},
-      };
+      const operationHandler = { onSubmit: () => {} };
 
-      const event = getDefaultEvent();
+      const event = global.testUtils.getDefaultEvent();
       operations.instance().handleRequest(event, operationHandler);
 
       expect(operations.state('operationHandler')).toEqual(operationHandler);
@@ -151,7 +145,7 @@ describe('<Operations />', () => {
         onSubmit: () => {},
       };
 
-      const event = getDefaultEvent();
+      const event = global.testUtils.getDefaultEvent();
       operations.instance().handleRequest(event, operationHandler);
 
       expect(operationHandler.onRequest).toHaveBeenCalled();
@@ -167,42 +161,40 @@ describe('<Operations />', () => {
       operations.setState({ operationHandler });
 
       operations.instance().handleAbort();
+
       expect(operationHandler.onAbort).toHaveBeenCalled();
     });
 
     it('sets the operationHandler state to null on a successful submit', async () => {
       const { operations } = setup();
-      const operationHandler = {
-        onSubmit: jest.fn(() => Promise.resolve(true)),
-      };
+      const operationHandler = { onSubmit: jest.fn(() => Promise.resolve(true)) };
 
       operations.setState({ operationHandler });
 
       await operations.instance().handleSubmit();
+
       expect(operations.state('operationHandler')).toBe(null);
     });
 
     it('does not change the operationHandler state on a false submit', async () => {
       const { operations } = setup();
-      const operationHandler = {
-        onSubmit: jest.fn(() => Promise.resolve(false)),
-      };
+      const operationHandler = { onSubmit: jest.fn(() => Promise.resolve(false)) };
 
       operations.setState({ operationHandler });
 
       await operations.instance().handleSubmit();
+
       expect(operations.state('operationHandler')).toEqual(operationHandler);
     });
 
     it('sets the operationHandler state to null when aborted an operation', () => {
       const { operations } = setup();
-      const operationHandler = {
-        onSubmit: jest.fn(),
-      };
+      const operationHandler = { onSubmit: () => {} };
 
       operations.setState({ operationHandler });
 
       operations.instance().handleAbort();
+
       expect(operations.state('operationHandler')).toBe(null);
     });
   });

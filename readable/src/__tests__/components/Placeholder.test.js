@@ -136,5 +136,4 @@ describe('<Placeholder />', () => {
 
     expect(global.clearTimeout).toHaveBeenCalledWith(timeoutId);
   });
-
 });

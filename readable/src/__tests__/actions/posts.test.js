@@ -1,14 +1,11 @@
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import * as PostsAPI from '../../util/PostsAPI';
-import * as actions from '../../actions/posts';
+import * as postsActions from '../../actions/posts';
 
 // Mock PostsAPI
 jest.mock('../../util/PostsAPI', () => {
-  const posts = [
-    { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
-    { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
-  ];
+  const posts = global.testUtils.getDefaultPostsArray();
 
   return {
     get: { posts: jest.fn(() => Promise.resolve(posts)) },
@@ -34,16 +31,6 @@ jest.mock('../../util/utils', () => {
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
 
-// Utils
-const getDefaultPostsArray = () => {
-  const postsArray = [
-    { id: 'testId1', title: 'testTitle1', body: 'testBody1' },
-    { id: 'testId2', title: 'testTitle2', body: 'testBody2' },
-  ];
-
-  return postsArray;
-};
-
 afterEach(() => {
   jest.clearAllMocks();
 });
@@ -52,6 +39,75 @@ afterEach(() => {
 // Tests
 describe('actions', () => {
   describe('action creators', () => {
+    it('should create an action to set posts', () => {
+      const posts = global.testUtils.getDefaultPostsArray();
+      const operationId = 'testOperationId';
+
+      const expectedAction = {
+        type: postsActions.POSTS_SET,
+        posts,
+        operationId,
+      };
+
+      expect(postsActions.setPosts({ posts, operationId }))
+        .toEqual(expectedAction);
+    });
+
+    it('should create an action to add a new post', () => {
+      const postToAdd = { id: 'testId' };
+
+      const expectedAction = {
+        type: postsActions.POSTS_ADD,
+        post: postToAdd,
+      };
+
+      expect(postsActions.addPost(postToAdd)).toEqual(expectedAction);
+    });
+
+    it('should create an action to remove a post', () => {
+      const postToRemove = global.testUtils.getDefaultPostData();
+
+      const expectedAction = {
+        type: postsActions.POSTS_REMOVE,
+        post: postToRemove,
+      };
+
+      expect(postsActions.removePost(postToRemove)).toEqual(expectedAction);
+    });
+
+    it('should create an action to update a post', () => {
+      const postToUpdate = global.testUtils.getDefaultPostData();
+      const updatedPostData = { title: 'testTitleUpdated', body: 'testBodyUpdated' };
+
+      const expectedAction = {
+        type: postsActions.POSTS_UPDATE,
+        post: postToUpdate,
+        newData: updatedPostData,
+      };
+
+      expect(postsActions.updatePost(postToUpdate, updatedPostData)).toEqual(expectedAction);
+    });
+
+    it('should create an action to vote on a post', () => {
+      const postToVote = global.testUtils.getDefaultPostData();
+      let vote = 4;
+      let expectedVote = 1;
+
+      const expectedAction = {
+        type: postsActions.POSTS_VOTE,
+        post: postToVote,
+        vote: expectedVote,
+      };
+
+      expect(postsActions.voteOnPost(postToVote, vote)).toEqual(expectedAction);
+
+      vote = -4;
+      expectedVote = -1;
+      expectedAction.vote = expectedVote;
+
+      expect(postsActions.voteOnPost(postToVote, vote)).toEqual(expectedAction);
+    });
+
     it('should create an action to set the loading state', () => {
       const operationId = 'testOperationId';
 
@@ -60,11 +116,11 @@ describe('actions', () => {
         isLoading: true,
       };
       let expectedAction = {
-        type: actions.POSTS_SET_LOADING_STATE,
+        type: postsActions.POSTS_SET_LOADING_STATE,
         loading: { ...loadingState, hasErrored: false },
       };
 
-      expect(actions.setLoadingState(loadingState)).toEqual(expectedAction);
+      expect(postsActions.setLoadingState(loadingState)).toEqual(expectedAction);
 
       loadingState = {
         id: operationId,
@@ -72,105 +128,63 @@ describe('actions', () => {
         hasErrored: true,
       };
       expectedAction = {
-        type: actions.POSTS_SET_LOADING_STATE,
+        type: postsActions.POSTS_SET_LOADING_STATE,
         loading: { ...loadingState },
       };
 
-      expect(actions.setLoadingState(loadingState)).toEqual(expectedAction);
+      expect(postsActions.setLoadingState(loadingState)).toEqual(expectedAction);
     });
 
-    it('should create an action to set posts', () => {
-      const testPostsArray = getDefaultPostsArray();
-      const operationId = 'testOperationId';
+    it('should create an action to set the processing state of a post', () => {
+      const postToSet = global.testUtils.getDefaultPostData();
+
+      let processingState = false;
       const expectedAction = {
-        type: actions.POSTS_SET,
-        posts: testPostsArray,
-        operationId,
+        type: postsActions.POSTS_SET_PROCESSING_STATE,
+        post: postToSet,
+        processingState,
       };
 
-      expect(actions.setPosts({ posts: testPostsArray, operationId }))
+      expect(postsActions.setProcessingState(postToSet, processingState))
         .toEqual(expectedAction);
-    });
 
-    it('should create an action to add a new post', () => {
-      const postToAdd = { id: 'testId' };
-      const expectedAction = {
-        type: actions.POSTS_ADD,
-        post: postToAdd,
-      };
+      processingState = true;
+      expectedAction.processingState = processingState;
 
-      expect(actions.addPost(postToAdd)).toEqual(expectedAction);
-    });
-
-    it('should create an action to remove a post', () => {
-      const postToRemove = { id: 'testId' };
-      const expectedAction = {
-        type: actions.POSTS_REMOVE,
-        post: postToRemove,
-      };
-
-      expect(actions.removePost(postToRemove)).toEqual(expectedAction);
-    });
-
-    it('should create an action to update a post', () => {
-      const postToUpdate = { id: 'testId' };
-      const updatedPostData = { title: 'testTitleUpdated', body: 'testBodyUpdated' };
-
-      const expectedAction = {
-        type: actions.POSTS_UPDATE,
-        post: postToUpdate,
-        newData: updatedPostData,
-      };
-
-      expect(actions.updatePost(postToUpdate, updatedPostData)).toEqual(expectedAction);
-    });
-
-    it('should create an action to vote on a post', () => {
-      const postToVote = { id: 'testId' };
-      let vote = 4;
-      let expectedVote = 1;
-
-      const expectedAction = {
-        type: actions.POSTS_VOTE,
-        post: postToVote,
-        vote: expectedVote,
-      };
-
-      expect(actions.voteOnPost(postToVote, vote)).toEqual(expectedAction);
-
-      vote = -4;
-      expectedVote = -1;
-      expectedAction.vote = expectedVote;
-
-      expect(actions.voteOnPost(postToVote, vote)).toEqual(expectedAction);
+      expect(postsActions.setProcessingState(postToSet, processingState))
+        .toEqual(expectedAction);
     });
 
     it('should create an action to set the sort option', () => {
       const sortOption = { value: 'testSortOption', label: 'test sort option' };
 
       const expectedAction = {
-        type: actions.POSTS_SET_SORT_OPTION,
+        type: postsActions.POSTS_SET_SORT_OPTION,
         sortOption,
       };
 
-      expect(actions.setSortOption(sortOption)).toEqual(expectedAction);
+      expect(postsActions.setSortOption(sortOption)).toEqual(expectedAction);
     });
   });
 
 
   describe('async actions', () => {
     it('should fetch posts from the api and dispatch actions on success', async () => {
-      const testPostsArray = getDefaultPostsArray();
+      const posts = global.testUtils.getDefaultPostsArray();
       const operationId = 'testOperationId';
 
       const expectedActions = [
-        actions.setLoadingState({ id: operationId, isLoading: true, hasErrored: false }),
-        actions.setPosts({ posts: testPostsArray, operationId }),
-        actions.setLoadingState({ id: operationId, isLoading: false, hasErrored: false }),
+        postsActions.setLoadingState(
+          { id: operationId, isLoading: true, hasErrored: false }
+        ),
+        postsActions.setPosts({ posts: posts, operationId }),
+        postsActions.setLoadingState(
+          { id: operationId, isLoading: false, hasErrored: false }
+        ),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchPosts());
+      await store.dispatch(postsActions.fetchPosts());
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -182,13 +196,17 @@ describe('actions', () => {
       const operationId = 'testOperationId';
 
       const expectedActions = [
-        actions.setLoadingState({ id: operationId, isLoading: true, hasErrored: false }),
-        actions.setPosts({ posts: [], operationId }),
-        actions.setLoadingState({ id: operationId, isLoading: false, hasErrored: true }),
+        postsActions.setLoadingState(
+          { id: operationId, isLoading: true, hasErrored: false }
+        ),
+        postsActions.setPosts({ posts: [], operationId }),
+        postsActions.setLoadingState(
+          { id: operationId, isLoading: false, hasErrored: true }
+        ),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchPosts());
+      await store.dispatch(postsActions.fetchPosts());
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -200,11 +218,11 @@ describe('actions', () => {
       const expectedAddedPost = { ...postToAdd, id: 'testCreatedPostId' };
 
       const expectedActions = [
-        actions.addPost(expectedAddedPost),
+        postsActions.addPost(expectedAddedPost),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchAddPost(postToAdd));
+      await store.dispatch(postsActions.fetchAddPost(postToAdd));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -212,15 +230,15 @@ describe('actions', () => {
     });
 
     it('should remove a post from the api and dispatch actions on success', async () => {
-      const postToRemove = { id: 'testId' };
+      const postToRemove = global.testUtils.getDefaultPostData();
 
       const expectedActions = [
-        actions.setProcessingState(postToRemove, true),
-        actions.removePost(postToRemove),
+        postsActions.setProcessingState(postToRemove, true),
+        postsActions.removePost(postToRemove),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchRemovePost(postToRemove));
+      await store.dispatch(postsActions.fetchRemovePost(postToRemove));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -229,15 +247,15 @@ describe('actions', () => {
 
     it('should remove a post from the api and dispatch actions on failure', async () => {
       PostsAPI.del.post.mockImplementationOnce(() => Promise.reject());
-      const postToRemove = { id: 'testId' };
+      const postToRemove = global.testUtils.getDefaultPostData();
 
       const expectedActions = [
-        actions.setProcessingState(postToRemove, true),
-        actions.setProcessingState(postToRemove, false),
+        postsActions.setProcessingState(postToRemove, true),
+        postsActions.setProcessingState(postToRemove, false),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchRemovePost(postToRemove));
+      await store.dispatch(postsActions.fetchRemovePost(postToRemove));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -245,17 +263,17 @@ describe('actions', () => {
     });
 
     it('should update a post on the api and dispatch actions on success', async () => {
-      const postToUpdate = { id: 'testId', title: 'testTitle', body: 'testBody' };
+      const postToUpdate = global.testUtils.getDefaultPostData();
       const updatedPostData = { title: 'updatedTestTitle', body: 'updatedTestBody' };
 
       const expectedActions = [
-        actions.setProcessingState(postToUpdate, true),
-        actions.updatePost(postToUpdate, updatedPostData),
-        actions.setProcessingState(postToUpdate, false),
+        postsActions.setProcessingState(postToUpdate, true),
+        postsActions.updatePost(postToUpdate, updatedPostData),
+        postsActions.setProcessingState(postToUpdate, false),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchUpdatePost(postToUpdate, updatedPostData));
+      await store.dispatch(postsActions.fetchUpdatePost(postToUpdate, updatedPostData));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -264,16 +282,16 @@ describe('actions', () => {
 
     it('should update a post on the api and dispatch actions on failure', async () => {
       PostsAPI.update.post.mockImplementationOnce(() => Promise.reject());
-      const postToUpdate = { id: 'testId', title: 'testTitle', body: 'testBody' };
+      const postToUpdate = global.testUtils.getDefaultPostData();
       const updatedPostData = { title: 'updatedTestTitle', body: 'updatedTestBody' };
 
       const expectedActions = [
-        actions.setProcessingState(postToUpdate, true),
-        actions.setProcessingState(postToUpdate, false),
+        postsActions.setProcessingState(postToUpdate, true),
+        postsActions.setProcessingState(postToUpdate, false),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchUpdatePost(postToUpdate, updatedPostData));
+      await store.dispatch(postsActions.fetchUpdatePost(postToUpdate, updatedPostData));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -281,17 +299,17 @@ describe('actions', () => {
     });
 
     it('should vote on a post on the api and dispatch actions on success', async () => {
-      const postToVote = { id: 'testId' };
+      const postToVote = global.testUtils.getDefaultPostData();
       const vote = 1;
 
       const expectedActions = [
-        actions.setProcessingState(postToVote, true),
-        actions.voteOnPost(postToVote, vote),
-        actions.setProcessingState(postToVote, false),
+        postsActions.setProcessingState(postToVote, true),
+        postsActions.voteOnPost(postToVote, vote),
+        postsActions.setProcessingState(postToVote, false),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchVoteOnPost(postToVote, vote));
+      await store.dispatch(postsActions.fetchVoteOnPost(postToVote, vote));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
@@ -300,16 +318,16 @@ describe('actions', () => {
 
     it('should vote on a post on the api and dispatch actions on failure', async () => {
       PostsAPI.create.voteOnPost.mockImplementationOnce(() => Promise.reject());
-      const postToVote = { id: 'testId' };
+      const postToVote = global.testUtils.getDefaultPostData();
       const vote = 1;
 
       const expectedActions = [
-        actions.setProcessingState(postToVote, true),
-        actions.setProcessingState(postToVote, false),
+        postsActions.setProcessingState(postToVote, true),
+        postsActions.setProcessingState(postToVote, false),
       ];
 
       const store = mockStore({});
-      await store.dispatch(actions.fetchVoteOnPost(postToVote, vote));
+      await store.dispatch(postsActions.fetchVoteOnPost(postToVote, vote));
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);

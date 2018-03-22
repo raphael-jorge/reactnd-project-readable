@@ -2,47 +2,19 @@ import * as commentsActions from '../../actions/comments';
 import * as postsActions from '../../actions/posts';
 import reducer from '../../reducers/comments';
 
-// Utils
-const getDefaultCommentsArray = () => {
-  const commentsArray = [
-    { id: 'testId1', body: 'testBody1', author: 'testAuthor1' },
-    { id: 'testId2', body: 'testBody2', author: 'testAuthor2' },
-  ];
-
-  return commentsArray;
-};
-
-const getExpectedCommentsOnState = (commentsArray = getDefaultCommentsArray()) => {
-  const commentsNormalized = commentsArray.reduce((commentsObj, comment) => {
-    commentsObj[comment.id] = { ...comment };
-    commentsObj[comment.id].processing = false;
-    return commentsObj;
-  }, {});
-
-  return commentsNormalized;
-};
-
 
 // Tests
 describe('reducer', () => {
   describe('comments actions', () => {
     it('should return the initial state', () => {
-      const expectedState = {
-        loading: {
-          id: null,
-          isLoading: false,
-          hasErrored: false,
-        },
-        comments: {},
-        parentPostId: null,
-      };
+      const expectedState = global.testUtils.getDefaultReduxState().comments;
 
       expect(reducer(undefined, {})).toEqual(expectedState);
     });
 
     describe('should handle COMMENTS_SET', () => {
       it('updates comments if the operation id matches', () => {
-        const testCommentsArray = getDefaultCommentsArray();
+        const comments = global.testUtils.getDefaultCommentsArray();
         const parentPostId = 'testParentPostId';
         const operationId = 'testOperationId';
 
@@ -52,16 +24,15 @@ describe('reducer', () => {
           parentPostId: null,
         };
 
-        const testAction = commentsActions.setComments({
-          comments: testCommentsArray,
-          operationId,
-          parentPostId,
-        });
+        const testAction = commentsActions.setComments(
+          { comments, operationId, parentPostId }
+        );
 
-        const expectedCommentsOnState = getExpectedCommentsOnState();
         const expectedState = {
           loading: { id: operationId },
-          comments: expectedCommentsOnState,
+          comments: global.testUtils.convertArrayToNormalizedObject(
+            comments, 'id', { processing: false }
+          ),
           parentPostId,
         };
 
@@ -69,7 +40,7 @@ describe('reducer', () => {
       });
 
       it('does not update comments if operation id does not match', () => {
-        const testCommentsArray = getDefaultCommentsArray();
+        const comments = global.testUtils.getDefaultCommentsArray();
         const parentPostId = 'testParentPostId';
         const operationIdState = 'testOldOperationId';
         const operationIdAction = 'testNewOperationId';
@@ -81,7 +52,7 @@ describe('reducer', () => {
         };
 
         const testAction = commentsActions.setComments({
-          comments: testCommentsArray,
+          comments,
           operationId: operationIdAction,
           parentPostId,
         });
@@ -97,21 +68,23 @@ describe('reducer', () => {
 
       const testAction = commentsActions.addComment(commentToAdd);
 
-      const expectedState = { comments: {
-        [commentToAdd.id]: { ...commentToAdd, processing: false },
-      } };
+      const expectedState = {
+        comments: global.testUtils.convertArrayToNormalizedObject(
+          [commentToAdd], 'id', { processing: false }
+        ),
+      };
 
       expect(reducer({}, testAction)).toEqual(expectedState);
     });
 
     it('should handle COMMENTS_REMOVE', () => {
-      const commentToRemove = { id: 'testId1' };
-      const commentToKeep = { id: 'testIdw' };
+      const comments = global.testUtils.getDefaultCommentsArray();
+      const commentToRemove = comments[0];
+      const commentToKeep = comments[1];
 
-      const initialState = { comments: {
-        [commentToRemove.id]: commentToRemove,
-        [commentToKeep.id]: commentToKeep,
-      } };
+      const initialState = {
+        comments: global.testUtils.convertArrayToNormalizedObject(comments, 'id'),
+      };
 
       const testAction = commentsActions.removeComment(commentToRemove);
 
@@ -123,7 +96,7 @@ describe('reducer', () => {
     });
 
     it('should handle COMMENTS_UPDATE', () => {
-      const commentToUpdate = { id: 'testId', body: 'testBody' };
+      const commentToUpdate = global.testUtils.getDefaultCommentData();
       const initialState = {
         comments: { [commentToUpdate.id]: commentToUpdate },
       };
@@ -133,21 +106,20 @@ describe('reducer', () => {
       const testAction = commentsActions.updateComment(commentToUpdate, updatedCommentData);
 
       const expectedState = {
-        comments: { [commentToUpdate.id]: { ...updatedCommentData, id: commentToUpdate.id } },
+        comments: { [commentToUpdate.id]: { ...commentToUpdate, ...updatedCommentData } },
       };
 
       expect(reducer(initialState, testAction)).toEqual(expectedState);
     });
 
     it('should handle COMMENTS_VOTE', () => {
-      const currentVoteScore = 3;
-      const commentToVote = { id: 'testId', voteScore: currentVoteScore };
+      const commentToVote = global.testUtils.getDefaultCommentData();
       const vote = 1;
+      const currentVoteScore = 3;
+      commentToVote.voteScore = currentVoteScore;
 
       const initialState = {
-        comments: {
-          [commentToVote.id]: commentToVote,
-        },
+        comments: { [commentToVote.id]: commentToVote },
       };
 
       const testAction = commentsActions.voteOnComment(commentToVote, vote);
@@ -155,27 +127,6 @@ describe('reducer', () => {
       const expectedState = {
         comments: {
           [commentToVote.id]: { ...commentToVote, voteScore: currentVoteScore + 1 },
-        },
-      };
-
-      expect(reducer(initialState, testAction)).toEqual(expectedState);
-    });
-
-    it('should handle COMMENTS_SET_PROCESSING_STATE', () => {
-      const processingState = true;
-      const commentToSet = { id: 'testId', processing: false };
-
-      const initialState = {
-        comments: {
-          [commentToSet.id]: commentToSet,
-        },
-      };
-
-      const testAction = commentsActions.setProcessingState(commentToSet, processingState);
-
-      const expectedState = {
-        comments: {
-          [commentToSet.id]: { ...commentToSet, processing: processingState },
         },
       };
 
@@ -247,14 +198,37 @@ describe('reducer', () => {
         });
       });
     });
+
+    it('should handle COMMENTS_SET_PROCESSING_STATE', () => {
+      const commentToSet = global.testUtils.getDefaultCommentData();
+      commentToSet.processing = false;
+      const processingState = true;
+
+      const initialState = {
+        comments: { [commentToSet.id]: commentToSet },
+      };
+
+      const testAction = commentsActions.setProcessingState(commentToSet, processingState);
+
+      const expectedState = {
+        comments: { [commentToSet.id]: { ...commentToSet, processing: processingState } },
+      };
+
+      expect(reducer(initialState, testAction)).toEqual(expectedState);
+    });
   });
 
 
   describe('posts actions', () => {
     it('should handle POSTS_REMOVE: remove the post child comments', () => {
-      const postToRemove = { id: 'testPostId' };
-      const testCommentToRemove = { id: 'testCommentId1', parentId: postToRemove.id };
-      const testCommentToKeep = { id: 'testCommentId2', parentId: 'testPostIdToKeep' };
+      const postToRemove = global.testUtils.getDefaultPostData();
+      const comments = global.testUtils.getDefaultCommentsArray();
+
+      const testCommentToKeep = comments[0];
+      testCommentToKeep.parentId = 'postIdToKeep';
+
+      const testCommentToRemove = comments[1];
+      testCommentToRemove.parentId = postToRemove.id;
 
       const initialState = { comments: {
         [testCommentToRemove.id]: testCommentToRemove,
@@ -263,9 +237,9 @@ describe('reducer', () => {
 
       const testAction = postsActions.removePost(postToRemove);
 
-      const expectedState = { comments: {
-        [testCommentToKeep.id]: testCommentToKeep,
-      } };
+      const expectedState = {
+        comments: { [testCommentToKeep.id]: testCommentToKeep },
+      };
 
       expect(reducer(initialState, testAction)).toEqual(expectedState);
     });

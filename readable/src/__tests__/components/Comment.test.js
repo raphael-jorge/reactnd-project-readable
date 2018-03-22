@@ -5,10 +5,10 @@ import Comment from '../../components/Comment';
 // Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
-    commentData: getDefaultCommentData(),
-    onVote: jest.fn(),
-    onRemove: jest.fn(),
-    onUpdate: jest.fn(),
+    commentData: global.testUtils.getDefaultCommentData(),
+    onVote: () => {},
+    onRemove: () => {},
+    onUpdate: () => {},
   }, propOverrides);
 
   const comment = shallow(<Comment {...props} />);
@@ -19,46 +19,40 @@ const setup = (propOverrides) => {
   };
 };
 
-const getDefaultCommentData = () => ({
-  id: 'testId',
-  timestamp: Date.now(),
-  author: '',
-  body: '',
-  voteScore: 0,
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
-});
-
 
 // Tests
 describe('<Comment />', () => {
-  it('renders without crashing', () => {
+  it('renders a comment article', () => {
     const { comment } = setup();
 
-    expect(comment.find('.comment').length).toBe(1);
-    expect(comment.find('.comment-info').length).toBe(1);
-    expect(comment.find('.comment-body').length).toBe(1);
+    expect(comment.find('article.comment').length).toBe(1);
   });
-
-
-  it('renders an Operations component', () => {
-    const { comment } = setup();
-    expect(comment.find('Operations').length).toBe(1);
-    expect(comment.find('.comment-operations').length).toBe(1);
-  });
-
 
   describe('operations', () => {
-    it('sets vote operations to vote up and down on the comment', () => {
-      const { comment, props } = setup();
+    it('renders an Operations component', () => {
+      const { comment } = setup();
+
+      expect(comment.find('Operations').length).toBe(1);
+      expect(comment.find('.comment-operations').length).toBe(1);
+    });
+
+    it('sets vote operations to vote up on the comment', () => {
+      const onVote = jest.fn();
+      const { comment, props } = setup({ onVote });
 
       const operations = comment.find('Operations');
       const operationVote = operations.prop('voteData');
 
       operationVote.onVoteUp();
       expect(props.onVote).toHaveBeenCalledWith(props.commentData, 1);
+    });
+
+    it('sets vote operations to vote down on the comment', () => {
+      const onVote = jest.fn();
+      const { comment, props } = setup({ onVote });
+
+      const operations = comment.find('Operations');
+      const operationVote = operations.prop('voteData');
 
       props.onVote.mockClear();
       operationVote.onVoteDown();
@@ -66,12 +60,13 @@ describe('<Comment />', () => {
     });
 
     it('sets remove operation submit to remove the comment', () => {
-      const { comment, props } = setup();
+      const onRemove = jest.fn();
+      const { comment, props } = setup({ onRemove });
 
       const operations = comment.find('Operations');
       const operationRemove = operations.prop('onRemove');
-
       operationRemove.onSubmit();
+
       expect(props.onRemove).toHaveBeenCalledWith(props.commentData);
     });
 
@@ -105,9 +100,7 @@ describe('<Comment />', () => {
         comment.setState({ editMode: true });
 
         const newBodyValue = 'new comment body';
-        const bodyChangeEvent = {
-          target: { value: newBodyValue },
-        };
+        const bodyChangeEvent = global.testUtils.getDefaultEvent({ targetValue: newBodyValue });
         comment.instance().handleBodyInputChange(bodyChangeEvent);
 
         expect(comment.state('bodyInput')).toBe(newBodyValue);
@@ -121,9 +114,7 @@ describe('<Comment />', () => {
         });
 
         const newBodyValue = '';
-        const bodyChangeEvent = {
-          target: { value: newBodyValue },
-        };
+        const bodyChangeEvent = global.testUtils.getDefaultEvent({ targetValue: newBodyValue });
         comment.instance().handleBodyInputChange(bodyChangeEvent);
 
         expect(comment.state('bodyInput')).toBe(newBodyValue);
@@ -133,7 +124,7 @@ describe('<Comment />', () => {
 
     describe('methods', () => {
       it('enters the edit mode', () => {
-        const commentData = getDefaultCommentData();
+        const commentData = global.testUtils.getDefaultCommentData();
         commentData.body = 'test comment body';
         const { comment } = setup({ commentData });
 
@@ -144,7 +135,7 @@ describe('<Comment />', () => {
       });
 
       it('leaves the edit mode', () => {
-        const commentData = getDefaultCommentData();
+        const commentData = global.testUtils.getDefaultCommentData();
         commentData.body = 'test comment body';
         const { comment } = setup({ commentData });
 
@@ -162,7 +153,8 @@ describe('<Comment />', () => {
       });
 
       it('submits the edit operation when data is valid and different', async () => {
-        const { comment, props } = setup();
+        const onUpdate = jest.fn();
+        const { comment, props } = setup({ onUpdate });
         const updatedCommentData = {
           body: 'updated comment body',
         };
@@ -180,9 +172,10 @@ describe('<Comment />', () => {
       });
 
       it('leaves the edit mode when submitted data is equal to current data', async () => {
-        const commentData = getDefaultCommentData();
+        const onUpdate = jest.fn();
+        const commentData = global.testUtils.getDefaultCommentData();
         commentData.body = 'test comment body';
-        const { comment, props } = setup({ commentData });
+        const { comment, props } = setup({ commentData, onUpdate });
 
         comment.setState({
           editMode: true,
@@ -196,8 +189,9 @@ describe('<Comment />', () => {
         expect(props.onUpdate).not.toHaveBeenCalled();
       });
 
-      it('stops submit operation if no body is provided', async () => {
-        const { comment, props } = setup();
+      it('aborts submit operation if no body is provided', async () => {
+        const onUpdate = jest.fn();
+        const { comment, props } = setup({ onUpdate });
 
         comment.setState({
           editMode: true,
