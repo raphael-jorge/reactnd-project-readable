@@ -74,11 +74,10 @@ export function areAllEntriesProvided(entries, object) {
  * @return {Boolean} Indica se os valores são iguais ou não.
  */
 export function areKeysDifferent(oldData, newData) {
-  let differentData = true;
-
+  let differentData = false;
   for (const key in newData) {
-    if (newData[key] === oldData[key]) {
-      differentData = false;
+    if (newData[key] !== oldData[key]) {
+      differentData = true;
     }
   }
 
