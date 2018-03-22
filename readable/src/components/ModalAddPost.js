@@ -141,7 +141,7 @@ export default class ModalAddPost extends Component {
       <Modal
         isOpen={isOpen}
         onRequestClose={onModalClose}
-        className="modal-create-post"
+        className={`modal-create-post ${this.state.category}`}
         overlayClassName="modal-overlay"
         shouldCloseOnOverlayClick={false}
       >

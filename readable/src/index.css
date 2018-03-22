@@ -518,7 +518,20 @@ a {
   padding: 30px;
   width: 80%;
   background: #f8f8f8;
-  box-shadow: 0 0 5px #222f5a;
+  box-shadow: 0 0 5px 1px #222f5a;
+  transition: box-shadow 0.3s;
+}
+/* React custom style */
+.modal-create-post.react {
+  box-shadow: 0 0 5px 2px #2ba2c6;
+}
+/* Redux custom style */
+.modal-create-post.redux {
+  box-shadow: 0 0 5px 2px #744cbc;
+}
+/* Udacity custom style */
+.modal-create-post.udacity {
+  box-shadow: 0 0 5px 2px #e0711d;
 }
 /* Create Comment */
 .modal-create-comment {
