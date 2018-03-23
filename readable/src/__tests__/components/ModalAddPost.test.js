@@ -215,7 +215,7 @@ describe('<ModalAddPost />', () => {
     });
 
     it('handles a valid submit', async () => {
-      const onPostAdd = jest.fn();
+      const onPostAdd = jest.fn(() => Promise.resolve());
       const { modal, props } = setup({ onPostAdd });
 
       jest.spyOn(modal.instance(), 'handleModalClose');
@@ -231,6 +231,23 @@ describe('<ModalAddPost />', () => {
 
       expect(props.onPostAdd).toHaveBeenCalledWith(postDataToSubmit);
       expect(modal.instance().handleModalClose).toHaveBeenCalled();
+    });
+
+    it('handles a failed submit operation', async () => {
+      const onPostAdd = jest.fn(() => Promise.reject());
+      const { modal, props } = setup({ onPostAdd });
+
+      const postDataToSubmit = {
+        title: 'test title',
+        body: 'test body',
+        author: 'test author',
+        category: 'test category',
+      };
+      modal.setState(postDataToSubmit);
+      await modal.instance().handleSubmit();
+
+      expect(props.onPostAdd).toHaveBeenCalledWith(postDataToSubmit);
+      expect(modal.state('isProcessing')).toBe(false);
     });
 
     it('handles an unvalid submit (missing title)', async () => {

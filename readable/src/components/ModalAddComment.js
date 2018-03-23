@@ -70,7 +70,6 @@ export default class ModalAddComment extends Component {
    * onCommentAdd, fornecida via props, com os dados fornecidos para a criação
    * do comentário. Por fim, concluído o processo de criação, chama o método
    * handleModalClose para fechar o modal.
-   * @return {Promise} O comentário criaddo, quando resolvida.
    */
   handleSubmit = async () => {
     const requiredEntries = ['body', 'author'];
@@ -83,9 +82,9 @@ export default class ModalAddComment extends Component {
         author: this.state.author,
       };
 
-      await this.props.onCommentAdd(this.props.postData.id, commentData);
-
-      this.handleModalClose();
+      await this.props.onCommentAdd(this.props.postData.id, commentData)
+        .then(this.handleModalClose)
+        .catch(() => this.setState({ isProcessing: false }));
     }
   }
 

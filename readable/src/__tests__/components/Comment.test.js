@@ -59,15 +59,25 @@ describe('<Comment />', () => {
       expect(props.onVote).toHaveBeenCalledWith(props.commentData, -1);
     });
 
-    it('sets remove operation submit to remove the comment', () => {
+    it('sets the remove operation methods correctly', () => {
+      const { comment } = setup();
+
+      const operations = comment.find('Operations');
+      const operationRemove = operations.prop('onRemove');
+
+      expect(operationRemove.onSubmit).toBe(comment.instance().handleRemoveSubmit);
+    });
+
+    it('handles the comment remove operation', async () => {
       const onRemove = jest.fn();
       const { comment, props } = setup({ onRemove });
 
       const operations = comment.find('Operations');
       const operationRemove = operations.prop('onRemove');
-      operationRemove.onSubmit();
+      const success = await operationRemove.onSubmit();
 
       expect(props.onRemove).toHaveBeenCalledWith(props.commentData);
+      expect(success).toBe(true);
     });
 
     it('sets edit operation methods correctly', () => {

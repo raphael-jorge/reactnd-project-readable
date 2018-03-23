@@ -89,11 +89,15 @@ export default class Post extends Component {
     return done;
   }
 
+  handleRemoveSubmit = async () => {
+    await this.props.onRemove(this.props.postData);
+    return true;
+  }
+
   render() {
     const {
       postData,
       onVote,
-      onRemove,
       linkMode,
       readMode,
     } = this.props;
@@ -163,7 +167,7 @@ export default class Post extends Component {
                 onAbort: this.handleEditModeLeave,
                 onSubmit: this.handleEditSubmit,
               }}
-              onRemove={{ onSubmit: () => onRemove(postData) }}
+              onRemove={{ onSubmit: this.handleRemoveSubmit }}
             />
           </div>
         }

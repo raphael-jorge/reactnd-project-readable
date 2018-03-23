@@ -110,7 +110,6 @@ export default class ModalAddPost extends Component {
    * onPostAdd, fornecida via props, com os dados fornecidos para a criação
    * do post. Por fim, concluído o processo de criação do post, chama o
    * método handleModalClose para fechar o modal.
-   * @return {Promise} O post criaddo, quando resolvida.
    */
   handleSubmit = async () => {
     const requiredEntries = ['title', 'body', 'author', 'category'];
@@ -125,8 +124,9 @@ export default class ModalAddPost extends Component {
         category: this.state.category,
       };
 
-      await this.props.onPostAdd(postData);
-      this.handleModalClose();
+      await this.props.onPostAdd(postData)
+        .then(this.handleModalClose)
+        .catch(() => this.setState({ isProcessing: false }));
     }
   }
 

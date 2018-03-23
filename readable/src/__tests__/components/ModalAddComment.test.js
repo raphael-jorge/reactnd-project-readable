@@ -125,7 +125,7 @@ describe('<ModalAddPost />', () => {
     });
 
     it('handles a valid submit', async () => {
-      const onCommentAdd = jest.fn();
+      const onCommentAdd = jest.fn(() => Promise.resolve());
       const postData = global.testUtils.getDefaultPostData();
       const { modal, props } = setup({ postData, onCommentAdd });
 
@@ -140,6 +140,22 @@ describe('<ModalAddPost />', () => {
 
       expect(props.onCommentAdd).toHaveBeenCalledWith(postData.id, commentDataToSubmit);
       expect(modal.instance().handleModalClose).toHaveBeenCalled();
+    });
+
+    it('handles a failed submit operation', async () => {
+      const onCommentAdd = jest.fn(() => Promise.reject());
+      const postData = global.testUtils.getDefaultPostData();
+      const { modal, props } = setup({ postData, onCommentAdd });
+
+      const commentDataToSubmit = {
+        body: 'test body',
+        author: 'test author',
+      };
+      modal.setState(commentDataToSubmit);
+      await modal.instance().handleSubmit();
+
+      expect(props.onCommentAdd).toHaveBeenCalledWith(postData.id, commentDataToSubmit);
+      expect(modal.state('isProcessing')).toBe(false);
     });
 
     it('handles an unvalid submit (missing body)', async () => {

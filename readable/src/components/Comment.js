@@ -66,11 +66,15 @@ export default class Comment extends Component {
     return done;
   }
 
+  handleRemoveSubmit = async () => {
+    await this.props.onRemove(this.props.commentData);
+    return true;
+  }
+
   render() {
     const {
       commentData,
       onVote,
-      onRemove,
     } = this.props;
 
     return (
@@ -112,7 +116,7 @@ export default class Comment extends Component {
             onAbort: this.handleEditModeLeave,
             onSubmit: this.handleEditSubmit,
           }}
-          onRemove={{ onSubmit: () => onRemove(commentData) }}
+          onRemove={{ onSubmit: this.handleRemoveSubmit }}
         />
 
       </article>
