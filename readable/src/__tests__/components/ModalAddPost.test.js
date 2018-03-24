@@ -25,6 +25,13 @@ const setup = (propOverrides) => {
 
 // Tests
 describe('<ModalAddPost />', () => {
+  it('renders a Modal component', () => {
+    const { modal } = setup();
+
+    expect(modal.find('Modal').length).toBe(1);
+  });
+
+
   it('renders an OperationConfirm conponent', () => {
     const { modal } = setup();
 
@@ -33,6 +40,16 @@ describe('<ModalAddPost />', () => {
     expect(operationConfirm.length).toBe(1);
     expect(operationConfirm.prop('onConfirm')).toBe(modal.instance().handleSubmit);
     expect(operationConfirm.prop('onCancel')).toBe(modal.instance().handleModalClose);
+  });
+
+
+  it('renders a loading cover placeholder', () => {
+    const { modal } = setup();
+
+    const placeholder = modal.find('Placeholder');
+
+    expect(placeholder.length).toBe(1);
+    expect(placeholder.prop('fallback')).toBe(modal.instance().LOADING_COVER_COMPONENT);
   });
 
 

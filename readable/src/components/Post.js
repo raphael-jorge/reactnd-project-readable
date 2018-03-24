@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import CommentsIcon from 'react-icons/lib/md/comment';
@@ -7,7 +7,7 @@ import Operations from './Operations';
 import Loading from './Loading';
 import Placeholder from './Placeholder';
 
-export default class Post extends Component {
+export default class Post extends PureComponent {
   static propTypes = {
     postData: PropTypes.object.isRequired,
     onVote: PropTypes.func,
@@ -24,6 +24,8 @@ export default class Post extends Component {
     bodyInputErrorClass: '',
     titleInputErrorClass: '',
   }
+
+  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
 
   handleTitleInputChange = (event) => {
     const newTitle = event.target.value;
@@ -89,15 +91,24 @@ export default class Post extends Component {
     return done;
   }
 
-  handleRemoveSubmit = async () => {
-    await this.props.onRemove(this.props.postData);
-    return true;
-  }
+  voteHandler = ((self=this) => ({
+    voteUp: () => self.props.onVote(this.props.postData, 1),
+    voteDown: () => self.props.onVote(this.props.postData, -1),
+  }))()
+
+  editHandler = ((self=this) => ({
+    onRequest: self.handleEditModeEnter,
+    onAbort: self.handleEditModeLeave,
+    onSubmit: self.handleEditSubmit,
+  }))()
+
+  removeHandler = ((self=this) => ({
+    onSubmit: () => self.props.onRemove(self.props.postData),
+  }))()
 
   render() {
     const {
       postData,
-      onVote,
       linkMode,
       readMode,
     } = this.props;
@@ -107,7 +118,7 @@ export default class Post extends Component {
 
         <Placeholder
           isReady={!postData.processing}
-          fallback={<Loading type="cover-squares" />}
+          fallback={this.LOADING_COVER_COMPONENT}
           delay={250}
         />
 
@@ -156,18 +167,14 @@ export default class Post extends Component {
               <CommentsIcon size={20} />
             </div>
 
+            <div className="post-vote-score">
+              {postData.voteScore}
+            </div>
+
             <Operations
-              voteData={{
-                voteCount: postData.voteScore,
-                onVoteUp: () => onVote(postData, 1),
-                onVoteDown: () => onVote(postData, -1),
-              }}
-              onEdit={{
-                onRequest: this.handleEditModeEnter,
-                onAbort: this.handleEditModeLeave,
-                onSubmit: this.handleEditSubmit,
-              }}
-              onRemove={{ onSubmit: this.handleRemoveSubmit }}
+              voteHandler={this.voteHandler}
+              editHandler={this.editHandler}
+              removeHandler={this.removeHandler}
             />
           </div>
         }

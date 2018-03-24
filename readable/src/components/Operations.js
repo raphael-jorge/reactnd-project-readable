@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import ArrowUpIcon from 'react-icons/lib/fa/caret-up';
 import ArrowDownIcon from 'react-icons/lib/fa/caret-down';
@@ -10,19 +10,18 @@ import OperationConfirm from './OperationConfirm';
  * Interface de controle para manipulação de votos, operações de edição
  * e remoção de posts ou comentários.
  */
-export default class Operations extends Component {
+export default class Operations extends PureComponent {
   static propTypes = {
-    voteData: PropTypes.shape({
-      voteCount: PropTypes.number.isRequired,
-      onVoteUp: PropTypes.func.isRequired,
-      onVoteDown: PropTypes.func.isRequired,
+    voteHandler: PropTypes.shape({
+      voteUp: PropTypes.func.isRequired,
+      voteDown: PropTypes.func.isRequired,
     }).isRequired,
-    onEdit: PropTypes.shape({
+    editHandler: PropTypes.shape({
       onRequest: PropTypes.func,
       onAbort: PropTypes.func,
       onSubmit: PropTypes.func.isRequired,
     }).isRequired,
-    onRemove: PropTypes.shape({
+    removeHandler: PropTypes.shape({
       onRequest: PropTypes.func,
       onAbort: PropTypes.func,
       onSubmit: PropTypes.func.isRequired,
@@ -38,7 +37,7 @@ export default class Operations extends Component {
    */
   handleVoteUp = (event) => {
     event.preventDefault();
-    this.props.voteData.onVoteUp();
+    this.props.voteHandler.voteUp();
   }
 
   /**
@@ -46,21 +45,39 @@ export default class Operations extends Component {
    */
   handleVoteDown = (event) => {
     event.preventDefault();
-    this.props.voteData.onVoteDown();
+    this.props.voteHandler.voteDown();
   }
 
   /**
-   * Inicializa uma determinada operação. Para isso chama o método
-   * onRequest do parâmetro operationHandler, quando disponível,
-   * e configura o estado operationHandler com esse parâmetro.
-   * @param {object} operationHandler O objeto com os métodos da operação.
+   * Inicializa a operação de edição. Para isso, chama o método
+   * onRequest da prop editHandler quando disponível e configura
+   * o estado operationHandler para a prop editHandler.
    */
-  handleRequest = (event, operationHandler) => {
+  handleEditRequest = (event) => {
     event.preventDefault();
-    if (operationHandler.onRequest) {
-      operationHandler.onRequest();
+    const { editHandler } = this.props;
+
+    if (editHandler.onRequest) {
+      editHandler.onRequest();
     }
-    this.setState({ operationHandler });
+
+    this.setState({ operationHandler: editHandler });
+  }
+
+  /**
+   * Inicializa a operação de remoção. Para isso, chama o método
+   * onRequest da prop removeHandler quando disponível e configura
+   * o estado operationHandler para a prop removeHandler.
+   */
+  handleRemoveRequest = (event) => {
+    event.preventDefault();
+    const { removeHandler } = this.props;
+
+    if (removeHandler.onRequest) {
+      removeHandler.onRequest();
+    }
+
+    this.setState({ operationHandler: removeHandler });
   }
 
   /**
@@ -68,7 +85,7 @@ export default class Operations extends Component {
    * Se essa operação retornar true, indicando que a operação foi bem
    * sucedida, o estado operationHandler é configurado para null. Caso
    * contrário, o estado permanece inalterado. (O estado operationHandler
-   * deve ser previamente configurado com o método handleRequest).
+   * deve ser previamente configurado).
    */
   handleSubmit = async () => {
     if (await this.state.operationHandler.onSubmit()) {
@@ -80,7 +97,7 @@ export default class Operations extends Component {
    * Executa o método onAbort presente no estado operationHandler,
    * quando disponível. Após realizar essa chamada, o estado operationHandler
    * é configurado para null. (O estado operationHandler deve ser previamente
-   * configurado com o método handleRequest).
+   * configurado).
    */
   handleAbort = () => {
     if (this.state.operationHandler.onAbort) {
@@ -90,16 +107,10 @@ export default class Operations extends Component {
   }
 
   render() {
-    const {
-      voteData,
-      onEdit,
-      onRemove,
-    } = this.props;
-
     return (
       <div>
 
-        {/* Interface de votos */}
+        {/* Interface de controle votos */}
         <div className="vote-operations">
           <button
             title="Vote Up"
@@ -108,8 +119,6 @@ export default class Operations extends Component {
           >
             <ArrowUpIcon size={20} />
           </button>
-
-          <div className="vote-count">{voteData.voteCount}</div>
 
           <button
             title="Vote Down"
@@ -120,14 +129,14 @@ export default class Operations extends Component {
           </button>
         </div>
 
-        {/* Interface de operações => edição, remoção */}
+        {/* Interface de controle das operações de edição e remoção */}
         {this.state.operationHandler === null ? (
-          // Renderiza um button para cada operação (edit, remove)
+          // Renderiza um button para cada operação
           <div className="operations">
             <button
               title="Edit"
               className="operation-item"
-              onClick={(event) => this.handleRequest(event, onEdit)}
+              onClick={this.handleEditRequest}
             >
               <EditIcon size={20} />
             </button>
@@ -135,7 +144,7 @@ export default class Operations extends Component {
             <button
               title="Delete"
               className="operation-item"
-              onClick={(event) => this.handleRequest(event, onRemove)}
+              onClick={this.handleRemoveRequest}
             >
               <RemoveIcon size={20} />
             </button>

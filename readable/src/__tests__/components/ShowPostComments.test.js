@@ -68,6 +68,16 @@ describe('<ShowPostComments />', () => {
   });
 
 
+  it('renders a loading icon placeholder', () => {
+    const { showPostComments } = setup();
+
+    const placeholder = showPostComments.find('Placeholder');
+
+    expect(placeholder.length).toBe(1);
+    expect(placeholder.prop('fallback')).toBe(showPostComments.instance().LOADING_ICON_COMPONENT);
+  });
+
+
   it('renders a ModalAddComment component', () => {
     const postData = global.testUtils.getDefaultPostData();
     const { showPostComments } = setup({ postData });

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import { capitalize, areAllEntriesProvided } from '../util/utils';
@@ -9,7 +9,7 @@ import Placeholder from './Placeholder';
 /**
  * Um componente modal para criação de novos posts
  */
-export default class ModalAddPost extends Component {
+export default class ModalAddPost extends PureComponent {
   static propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onModalClose: PropTypes.func.isRequired,
@@ -30,9 +30,7 @@ export default class ModalAddPost extends Component {
     categoryErrorClass: '',
   }
 
-  componentDidMount() {
-    Modal.setAppElement('#root');
-  }
+  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
 
   componentWillReceiveProps(nextProps) {
     // Atualiza o estado category com base na categoria atual
@@ -148,7 +146,7 @@ export default class ModalAddPost extends Component {
         {/* Loading para processamento */}
         <Placeholder
           isReady={!this.state.isProcessing}
-          fallback={<Loading type="cover-squares" />}
+          fallback={this.LOADING_COVER_COMPONENT}
           delay={250}
         />
 

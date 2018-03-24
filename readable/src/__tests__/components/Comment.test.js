@@ -28,6 +28,15 @@ describe('<Comment />', () => {
     expect(comment.find('article.comment').length).toBe(1);
   });
 
+  it('renders a loading cover placeholder', () => {
+    const { comment } = setup();
+
+    const placeholder = comment.find('Placeholder');
+
+    expect(placeholder.length).toBe(1);
+    expect(placeholder.prop('fallback')).toBe(comment.instance().LOADING_COVER_COMPONENT);
+  });
+
   describe('operations', () => {
     it('renders an Operations component', () => {
       const { comment } = setup();
@@ -41,9 +50,9 @@ describe('<Comment />', () => {
       const { comment, props } = setup({ onVote });
 
       const operations = comment.find('Operations');
-      const operationVote = operations.prop('voteData');
+      const voteHandler = operations.prop('voteHandler');
 
-      operationVote.onVoteUp();
+      voteHandler.voteUp();
       expect(props.onVote).toHaveBeenCalledWith(props.commentData, 1);
     });
 
@@ -52,20 +61,10 @@ describe('<Comment />', () => {
       const { comment, props } = setup({ onVote });
 
       const operations = comment.find('Operations');
-      const operationVote = operations.prop('voteData');
+      const voteHandler = operations.prop('voteHandler');
 
-      props.onVote.mockClear();
-      operationVote.onVoteDown();
+      voteHandler.voteDown();
       expect(props.onVote).toHaveBeenCalledWith(props.commentData, -1);
-    });
-
-    it('sets the remove operation methods correctly', () => {
-      const { comment } = setup();
-
-      const operations = comment.find('Operations');
-      const operationRemove = operations.prop('onRemove');
-
-      expect(operationRemove.onSubmit).toBe(comment.instance().handleRemoveSubmit);
     });
 
     it('handles the comment remove operation', async () => {
@@ -73,22 +72,21 @@ describe('<Comment />', () => {
       const { comment, props } = setup({ onRemove });
 
       const operations = comment.find('Operations');
-      const operationRemove = operations.prop('onRemove');
-      const success = await operationRemove.onSubmit();
+      const removeHandler = operations.prop('removeHandler');
+      await removeHandler.onSubmit();
 
       expect(props.onRemove).toHaveBeenCalledWith(props.commentData);
-      expect(success).toBe(true);
     });
 
     it('sets edit operation methods correctly', () => {
       const { comment } = setup();
 
       const operations = comment.find('Operations');
-      const operationEdit = operations.prop('onEdit');
+      const editHandler = operations.prop('editHandler');
 
-      expect(operationEdit.onRequest).toBe(comment.instance().handleEditModeEnter);
-      expect(operationEdit.onAbort).toBe(comment.instance().handleEditModeLeave);
-      expect(operationEdit.onSubmit).toBe(comment.instance().handleEditSubmit);
+      expect(editHandler.onRequest).toBe(comment.instance().handleEditModeEnter);
+      expect(editHandler.onAbort).toBe(comment.instance().handleEditModeLeave);
+      expect(editHandler.onSubmit).toBe(comment.instance().handleEditSubmit);
     });
   });
 

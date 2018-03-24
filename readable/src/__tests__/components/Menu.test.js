@@ -5,21 +5,19 @@ import Menu from '../../components/Menu';
 // Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
-    sortMenu: undefined,
+    selectedSortOption: undefined,
+    onSortOptionChange: undefined,
   }, propOverrides);
 
   const menu = shallow(<Menu {...props} />);
+  const sortOptions = menu.instance().sortOptions;
 
   return {
     props,
     menu,
+    sortOptions,
   };
 };
-
-const getDefaultSortMenuConfig = () => ({
-  selectedSortOption: undefined,
-  onSortOptionChange: () => {},
-});
 
 
 // Tests
@@ -33,31 +31,37 @@ describe('<Menu />', () => {
 
   describe('sort menu', () => {
     it('renders a Select component', () => {
-      const sortMenu = getDefaultSortMenuConfig();
-      const { menu } = setup({ sortMenu });
+      const selectedSortOption = null;
+      const onSortOptionChange = () => {};
+      const { menu } = setup({ selectedSortOption, onSortOptionChange });
 
       expect(menu.find('Select').length).toBe(1);
     });
 
     it('sets the initial selected value', () => {
-      const sortMenu = getDefaultSortMenuConfig();
-      const sortOption = { value: 'test sort value', label: 'test sort label' };
-      sortMenu.selectedSortOption = sortOption;
-      const { menu } = setup({ sortMenu });
+      let selectedSortOption = null;
+      const onSortOptionChange = () => {};
+      const { menu, sortOptions } = setup({ selectedSortOption, onSortOptionChange });
 
-      const select = menu.find('Select');
+      sortOptions.forEach((sortOption) => {
+        selectedSortOption = sortOption;
+        menu.setProps({ selectedSortOption });
 
-      expect(select.prop('value')).toBe(sortOption.value);
+        const select = menu.find('Select');
+
+        expect(select.prop('value')).toBe(selectedSortOption.value);
+      });
     });
 
     it('sets the selection change method', () => {
-      const sortMenu = getDefaultSortMenuConfig();
-      sortMenu.onSortOptionChange = jest.fn();
-      const { menu } = setup({ sortMenu });
+      const selectedSortOption = null;
+      const onSortOptionChange = jest.fn();
+      const { menu } = setup({ selectedSortOption, onSortOptionChange });
 
       const select = menu.find('Select');
+      select.prop('onChange')();
 
-      expect(select.prop('onChange')).toBe(sortMenu.onSortOptionChange);
+      expect(onSortOptionChange).toHaveBeenCalled();
     });
   });
 });

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
@@ -15,6 +15,9 @@ import {
   fetchUpdateComment,
   fetchAddComment,
 } from '../actions/comments';
+import { getCategories } from '../selectors/categories';
+import { getComments } from '../selectors/comments';
+import { getPostData } from '../selectors/posts';
 import Comment from './Comment';
 import Header from './Header';
 import Loading from './Loading';
@@ -24,7 +27,7 @@ import NotFound from './NotFound';
 import Placeholder from './Placeholder';
 import Post from './Post';
 
-export class ShowPostComments extends Component {
+export class ShowPostComments extends PureComponent {
   static propTypes = {
     postData: PropTypes.object.isRequired,
     comments: PropTypes.array.isRequired,
@@ -47,6 +50,10 @@ export class ShowPostComments extends Component {
     redirectToRoot: false,
   }
 
+  MESSAGE_LOAD_ERROR = 'There was an error while loading data from the server'
+  MESSAGE_NO_COMMENTS = 'No comments yet'
+  LOADING_ICON_COMPONENT = <Loading type={'icon-squares'} />
+
   wasPostFound = () => {
     return (Object.keys(this.props.postData).length > 0);
   }
@@ -63,9 +70,6 @@ export class ShowPostComments extends Component {
   closeModalAddComment = () => {
     this.setState({ isModalAddCommentOpen: false });
   }
-
-  MESSAGE_LOAD_ERROR = 'There was an error while loading data from the server'
-  MESSAGE_NO_COMMENTS = 'No comments yet'
 
   render() {
     const {
@@ -98,7 +102,7 @@ export class ShowPostComments extends Component {
             {/* Verifica se os dados do post estão sendo carregados */}
             <Placeholder
               isReady={!isLoadingPost}
-              fallback={<Loading type={'icon-squares'} />}
+              fallback={this.LOADING_ICON_COMPONENT}
               delay={250}
             >
               {hasErroredPost ? (
@@ -140,7 +144,7 @@ export class ShowPostComments extends Component {
             {!isLoadingPost && pageFound && !hasErroredPost &&
               <Placeholder
                 isReady={!isLoadingComments}
-                fallback={<Loading type={'icon-squares'} />}
+                fallback={this.LOADING_ICON_COMPONENT}
                 delay={250}
               >
                 {hasErroredComments ? (
@@ -170,20 +174,13 @@ export class ShowPostComments extends Component {
   }
 }
 
-export const mapStateToProps = ({ posts, comments, categories }, ownProps) => {
-  const commentsObj = comments.comments;
-  const commentsIds = Object.keys(commentsObj);
-
-  const postsObj = posts.posts;
-  const postData = postsObj[ownProps.postId] || {};
-
-  const categoriesObj = categories.categories;
-  const categoriesPaths = Object.keys(categoriesObj);
+export const mapStateToProps = (state, ownProps) => {
+  const { posts, comments } = state;
 
   return {
-    postData,
-    comments: commentsIds.map((commentId) => commentsObj[commentId]),
-    categories: categoriesPaths.map((categoryPath) => categoriesObj[categoryPath]),
+    postData: getPostData(state, ownProps),
+    comments: getComments(state),
+    categories: getCategories(state),
     isLoadingPost: posts.loading.isLoading,
     isLoadingComments: comments.loading.isLoading,
     hasErroredPost: posts.loading.hasErrored,

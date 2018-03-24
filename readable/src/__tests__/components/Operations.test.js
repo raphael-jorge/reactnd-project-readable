@@ -5,9 +5,9 @@ import Operations from '../../components/Operations';
 // Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
-    voteData: getDefaultVoteData(),
-    onEdit: { onSubmit: () => {} },
-    onRemove: { onSubmit: () => {} },
+    voteHandler: getDefaultVoteHandler(),
+    editHandler: { onSubmit: () => {} },
+    removeHandler: { onSubmit: () => {} },
   }, propOverrides);
 
   const operations = shallow(<Operations {...props} />);
@@ -29,92 +29,134 @@ const setup = (propOverrides) => {
   };
 };
 
-const getDefaultVoteData = () => ({
-  voteCount: 0,
-  onVoteUp: () => {},
-  onVoteDown: () => {},
+const getDefaultVoteHandler = () => ({
+  voteUp: () => {},
+  voteDown: () => {},
 });
 
 
 // Tests
 describe('<Operations />', () => {
-  describe('vote score control', () => {
-    it('renders the voteScore', () => {
-      const { operations, props } = setup();
-
-      const renderedVoteCount = operations.find('.vote-count');
-
-      expect(renderedVoteCount.length).toBe(1);
-      expect(renderedVoteCount.text()).toBe(props.voteData.voteCount.toString());
-    });
-
+  describe('vote handler', () => {
     it('renders a button to increase the vote score', () => {
-      const voteData = getDefaultVoteData();
-      voteData.onVoteUp = jest.fn();
-      const { props, selectButton } = setup({ voteData });
+      const { operations, selectButton } = setup();
 
       const voteUpRenderedButton = selectButton('Vote Up');
 
+      expect(voteUpRenderedButton.length).toBe(1);
+      expect(voteUpRenderedButton.prop('onClick'))
+        .toBe(operations.instance().handleVoteUp);
+    });
+
+    it('handles the vote up operation', () => {
+      const voteHandler = getDefaultVoteHandler();
+      voteHandler.voteUp = jest.fn();
+      const { operations, props } = setup({ voteHandler });
+
       const event = global.testUtils.getDefaultEvent();
       event.preventDefault = jest.fn();
+      operations.instance().handleVoteUp(event);
 
-      voteUpRenderedButton.prop('onClick')(event);
-
-      expect(voteUpRenderedButton.length).toBe(1);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(props.voteData.onVoteUp).toHaveBeenCalled();
+      expect(props.voteHandler.voteUp).toHaveBeenCalled();
     });
 
     it('renders a button to decrease the vote score', () => {
-      const voteData = getDefaultVoteData();
-      voteData.onVoteDown = jest.fn();
-      const { props, selectButton } = setup({ voteData });
+      const { operations, selectButton } = setup();
 
       const voteDownRenderedButton = selectButton('Vote Down');
 
+      expect(voteDownRenderedButton.length).toBe(1);
+      expect(voteDownRenderedButton.prop('onClick'))
+        .toBe(operations.instance().handleVoteDown);
+    });
+
+    it('handles the vote down operation', () => {
+      const voteHandler = getDefaultVoteHandler();
+      voteHandler.voteDown = jest.fn();
+      const { operations, props } = setup({ voteHandler });
+
       const event = global.testUtils.getDefaultEvent();
       event.preventDefault = jest.fn();
+      operations.instance().handleVoteDown(event);
 
-      voteDownRenderedButton.prop('onClick')(event);
-
-      expect(voteDownRenderedButton.length).toBe(1);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(props.voteData.onVoteDown).toHaveBeenCalled();
+      expect(props.voteHandler.voteDown).toHaveBeenCalled();
     });
   });
 
 
-  describe('edit/remove control', () => {
+  describe('edit/remove handlers', () => {
     it('renders a button to edit', () => {
-      const { operations, props, selectButton } = setup();
-      jest.spyOn(operations.instance(), 'handleRequest');
+      const { operations, selectButton } = setup();
 
       const editRenderedButton = selectButton('Edit');
 
+      expect(editRenderedButton.length).toBe(1);
+      expect(editRenderedButton.prop('onClick'))
+        .toBe(operations.instance().handleEditRequest);
+    });
+
+    it('handles the edit operation request', () => {
+      const editHandler = { onSubmit: () => {} };
+      const { operations } = setup({ editHandler });
+
       const event = global.testUtils.getDefaultEvent();
       event.preventDefault = jest.fn();
+      operations.instance().handleEditRequest(event);
 
-      editRenderedButton.prop('onClick')(event);
-
-      expect(editRenderedButton.length).toBe(1);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(operations.instance().handleRequest).toHaveBeenCalledWith(event, props.onEdit);
+      expect(operations.state('operationHandler')).toBe(editHandler);
+    });
+
+    it('calls editHandler.onRequest method, when set, on a edit operation request', () => {
+      const editHandler = {
+        onSubmit: () => {},
+        onRequest: jest.fn(),
+      };
+      const { operations } = setup({ editHandler });
+
+      const event = global.testUtils.getDefaultEvent();
+      event.preventDefault = jest.fn();
+      operations.instance().handleEditRequest(event);
+
+      expect(editHandler.onRequest).toHaveBeenCalled();
     });
 
     it('renders a button to remove', () => {
-      const { operations, props, selectButton } = setup();
-      jest.spyOn(operations.instance(), 'handleRequest');
+      const { operations, selectButton } = setup();
 
       const removeRenderedButton = selectButton('Delete');
 
+      expect(removeRenderedButton.length).toBe(1);
+      expect(removeRenderedButton.prop('onClick'))
+        .toBe(operations.instance().handleRemoveRequest);
+    });
+
+    it('handles the remove operation request', () => {
+      const removeHandler = { onSubmit: () => {} };
+      const { operations } = setup({ removeHandler });
+
       const event = global.testUtils.getDefaultEvent();
       event.preventDefault = jest.fn();
+      operations.instance().handleRemoveRequest(event);
 
-      removeRenderedButton.prop('onClick')(event);
-
-      expect(removeRenderedButton.length).toBe(1);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(operations.instance().handleRequest).toHaveBeenCalledWith(event, props.onRemove);
+      expect(operations.state('operationHandler')).toBe(removeHandler);
+    });
+
+    it('calls removeHandler.onRequest method, when set, on a remove operation request', () => {
+      const removeHandler = {
+        onSubmit: () => {},
+        onRequest: jest.fn(),
+      };
+      const { operations } = setup({ removeHandler });
+
+      const event = global.testUtils.getDefaultEvent();
+      event.preventDefault = jest.fn();
+      operations.instance().handleRemoveRequest(event);
+
+      expect(removeHandler.onRequest).toHaveBeenCalled();
     });
 
     it('renders an OperationConfirm component when an operation is requested', () => {
@@ -126,29 +168,6 @@ describe('<Operations />', () => {
       const operationConfirm = operations.find('OperationConfirm');
 
       expect(operationConfirm.length).toBe(1);
-    });
-
-    it('sets the operationHandler state once an operation is triggered', () => {
-      const { operations } = setup();
-      const operationHandler = { onSubmit: () => {} };
-
-      const event = global.testUtils.getDefaultEvent();
-      operations.instance().handleRequest(event, operationHandler);
-
-      expect(operations.state('operationHandler')).toEqual(operationHandler);
-    });
-
-    it('calls operation handler`s onRequest method if one is set', () => {
-      const { operations } = setup();
-      const operationHandler = {
-        onRequest: jest.fn(),
-        onSubmit: () => {},
-      };
-
-      const event = global.testUtils.getDefaultEvent();
-      operations.instance().handleRequest(event, operationHandler);
-
-      expect(operationHandler.onRequest).toHaveBeenCalled();
     });
 
     it('calls operation handler`s onAbort method if one is set when aborted', () => {

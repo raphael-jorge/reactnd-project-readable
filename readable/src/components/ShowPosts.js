@@ -1,7 +1,6 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import sortBy from 'sort-by';
 import AddIcon from 'react-icons/lib/fa/plus';
 import {
   setSortOption,
@@ -10,6 +9,8 @@ import {
   fetchUpdatePost,
   fetchAddPost,
 } from '../actions/posts';
+import { getPosts } from '../selectors/posts';
+import { getCategories } from '../selectors/categories';
 import Loading from './Loading';
 import Header from './Header';
 import Menu from './Menu';
@@ -19,26 +20,27 @@ import NotFound from './NotFound';
 import Placeholder from './Placeholder';
 import Post from './Post';
 
-export class ShowPosts extends Component {
+export class ShowPosts extends PureComponent {
   static propTypes = {
-    categories: PropTypes.array.isRequired,
-    activeCategoryPath: PropTypes.string,
     posts: PropTypes.array.isRequired,
-    postsSortOption: PropTypes.object,
+    categories: PropTypes.array.isRequired,
     onSortOptionChange: PropTypes.func.isRequired,
     onPostVote: PropTypes.func.isRequired,
     onPostRemove: PropTypes.func.isRequired,
     onPostUpdate: PropTypes.func.isRequired,
     isLoading: PropTypes.bool,
     hasErrored: PropTypes.bool,
+    postsSortOption: PropTypes.object,
+    activeCategoryPath: PropTypes.string,
   }
-
-  MESSAGE_LOAD_ERROR = 'There was an error while loading posts from the server'
-  MESSAGE_NO_POSTS = 'No Posts Available'
 
   state = {
     isModalAddPostOpen: false,
   }
+
+  MESSAGE_LOAD_ERROR = 'There was an error while loading posts from the server'
+  MESSAGE_NO_POSTS = 'No Posts Available'
+  LOADING_ICON_COMPONENT = <Loading type="icon-squares" />
 
   wasCategoryFound = () => {
     const {
@@ -75,14 +77,14 @@ export class ShowPosts extends Component {
   render() {
     const {
       posts,
-      postsSortOption,
+      categories,
       onPostVote,
       onPostRemove,
       onPostUpdate,
       onPostAdd,
       isLoading,
       hasErrored,
-      categories,
+      postsSortOption,
       activeCategoryPath,
     } = this.props;
 
@@ -97,7 +99,7 @@ export class ShowPosts extends Component {
           {/* Verifica se os posts estão sendo carregados */}
           <Placeholder
             isReady={!isLoading}
-            fallback={<Loading type="icon-squares" />}
+            fallback={this.LOADING_ICON_COMPONENT}
             delay={250}
           >
             {hasErrored ? (
@@ -121,10 +123,8 @@ export class ShowPosts extends Component {
                   ) : (
                     <div>
                       <Menu
-                        sortMenu={{
-                          selectedSortOption: postsSortOption,
-                          onSortOptionChange: this.handleSortOptionChange,
-                        }}
+                        selectedSortOption={postsSortOption}
+                        onSortOptionChange={this.handleSortOptionChange}
                       />
 
                       {posts.map((postData) => (
@@ -158,33 +158,16 @@ export class ShowPosts extends Component {
   }
 }
 
-export const mapStateToProps = ({ posts, categories }, ownProps) => {
-  const postsObj = posts.posts;
-  const postsIds = Object.keys(postsObj);
-  const postsArr = postsIds.map((postId) => (postsObj[postId]));
-
-  const categoriesObj = categories.categories;
-  const categoriesPaths = Object.keys(categoriesObj);
-  const categoriesArr = categoriesPaths.map((path) => categoriesObj[path]);
-
-  const activeCategoryPath = ownProps.activeCategoryPath;
-  let postsToProps;
-  if (activeCategoryPath) {
-    postsToProps = postsArr.filter((post) => post.category === activeCategoryPath);
-  } else {
-    postsToProps = postsArr;
-  }
-
-  if (posts.sortOption) {
-    postsToProps = postsToProps.sort(sortBy(posts.sortOption.value));
-  }
+export const mapStateToProps = (state, ownProps) => {
+  const { posts, categories } = state;
+  const { activeCategoryPath } = ownProps;
 
   return {
+    posts: getPosts(state, ownProps),
+    categories: getCategories(state),
     isLoading: posts.loading.isLoading || categories.loading.isLoading,
     hasErrored: posts.loading.hasErrored || categories.loading.hasErrored,
-    posts: postsToProps,
     postsSortOption: posts.sortOption,
-    categories: categoriesArr,
     activeCategoryPath,
   };
 };

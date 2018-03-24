@@ -58,6 +58,16 @@ describe('<ShowPosts />', () => {
   });
 
 
+  it('renders a loading icon placeholder', () => {
+    const { showPosts } = setup();
+
+    const placeholder = showPosts.find('Placeholder');
+
+    expect(placeholder.length).toBe(1);
+    expect(placeholder.prop('fallback')).toBe(showPosts.instance().LOADING_ICON_COMPONENT);
+  });
+
+
   it('renders a NotFound component if activeCategoryPath is not found in categories', () => {
     const categories = global.testUtils.getDefaultCategoriesArray();
     const activeCategoryPath = 'noMatchCategoryPath';
@@ -114,12 +124,14 @@ describe('<ShowPosts />', () => {
     });
   });
 
+
   it('renders a Menu component when posts are available', () => {
     const posts = global.testUtils.getDefaultPostsArray();
     const { showPosts } = setup({ posts });
 
     expect(showPosts.find('Menu').length).toBe(1);
   });
+
 
   it('provides a method to handle sort option change', () => {
     const posts = global.testUtils.getDefaultPostsArray();
@@ -131,16 +143,17 @@ describe('<ShowPosts />', () => {
     expect(props.onSortOptionChange).toHaveBeenCalled();
   });
 
+
   it('sets the Menu component sort configuration', () => {
     const posts = global.testUtils.getDefaultPostsArray();
     const { showPosts, props } = setup({ posts });
 
     const menu = showPosts.find('Menu');
-    const sortMenu = menu.prop('sortMenu');
 
-    expect(sortMenu.selectedSortOption).toBe(props.postsSortOption);
-    expect(sortMenu.onSortOptionChange).toBe(showPosts.instance().handleSortOptionChange);
+    expect(menu.prop('selectedSortOption')).toBe(props.postsSortOption);
+    expect(menu.prop('onSortOptionChange')).toBe(showPosts.instance().handleSortOptionChange);
   });
+
 
   it('renders a Message component when posts is empty', () => {
     const { showPosts } = setup();
@@ -345,6 +358,7 @@ describe('mapDispatchToProps', () => {
     expect(postsActions.fetchVoteOnPost).toHaveBeenCalledWith(postData, vote);
   });
 
+
   it('sets the onPostRemove prop to dispatch the fetchRemovePost action', () => {
     const mappedProps = mapDispatchToProps(dispatchMock);
     const postData = global.testUtils.getDefaultPostData();
@@ -354,6 +368,7 @@ describe('mapDispatchToProps', () => {
     mappedProps.onPostRemove(postData);
     expect(postsActions.fetchRemovePost).toHaveBeenCalledWith(postData);
   });
+
 
   it('sets the onPostUpdate prop to dispatch the fetchUpdatePost action', () => {
     const mappedProps = mapDispatchToProps(dispatchMock);
@@ -369,6 +384,7 @@ describe('mapDispatchToProps', () => {
     expect(postsActions.fetchUpdatePost).toHaveBeenCalledWith(postData, updatedPostData);
   });
 
+
   it('sets the onPostAdd prop to dispatch the fetchAddPost action', () => {
     const mappedProps = mapDispatchToProps(dispatchMock);
     const postDataToAdd = {
@@ -383,6 +399,7 @@ describe('mapDispatchToProps', () => {
     mappedProps.onPostAdd(postDataToAdd);
     expect(postsActions.fetchAddPost).toHaveBeenCalledWith(postDataToAdd);
   });
+
 
   it('sets the onSortOptionChange prop to dispatch the setSortOption action', () => {
     const mappedProps = mapDispatchToProps(dispatchMock);

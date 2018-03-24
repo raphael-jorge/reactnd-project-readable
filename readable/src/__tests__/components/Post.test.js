@@ -36,6 +36,16 @@ describe('<Post />', () => {
   });
 
 
+  it('renders a loading cover placeholder', () => {
+    const { post } = setup();
+
+    const placeholder = post.find('Placeholder');
+
+    expect(placeholder.length).toBe(1);
+    expect(placeholder.prop('fallback')).toBe(post.instance().LOADING_COVER_COMPONENT);
+  });
+
+
   describe('operations', () => {
     it('renders an Operations component', () => {
       const { post } = setup();
@@ -49,9 +59,9 @@ describe('<Post />', () => {
       const { post, props } = setup({ onVote });
 
       const operations = post.find('Operations');
-      const operationVote = operations.prop('voteData');
+      const voteHandler = operations.prop('voteHandler');
 
-      operationVote.onVoteUp();
+      voteHandler.voteUp();
       expect(props.onVote).toHaveBeenCalledWith(props.postData, 1);
     });
 
@@ -60,19 +70,10 @@ describe('<Post />', () => {
       const { post, props } = setup({ onVote });
 
       const operations = post.find('Operations');
-      const operationVote = operations.prop('voteData');
+      const voteHandler = operations.prop('voteHandler');
 
-      operationVote.onVoteDown();
+      voteHandler.voteDown();
       expect(props.onVote).toHaveBeenCalledWith(props.postData, -1);
-    });
-
-    it('sets the remove operation methods correctly', () => {
-      const { post } = setup();
-
-      const operations = post.find('Operations');
-      const operationRemove = operations.prop('onRemove');
-
-      expect(operationRemove.onSubmit).toBe(post.instance().handleRemoveSubmit);
     });
 
     it('handles the post remove operation', async () => {
@@ -80,22 +81,21 @@ describe('<Post />', () => {
       const { post, props } = setup({ onRemove });
 
       const operations = post.find('Operations');
-      const operationRemove = operations.prop('onRemove');
-      const success = await operationRemove.onSubmit();
+      const removeHandler = operations.prop('removeHandler');
+      await removeHandler.onSubmit();
 
       expect(props.onRemove).toHaveBeenCalledWith(props.postData);
-      expect(success).toBe(true);
     });
 
     it('sets edit operation methods correctly', () => {
       const { post } = setup();
 
       const operations = post.find('Operations');
-      const operationEdit = operations.prop('onEdit');
+      const editHandler = operations.prop('editHandler');
 
-      expect(operationEdit.onRequest).toBe(post.instance().handleEditModeEnter);
-      expect(operationEdit.onSubmit).toBe(post.instance().handleEditSubmit);
-      expect(operationEdit.onAbort).toBe(post.instance().handleEditModeLeave);
+      expect(editHandler.onRequest).toBe(post.instance().handleEditModeEnter);
+      expect(editHandler.onSubmit).toBe(post.instance().handleEditSubmit);
+      expect(editHandler.onAbort).toBe(post.instance().handleEditModeLeave);
     });
   });
 

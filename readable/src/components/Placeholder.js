@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
 /**
@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
  * de delay, determinando um tempo mínimo a esperar para renderizar
  * o componente fallback.
  */
-export default class Placeholder extends Component {
+export default class Placeholder extends PureComponent {
   static propTypes = {
     isReady: PropTypes.bool.isRequired,
     fallback: PropTypes.element,

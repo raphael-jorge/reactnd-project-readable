@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import { areAllEntriesProvided } from '../util/utils';
@@ -10,7 +10,7 @@ import Post from './Post';
 /**
  * Um componente modal para criação de novos comentários
  */
-export default class ModalAddComment extends Component {
+export default class ModalAddComment extends PureComponent {
   static propTypes = {
     isOpen: PropTypes.bool.isRequired,
     postData: PropTypes.object.isRequired,
@@ -25,6 +25,8 @@ export default class ModalAddComment extends Component {
     authorErrorClass: '',
     bodyErrorClass: '',
   }
+
+  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
 
   handleAuthorChange = (event) => {
     const newAuthor = event.target.value;
@@ -114,7 +116,7 @@ export default class ModalAddComment extends Component {
           {/* Loading para processamento */}
           <Placeholder
             isReady={!this.state.isProcessing}
-            fallback={<Loading type="cover-squares" />}
+            fallback={this.LOADING_COVER_COMPONENT}
             delay={250}
           />
 

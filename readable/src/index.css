@@ -277,6 +277,14 @@ a {
   color: #777;
   text-align: right;
 }
+.post-vote-score {
+  position: absolute;
+  top: 55px;
+  left: 0;
+  width: 50px;
+  text-align: center;
+  color: #777;
+}
 .post-comments-info .info-data {
   margin: 0 10px;
 }
@@ -326,6 +334,14 @@ a {
   letter-spacing: 0.03rem;
   line-height: 1.2rem;
 }
+.comment-vote-score {
+  position: absolute;
+  top: 34px;
+  left: 0;
+  width: 50px;
+  text-align: center;
+  color: #777;
+}
 
 
 /* Control */
@@ -348,13 +364,13 @@ a {
 /* Vote operations */
 .post-operations .vote-operations {
   position: absolute;
-  top: 35px;
+  top: 30px;
   left: 0;
   width: 50px;
 }
 .comment-operations .vote-operations {
   position: absolute;
-  top: 11px;
+  top: 9px;
   left: 0;
   width: 50px;
 }
@@ -364,8 +380,13 @@ a {
 }
 .vote-operations .vote-up,
 .vote-operations .vote-down {
+  margin: 0 auto;
+  display: block;
   color: #bbb;
   transition: color 0.2s;
+}
+.vote-operations .vote-down {
+  margin-top: 25px;
 }
 .vote-operations .vote-up:hover,
 .vote-operations .vote-down:hover {

@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import CheckIcon from 'react-icons/lib/fa/check';
 import CrossIcon from 'react-icons/lib/fa/close';
 
-export default class OperationConfirm extends Component {
+export default class OperationConfirm extends PureComponent {
   static propTypes = {
     onConfirm: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,

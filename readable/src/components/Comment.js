@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { formatDate, areAllEntriesProvided, areKeysDifferent } from '../util/utils';
 import Operations from './Operations';
 import Loading from './Loading';
 import Placeholder from './Placeholder';
 
-export default class Comment extends Component {
+export default class Comment extends PureComponent {
   static propTypes = {
     commentData: PropTypes.object.isRequired,
     onVote: PropTypes.func.isRequired,
@@ -18,6 +18,8 @@ export default class Comment extends Component {
     bodyInput: '',
     bodyInputErrorClass: '',
   }
+
+  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
 
   handleBodyInputChange = (event) => {
     const newBody = event.target.value;
@@ -66,15 +68,24 @@ export default class Comment extends Component {
     return done;
   }
 
-  handleRemoveSubmit = async () => {
-    await this.props.onRemove(this.props.commentData);
-    return true;
-  }
+  voteHandler = ((self=this) => ({
+    voteUp: () => self.props.onVote(this.props.commentData, 1),
+    voteDown: () => self.props.onVote(this.props.commentData, -1),
+  }))()
+
+  editHandler = ((self=this) => ({
+    onRequest: self.handleEditModeEnter,
+    onAbort: self.handleEditModeLeave,
+    onSubmit: self.handleEditSubmit,
+  }))()
+
+  removeHandler = ((self=this) => ({
+    onSubmit: () => self.props.onRemove(self.props.commentData),
+  }))()
 
   render() {
     const {
       commentData,
-      onVote,
     } = this.props;
 
     return (
@@ -82,7 +93,7 @@ export default class Comment extends Component {
 
         <Placeholder
           isReady={!commentData.processing}
-          fallback={<Loading type="cover-squares" />}
+          fallback={this.LOADING_COVER_COMPONENT}
           delay={250}
         />
 
@@ -90,6 +101,10 @@ export default class Comment extends Component {
           <span>{ commentData.author }</span>
           { ' - ' }
           <span>{ formatDate(commentData.timestamp) }</span>
+        </div>
+
+        <div className="comment-vote-score">
+          {commentData.voteScore}
         </div>
 
         {this.state.editMode ? (
@@ -106,17 +121,9 @@ export default class Comment extends Component {
         )}
 
         <Operations
-          voteData={{
-            voteCount: commentData.voteScore,
-            onVoteUp: () => onVote(commentData, 1),
-            onVoteDown: () => onVote(commentData, -1),
-          }}
-          onEdit={{
-            onRequest: this.handleEditModeEnter,
-            onAbort: this.handleEditModeLeave,
-            onSubmit: this.handleEditSubmit,
-          }}
-          onRemove={{ onSubmit: this.handleRemoveSubmit }}
+          voteHandler={this.voteHandler}
+          editHandler={this.editHandler}
+          removeHandler={this.removeHandler}
         />
 
       </article>
