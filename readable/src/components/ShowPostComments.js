@@ -113,7 +113,7 @@ export class ShowPostComments extends PureComponent {
                 ) : (
                   <div>
                     <button
-                      className="btn-fixed btn-magenta"
+                      className="btn btn-fixed btn-magenta-shadow"
                       title="Add Comment"
                       onClick={this.openModalAddComment}
                     >

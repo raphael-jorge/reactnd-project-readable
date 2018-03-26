@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import escapeRegExp from 'escape-string-regexp';
 import AddIcon from 'react-icons/lib/fa/plus';
 import {
   setSortOption,
@@ -34,13 +35,29 @@ export class ShowPosts extends PureComponent {
     activeCategoryPath: PropTypes.string,
   }
 
+  postsSearchOptions = [
+    { value: 'title', label: 'Title' },
+    { value: 'author', label: 'Author' },
+  ]
+
   state = {
     isModalAddPostOpen: false,
+    postsSearchQuery: '',
+    postsSearchOption: this.postsSearchOptions[0],
   }
 
   MESSAGE_LOAD_ERROR = 'There was an error while loading posts from the server'
   MESSAGE_NO_POSTS = 'No Posts Available'
   LOADING_ICON_COMPONENT = <Loading type="icon-squares" />
+
+  componentWillReceiveProps(nextProps) {
+    const { activeCategoryPath: currentActiveCategoryPath } = this.props;
+    const { activeCategoryPath: nextActiveCategoryPath } = nextProps;
+
+    if (nextActiveCategoryPath !== currentActiveCategoryPath) {
+      this.clearSearchQuery();
+    }
+  }
 
   wasCategoryFound = () => {
     const {
@@ -66,12 +83,38 @@ export class ShowPosts extends PureComponent {
     this.props.onSortOptionChange(selectedOption);
   }
 
+  handleSearchOptionChange = (selectedOption) => {
+    this.setState({ postsSearchOption: selectedOption });
+  }
+
+  handleSearchQueryChange = (event) => {
+    this.setState({ postsSearchQuery: event.target.value });
+  }
+
+  clearSearchQuery = () => {
+    this.setState({ postsSearchQuery: '' });
+  }
+
   openModalAddPost = () => {
     this.setState({ isModalAddPostOpen: true });
   }
 
   closeModalAddPost = () => {
     this.setState({ isModalAddPostOpen: false });
+  }
+
+  filterPostsByQuery = () => {
+    const { posts } = this.props;
+    const { postsSearchQuery, postsSearchOption } = this.state;
+    let postsToShow;
+    if (postsSearchQuery) {
+      const match = new RegExp(escapeRegExp(postsSearchQuery.trim()), 'i');
+      postsToShow = posts.filter((post) => match.test(post[postsSearchOption.value]));
+    } else {
+      postsToShow = posts;
+    }
+
+    return postsToShow;
   }
 
   render() {
@@ -89,6 +132,8 @@ export class ShowPosts extends PureComponent {
     } = this.props;
 
     const pageFound = this.wasCategoryFound();
+
+    const postsToShow = this.filterPostsByQuery();
 
     return (
       <div>
@@ -110,7 +155,7 @@ export class ShowPosts extends PureComponent {
               ) : (
                 <div>
                   <button
-                    className="btn-fixed btn-blue"
+                    className="btn btn-fixed btn-blue-shadow"
                     title="Add Post"
                     onClick={this.openModalAddPost}
                   >
@@ -125,9 +170,28 @@ export class ShowPosts extends PureComponent {
                       <Menu
                         selectedSortOption={postsSortOption}
                         onSortOptionChange={this.handleSortOptionChange}
+                        searchOptions={this.postsSearchOptions}
+                        selectedSearchOption={this.state.postsSearchOption}
+                        onSearchOptionChange={this.handleSearchOptionChange}
+                        searchQueryValue={this.state.postsSearchQuery}
+                        onSearchQueryChange={this.handleSearchQueryChange}
                       />
 
-                      {posts.map((postData) => (
+                      {this.state.postsSearchQuery.trim() &&
+                        <div className="status-group">
+                          <Message
+                            msg={`Found ${postsToShow.length} matching posts of ${posts.length}.`}
+                          />
+                          <button
+                            className="btn btn-blue-border"
+                            onClick={this.clearSearchQuery}
+                          >
+                            Show All Posts
+                          </button>
+                        </div>
+                      }
+
+                      {postsToShow.map((postData) => (
                         <Post
                           key={postData.id}
                           postData={postData}

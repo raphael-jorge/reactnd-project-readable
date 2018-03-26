@@ -144,14 +144,87 @@ describe('<ShowPosts />', () => {
   });
 
 
-  it('sets the Menu component sort configuration', () => {
+  it('provides a method to handle the search option change', () => {
     const posts = global.testUtils.getDefaultPostsArray();
-    const { showPosts, props } = setup({ posts });
+    const { showPosts } = setup({ posts });
 
-    const menu = showPosts.find('Menu');
+    const searchOption = { value: 'searchOption', label: 'Search Option' };
+    showPosts.instance().handleSearchOptionChange(searchOption);
 
-    expect(menu.prop('selectedSortOption')).toBe(props.postsSortOption);
-    expect(menu.prop('onSortOptionChange')).toBe(showPosts.instance().handleSortOptionChange);
+    expect(showPosts.state('postsSearchOption')).toBe(searchOption);
+  });
+
+
+  it('provides a method to handle the search query change', () => {
+    const posts = global.testUtils.getDefaultPostsArray();
+    const { showPosts } = setup({ posts });
+
+    const searchQueryValue = 'new search query';
+    const changeQueryEvent = global.testUtils.getDefaultEvent({ targetValue: searchQueryValue });
+    showPosts.instance().handleSearchQueryChange(changeQueryEvent);
+
+    expect(showPosts.state('postsSearchQuery')).toBe(searchQueryValue);
+  });
+
+
+  it('resets the postsSearchQuery state once the activeCategoryPath prop changes', () => {
+    const { showPosts } = setup();
+    showPosts.setState({ postsSearchQuery: 'some query value' });
+
+    const activeCategoryPath = 'newCategoryPath';
+    showPosts.setProps({ activeCategoryPath });
+
+    expect(showPosts.state('postsSearchQuery')).toBe('');
+  });
+
+
+  it('keeps the postsSearchQuery state when the activecategoryPath prop does not change', () => {
+    const { showPosts } = setup();
+    const postsSearchQuery = 'some query value';
+    showPosts.setState({ postsSearchQuery });
+
+    showPosts.setProps({ posts: [] });
+
+    expect(showPosts.state('postsSearchQuery')).toBe(postsSearchQuery);
+  });
+
+
+  it('filters displayed posts by postsSearchQuery and postsSearchOption', () => {
+    const posts = global.testUtils.getDefaultPostsArray();
+    const searchOptionKey = 'testSearchOption';
+    // Configura a key nos posts
+    posts.forEach((post, i) => {
+      post[searchOptionKey] = `${i}`;
+    });
+
+    const { showPosts } = setup({ posts });
+
+    expect(showPosts.find('Post').length).toBe(posts.length);
+
+    // Configura as configurações de filtro para filtrar os posts
+    const searchQuery = '1';
+    showPosts.setState({
+      postsSearchOption: { value: searchOptionKey, label: 'Test Search Option' },
+      postsSearchQuery: searchQuery,
+    });
+
+    expect(showPosts.find('Post').length).toBe(1);
+  });
+
+
+  it('renders a button to reset the search options once they are set', () => {
+    const posts = global.testUtils.getDefaultPostsArray();
+    const { showPosts } = setup({ posts });
+
+    showPosts.setState({
+      postsSearchOption: { value: 'searchOptionValue', label: 'Test Search Option' },
+      postsSearchQuery: 'searchQuery',
+    });
+
+    const button = showPosts.find('.status-group .btn');
+
+    expect(button.length).toBe(1);
+    expect(button.prop('onClick')).toBe(showPosts.instance().clearSearchQuery);
   });
 
 
