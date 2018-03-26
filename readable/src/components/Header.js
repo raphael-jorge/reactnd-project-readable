@@ -15,7 +15,7 @@ export default function Header(props) {
       <div className="container">
 
         <Link to={routes.root}>
-          <h1>Readable</h1>
+          <h1 className="font-cursive">Readable</h1>
         </Link>
 
         <nav className="header-nav">

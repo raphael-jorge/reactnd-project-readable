@@ -143,6 +143,8 @@ export default class ModalAddPost extends PureComponent {
         overlayClassName="modal-overlay"
         shouldCloseOnOverlayClick={false}
       >
+        <h2 className="modal-header font-cursive">New Post</h2>
+
         {/* Loading para processamento */}
         <Placeholder
           isReady={!this.state.isProcessing}

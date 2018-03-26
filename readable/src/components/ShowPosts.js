@@ -155,7 +155,7 @@ export class ShowPosts extends PureComponent {
               ) : (
                 <div>
                   <button
-                    className="btn btn-fixed btn-blue-shadow"
+                    className={`btn btn-fixed btn-blue-shadow ${activeCategoryPath}`}
                     title="Add Post"
                     onClick={this.openModalAddPost}
                   >

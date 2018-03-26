@@ -120,6 +120,8 @@ export default class ModalAddComment extends PureComponent {
             delay={250}
           />
 
+          <h2 className="modal-header font-cursive">New Comment</h2>
+
           <form className="form">
             {/* Entrada do autor */}
             <label htmlFor="input-author">
