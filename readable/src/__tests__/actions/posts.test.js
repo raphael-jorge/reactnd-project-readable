@@ -2,6 +2,7 @@ import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import * as PostsAPI from '../../util/PostsAPI';
 import * as postsActions from '../../actions/posts';
+import createSimpleId from '../../util/createSimpleId';
 
 // Mock PostsAPI
 jest.mock('../../util/PostsAPI', () => {
@@ -9,7 +10,7 @@ jest.mock('../../util/PostsAPI', () => {
 
   return {
     get: { posts: jest.fn(() => Promise.resolve(posts)) },
-    create: {
+    add: {
       post: jest.fn((postData) => {
         const createdPost = { ...postData };
         createdPost.id = 'testCreatedPostId';
@@ -18,14 +19,13 @@ jest.mock('../../util/PostsAPI', () => {
       voteOnPost: jest.fn(() => Promise.resolve()),
     },
     update: { post: jest.fn(() => Promise.resolve()) },
-    del: { post: jest.fn(() => Promise.resolve()) },
+    remove: { post: jest.fn(() => Promise.resolve()) },
   };
 });
 
 // Mock createId
-jest.mock('../../util/utils', () => {
-  return { createId: () => 'testOperationId' };
-});
+jest.mock('../../util/createSimpleId');
+createSimpleId.mockImplementation(() => 'testOperationId');
 
 // Mock redux store
 const middlewares = [thunk];
@@ -154,17 +154,6 @@ describe('actions', () => {
       expect(postsActions.setProcessingState(postToSet, processingState))
         .toEqual(expectedAction);
     });
-
-    it('should create an action to set the sort option', () => {
-      const sortOption = { value: 'testSortOption', label: 'test sort option' };
-
-      const expectedAction = {
-        type: postsActions.POSTS_SET_SORT_OPTION,
-        sortOption,
-      };
-
-      expect(postsActions.setSortOption(sortOption)).toEqual(expectedAction);
-    });
   });
 
 
@@ -226,7 +215,7 @@ describe('actions', () => {
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
-      expect(PostsAPI.create.post).toHaveBeenCalledWith(postToAdd);
+      expect(PostsAPI.add.post).toHaveBeenCalledWith(postToAdd);
     });
 
     it('should remove a post from the api and dispatch actions on success', async () => {
@@ -242,11 +231,11 @@ describe('actions', () => {
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
-      expect(PostsAPI.del.post).toHaveBeenCalledWith(postToRemove.id);
+      expect(PostsAPI.remove.post).toHaveBeenCalledWith(postToRemove.id);
     });
 
     it('should remove a post from the api and dispatch actions on failure', async () => {
-      PostsAPI.del.post.mockImplementationOnce(() => Promise.reject());
+      PostsAPI.remove.post.mockImplementationOnce(() => Promise.reject());
       const postToRemove = global.testUtils.getDefaultPostData();
 
       const expectedActions = [
@@ -259,7 +248,7 @@ describe('actions', () => {
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
-      expect(PostsAPI.del.post).toHaveBeenCalledWith(postToRemove.id);
+      expect(PostsAPI.remove.post).toHaveBeenCalledWith(postToRemove.id);
     });
 
     it('should update a post on the api and dispatch actions on success', async () => {
@@ -313,11 +302,11 @@ describe('actions', () => {
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
-      expect(PostsAPI.create.voteOnPost).toHaveBeenCalledWith(postToVote.id, vote);
+      expect(PostsAPI.add.voteOnPost).toHaveBeenCalledWith(postToVote.id, vote);
     });
 
     it('should vote on a post on the api and dispatch actions on failure', async () => {
-      PostsAPI.create.voteOnPost.mockImplementationOnce(() => Promise.reject());
+      PostsAPI.add.voteOnPost.mockImplementationOnce(() => Promise.reject());
       const postToVote = global.testUtils.getDefaultPostData();
       const vote = 1;
 
@@ -331,7 +320,7 @@ describe('actions', () => {
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
-      expect(PostsAPI.create.voteOnPost).toHaveBeenCalledWith(postToVote.id, vote);
+      expect(PostsAPI.add.voteOnPost).toHaveBeenCalledWith(postToVote.id, vote);
     });
   });
 });

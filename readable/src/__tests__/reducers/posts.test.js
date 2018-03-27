@@ -200,18 +200,6 @@ describe('reducer', () => {
 
       expect(reducer(initialState, testAction)).toEqual(expectedState);
     });
-
-    it('should handle POSTS_SET_SORT_OPTION', () => {
-      const sortOption = { value: 'testSortOption', label: 'test sort option' };
-
-      const initialState = { sortOption: null };
-
-      const testAction = postsActions.setSortOption(sortOption);
-
-      const expectedState = { sortOption };
-
-      expect(reducer(initialState, testAction)).toEqual(expectedState);
-    });
   });
 
 

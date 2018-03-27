@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
-import { areAllEntriesProvided } from '../util/utils';
+import { areAllEntriesProvided } from '../util/objectsVerifier';
 import Loading from './Loading';
 import OperationConfirm from './OperationConfirm';
 import Placeholder from './Placeholder';
@@ -18,6 +18,8 @@ export default class ModalAddComment extends PureComponent {
     onCommentAdd: PropTypes.func.isRequired,
   }
 
+  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
+
   state = {
     isProcessing: false,
     author: '',
@@ -25,8 +27,6 @@ export default class ModalAddComment extends PureComponent {
     authorErrorClass: '',
     bodyErrorClass: '',
   }
-
-  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
 
   handleAuthorChange = (event) => {
     const newAuthor = event.target.value;

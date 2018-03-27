@@ -5,6 +5,7 @@ import Menu from '../../components/Menu';
 // Utils
 const setup = (propOverrides) => {
   const props = Object.assign({
+    sortOptions: [],
     selectedSortOption: undefined,
     onSortOptionChange: () => {},
     searchOptions: [],
@@ -16,7 +17,6 @@ const setup = (propOverrides) => {
 
   const menu = shallow(<Menu {...props} />);
 
-  const sortOptions = menu.instance().sortOptions;
   const sortOptionSelector = () => menu.find('.menu-sort Select');
   const searchOptionSelector = () => menu.find('.menu-search Select');
   const searchInputSelector = () => menu.find('.menu-search input');
@@ -24,7 +24,6 @@ const setup = (propOverrides) => {
   return {
     props,
     menu,
-    sortOptions,
     sortOptionSelector,
     searchOptionSelector,
     searchInputSelector,
@@ -46,9 +45,17 @@ describe('<Menu />', () => {
       expect(sortOptionSelector().length).toBe(1);
     });
 
+    it('sets the search options', () => {
+      const sortOptions = getDefaultOptions();
+      const { sortOptionSelector } = setup({ sortOptions });
+
+      expect(sortOptionSelector().prop('options')).toEqual(sortOptions);
+    });
+
     it('sets the selected sort option', () => {
       let selectedSortOption = null;
-      const { menu, sortOptions, sortOptionSelector } = setup({ selectedSortOption });
+      const sortOptions = getDefaultOptions();
+      const { menu, sortOptionSelector } = setup({ selectedSortOption, sortOptions });
 
       sortOptions.forEach((sortOption) => {
         selectedSortOption = sortOption;

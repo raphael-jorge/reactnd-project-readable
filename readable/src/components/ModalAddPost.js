@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
-import { capitalize, areAllEntriesProvided } from '../util/utils';
+import capitalize from '../util/capitalize';
+import { areAllEntriesProvided } from '../util/objectsVerifier';
 import Loading from './Loading';
 import OperationConfirm from './OperationConfirm';
 import Placeholder from './Placeholder';
@@ -18,6 +19,8 @@ export default class ModalAddPost extends PureComponent {
     activeCategoryPath: PropTypes.string,
   }
 
+  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
+
   state = {
     isProcessing: false,
     title: '',
@@ -29,8 +32,6 @@ export default class ModalAddPost extends PureComponent {
     authorErrorClass: '',
     categoryErrorClass: '',
   }
-
-  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
 
   componentWillReceiveProps(nextProps) {
     // Atualiza o estado category com base na categoria atual

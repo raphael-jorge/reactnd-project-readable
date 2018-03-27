@@ -164,7 +164,7 @@ describe('PostsAPI', () => {
         category: 'testCategory',
       };
 
-      await api.create.post(postToAdd);
+      await api.add.post(postToAdd);
       const fetchBody = getLastFetchCallBody();
 
       verifyLastFetchCallParameters(expectedMethod, expectedUrl);
@@ -183,7 +183,7 @@ describe('PostsAPI', () => {
       const testVote = 1;
       const expectedUrl = `${apiUrl}/posts/${testPostId}`;
 
-      await api.create.voteOnPost(testPostId, testVote);
+      await api.add.voteOnPost(testPostId, testVote);
       const fetchBody = getLastFetchCallBody();
 
       verifyLastFetchCallParameters(expectedMethod, expectedUrl);
@@ -196,7 +196,7 @@ describe('PostsAPI', () => {
       const testVote = -1;
       const expectedUrl = `${apiUrl}/posts/${testPostId}`;
 
-      await api.create.voteOnPost(testPostId, testVote);
+      await api.add.voteOnPost(testPostId, testVote);
       const fetchBody = getLastFetchCallBody();
 
       verifyLastFetchCallParameters(expectedMethod, expectedUrl);
@@ -212,7 +212,7 @@ describe('PostsAPI', () => {
         body: 'testBody',
       };
 
-      await api.create.comment(testPostId, testComment);
+      await api.add.comment(testPostId, testComment);
       const fetchBody = getLastFetchCallBody();
 
       verifyLastFetchCallParameters(expectedMethod, expectedUrl);
@@ -229,7 +229,7 @@ describe('PostsAPI', () => {
       const expectedUrl = `${apiUrl}/comments/${testCommentId}`;
       const testVote = 1;
 
-      await api.create.voteOnComment(testCommentId, testVote);
+      await api.add.voteOnComment(testCommentId, testVote);
       const fetchBody = getLastFetchCallBody();
 
       verifyLastFetchCallParameters(expectedMethod, expectedUrl);
@@ -242,7 +242,7 @@ describe('PostsAPI', () => {
       const expectedUrl = `${apiUrl}/comments/${testCommentId}`;
       const testVote = -1;
 
-      await api.create.voteOnComment(testCommentId, testVote);
+      await api.add.voteOnComment(testCommentId, testVote);
       const fetchBody = getLastFetchCallBody();
 
       verifyLastFetchCallParameters(expectedMethod, expectedUrl);
@@ -297,7 +297,7 @@ describe('PostsAPI', () => {
       const testPostId = 'testId';
       const expectedUrl = `${apiUrl}/posts/${testPostId}`;
 
-      await api.del.post(testPostId);
+      await api.remove.post(testPostId);
 
       verifyLastFetchCallParameters(expectedMethod, expectedUrl);
     });
@@ -307,7 +307,7 @@ describe('PostsAPI', () => {
       const testCommentId = 'testId';
       const expectedUrl = `${apiUrl}/comments/${testCommentId}`;
 
-      await api.del.comment(testCommentId);
+      await api.remove.comment(testCommentId);
 
       verifyLastFetchCallParameters(expectedMethod, expectedUrl);
     });

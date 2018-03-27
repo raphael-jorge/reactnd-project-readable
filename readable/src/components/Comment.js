@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { formatDate, areAllEntriesProvided, areKeysDifferent } from '../util/utils';
+import formatDate from '../util/formatDate';
+import { areAllEntriesProvided, areKeysDifferent } from '../util/objectsVerifier';
 import Operations from './Operations';
 import Loading from './Loading';
 import Placeholder from './Placeholder';
@@ -13,13 +14,13 @@ export default class Comment extends PureComponent {
     onUpdate: PropTypes.func.isRequired,
   }
 
+  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
+
   state = {
     editMode: false,
     bodyInput: '',
     bodyInputErrorClass: '',
   }
-
-  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
 
   handleBodyInputChange = (event) => {
     const newBody = event.target.value;
@@ -31,20 +32,22 @@ export default class Comment extends PureComponent {
     });
   }
 
-  handleEditModeEnter = () => {
-    this.setState({
-      editMode: true,
-      bodyInput: this.props.commentData.body,
-    });
-  }
+  handleVoteUp = () => this.props.onVote(this.props.commentData, 1)
 
-  handleEditModeLeave = () => {
-    this.setState({
-      editMode: false,
-      bodyInput: '',
-      bodyInputErrorClass: '',
-    });
-  }
+  handleVoteDown = () => this.props.onVote(this.props.commentData, -1)
+
+  handleRemoveSubmit = () => this.props.onRemove(this.props.commentData)
+
+  handleEditModeEnter = () => this.setState({
+    editMode: true,
+    bodyInput: this.props.commentData.body,
+  });
+
+  handleEditModeLeave = () => this.setState({
+    editMode: false,
+    bodyInput: '',
+    bodyInputErrorClass: '',
+  });
 
   handleEditSubmit = async () => {
     let done = true;
@@ -69,8 +72,8 @@ export default class Comment extends PureComponent {
   }
 
   voteHandler = ((self=this) => ({
-    voteUp: () => self.props.onVote(this.props.commentData, 1),
-    voteDown: () => self.props.onVote(this.props.commentData, -1),
+    voteUp: self.handleVoteUp,
+    voteDown: self.handleVoteDown,
   }))()
 
   editHandler = ((self=this) => ({
@@ -80,7 +83,7 @@ export default class Comment extends PureComponent {
   }))()
 
   removeHandler = ((self=this) => ({
-    onSubmit: () => self.props.onRemove(self.props.commentData),
+    onSubmit: self.handleRemoveSubmit,
   }))()
 
   render() {

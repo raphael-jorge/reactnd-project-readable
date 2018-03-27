@@ -1,5 +1,5 @@
 import * as PostsAPI from '../util/PostsAPI';
-import { createId } from '../util/utils';
+import createIdSimpleId from '../util/createSimpleId';
 
 export const COMMENTS_SET = 'COMMENTS_SET';
 export const COMMENTS_ADD = 'COMMENTS_ADD';
@@ -57,7 +57,7 @@ export const setProcessingState = (comment, processingState) => ({
 // Async Actions
 
 export const fetchComments = (parentPostId) => ((dispatch) => {
-  const operationId = createId();
+  const operationId = createIdSimpleId();
   dispatch(setLoadingState({
     id: operationId,
     isLoading: true,
@@ -82,7 +82,7 @@ export const fetchComments = (parentPostId) => ((dispatch) => {
 });
 
 export const fetchAddComment = (postId, comment) => ((dispatch) => {
-  return PostsAPI.create.comment(postId, comment)
+  return PostsAPI.add.comment(postId, comment)
     .then((createdComment) => {
       dispatch(addComment(createdComment));
     });
@@ -91,7 +91,7 @@ export const fetchAddComment = (postId, comment) => ((dispatch) => {
 export const fetchRemoveComment = (comment) => ((dispatch) => {
   dispatch(setProcessingState(comment, true));
 
-  return PostsAPI.del.comment(comment.id)
+  return PostsAPI.remove.comment(comment.id)
     .then(() => {
       dispatch(removeComment(comment));
     })
@@ -116,7 +116,7 @@ export const fetchUpdateComment = (comment, updatedData) => ((dispatch) => {
 export const fetchVoteOnComment = (comment, vote) => ((dispatch) => {
   dispatch(setProcessingState(comment, true));
 
-  return PostsAPI.create.voteOnComment(comment.id, vote)
+  return PostsAPI.add.voteOnComment(comment.id, vote)
     .then(() => {
       dispatch(voteOnComment(comment, vote));
       dispatch(setProcessingState(comment, false));

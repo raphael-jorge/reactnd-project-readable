@@ -2,6 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Message from './Message';
 
+Loading.propTypes = {
+  type: PropTypes.string,
+};
+
 export default function Loading(props) {
   switch (props.type) {
     case 'icon-squares':
@@ -24,7 +28,3 @@ export default function Loading(props) {
       return <Message msg={'Loading...'}/>;
   }
 }
-
-Loading.propTypes = {
-  type: PropTypes.string,
-};

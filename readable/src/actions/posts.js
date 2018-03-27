@@ -1,5 +1,5 @@
 import * as PostsAPI from '../util/PostsAPI';
-import { createId } from '../util/utils';
+import createIdSimpleId from '../util/createSimpleId';
 
 export const POSTS_SET = 'POSTS_SET';
 export const POSTS_ADD = 'POSTS_ADD';
@@ -8,7 +8,6 @@ export const POSTS_UPDATE = 'POSTS_UPDATE';
 export const POSTS_VOTE = 'POSTS_VOTE';
 export const POSTS_SET_LOADING_STATE = 'POSTS_SET_LOADING_STATE';
 export const POSTS_SET_PROCESSING_STATE = 'POSTS_SET_PROCESSING_STATE';
-export const POSTS_SET_SORT_OPTION = 'POSTS_SET_SORT_VALUE';
 
 // Action creators
 
@@ -54,15 +53,10 @@ export const setProcessingState = (post, processingState) => ({
   processingState,
 });
 
-export const setSortOption = (sortOption) => ({
-  type: POSTS_SET_SORT_OPTION,
-  sortOption,
-});
-
 // Async action creators
 
 export const fetchPosts = (category) => ((dispatch) => {
-  const operationId = createId();
+  const operationId = createIdSimpleId();
   dispatch(setLoadingState({
     id: operationId,
     isLoading: true,
@@ -88,7 +82,7 @@ export const fetchPosts = (category) => ((dispatch) => {
 });
 
 export const fetchAddPost = (postData) => ((dispatch) => {
-  return PostsAPI.create.post(postData)
+  return PostsAPI.add.post(postData)
     .then((createdPost) => {
       dispatch(addPost(createdPost));
     });
@@ -97,7 +91,7 @@ export const fetchAddPost = (postData) => ((dispatch) => {
 export const fetchRemovePost = (post) => ((dispatch) => {
   dispatch(setProcessingState(post, true));
 
-  return PostsAPI.del.post(post.id)
+  return PostsAPI.remove.post(post.id)
     .then(() => {
       dispatch(removePost(post));
     })
@@ -122,7 +116,7 @@ export const fetchUpdatePost = (post, updatedData) => ((dispatch) => {
 export const fetchVoteOnPost = (post, vote) => ((dispatch) => {
   dispatch(setProcessingState(post, true));
 
-  return PostsAPI.create.voteOnPost(post.id, vote)
+  return PostsAPI.add.voteOnPost(post.id, vote)
     .then(() => {
       dispatch(voteOnPost(post, vote));
       dispatch(setProcessingState(post, false));

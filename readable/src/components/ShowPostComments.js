@@ -4,17 +4,8 @@ import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import AddIcon from 'react-icons/lib/fa/plus';
 import routes from '../routes';
-import {
-  fetchVoteOnPost,
-  fetchRemovePost,
-  fetchUpdatePost,
-} from '../actions/posts';
-import {
-  fetchVoteOnComment,
-  fetchRemoveComment,
-  fetchUpdateComment,
-  fetchAddComment,
-} from '../actions/comments';
+import * as postsActions from '../actions/posts';
+import * as commentsActions from '../actions/comments';
 import { getCategories } from '../selectors/categories';
 import { getComments } from '../selectors/comments';
 import { getPostData } from '../selectors/posts';
@@ -45,17 +36,13 @@ export class ShowPostComments extends PureComponent {
     hasErroredComments: PropTypes.bool,
   };
 
-  state = {
-    isModalAddCommentOpen: false,
-    redirectToRoot: false,
-  }
-
   MESSAGE_LOAD_ERROR = 'There was an error while loading data from the server'
   MESSAGE_NO_COMMENTS = 'No comments yet'
   LOADING_ICON_COMPONENT = <Loading type={'icon-squares'} />
 
-  wasPostFound = () => {
-    return (Object.keys(this.props.postData).length > 0);
+  state = {
+    isModalAddCommentOpen: false,
+    redirectToRoot: false,
   }
 
   handlePostRemove = (post) => {
@@ -69,6 +56,10 @@ export class ShowPostComments extends PureComponent {
 
   closeModalAddComment = () => {
     this.setState({ isModalAddCommentOpen: false });
+  }
+
+  wasPostFound = () => {
+    return (Object.keys(this.props.postData).length > 0);
   }
 
   render() {
@@ -188,16 +179,19 @@ export const mapStateToProps = (state, ownProps) => {
   };
 };
 
-export const mapDispatchToProps = (dispatch, props) => {
-  return {
-    onPostVote: (post, vote) => dispatch(fetchVoteOnPost(post, vote)),
-    onPostRemove: (post) => dispatch(fetchRemovePost(post)),
-    onPostUpdate: (post, updatedData) => dispatch(fetchUpdatePost(post, updatedData)),
-    onCommentVote: (comment, vote) => dispatch(fetchVoteOnComment(comment, vote)),
-    onCommentRemove: (comment) => dispatch(fetchRemoveComment(comment)),
-    onCommentUpdate: (comment, updatedData) => dispatch(fetchUpdateComment(comment, updatedData)),
-    onCommentAdd: (postId, commentData) => dispatch(fetchAddComment(postId, commentData)),
-  };
-};
+export const mapDispatchToProps = (dispatch, ownProps) => ({
+  onPostVote: (post, vote) => dispatch(postsActions.fetchVoteOnPost(post, vote)),
+  onPostRemove: (post) => dispatch(postsActions.fetchRemovePost(post)),
+  onPostUpdate: (post, updatedData) =>
+    dispatch(postsActions.fetchUpdatePost(post, updatedData)),
+  onCommentVote: (comment, vote) =>
+    dispatch(commentsActions.fetchVoteOnComment(comment, vote)),
+  onCommentRemove: (comment) =>
+    dispatch(commentsActions.fetchRemoveComment(comment)),
+  onCommentUpdate: (comment, updatedData) =>
+    dispatch(commentsActions.fetchUpdateComment(comment, updatedData)),
+  onCommentAdd: (postId, commentData) =>
+    dispatch(commentsActions.fetchAddComment(postId, commentData)),
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ShowPostComments);

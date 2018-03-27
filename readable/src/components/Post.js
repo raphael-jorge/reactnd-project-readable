@@ -2,7 +2,8 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import CommentsIcon from 'react-icons/lib/md/comment';
-import { formatDate, areAllEntriesProvided, areKeysDifferent } from '../util/utils';
+import formatDate from '../util/formatDate';
+import { areAllEntriesProvided, areKeysDifferent } from '../util/objectsVerifier';
 import Operations from './Operations';
 import Loading from './Loading';
 import Placeholder from './Placeholder';
@@ -17,6 +18,8 @@ export default class Post extends PureComponent {
     readMode: PropTypes.bool,
   }
 
+  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
+
   state = {
     editMode: false,
     bodyInput: '',
@@ -24,8 +27,6 @@ export default class Post extends PureComponent {
     bodyInputErrorClass: '',
     titleInputErrorClass: '',
   }
-
-  LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
 
   handleTitleInputChange = (event) => {
     const newTitle = event.target.value;
@@ -47,23 +48,25 @@ export default class Post extends PureComponent {
     });
   }
 
-  handleEditModeEnter = () => {
-    this.setState({
-      editMode: true,
-      bodyInput: this.props.postData.body,
-      titleInput: this.props.postData.title,
-    });
-  }
+  handleVoteUp = () => this.props.onVote(this.props.postData, 1)
 
-  handleEditModeLeave = () => {
-    this.setState({
-      editMode: false,
-      bodyInput: '',
-      titleInput: '',
-      bodyInputErrorClass: '',
-      titleInputErrorClass: '',
-    });
-  }
+  handleVoteDown = () => this.props.onVote(this.props.postData, -1)
+
+  handleRemoveSubmit = () => this.props.onRemove(this.props.postData)
+
+  handleEditModeEnter = () => this.setState({
+    editMode: true,
+    bodyInput: this.props.postData.body,
+    titleInput: this.props.postData.title,
+  });
+
+  handleEditModeLeave = () => this.setState({
+    editMode: false,
+    bodyInput: '',
+    titleInput: '',
+    bodyInputErrorClass: '',
+    titleInputErrorClass: '',
+  });
 
   handleEditSubmit = async () => {
     let done = true;
@@ -92,8 +95,8 @@ export default class Post extends PureComponent {
   }
 
   voteHandler = ((self=this) => ({
-    voteUp: () => self.props.onVote(this.props.postData, 1),
-    voteDown: () => self.props.onVote(this.props.postData, -1),
+    voteUp: self.handleVoteUp,
+    voteDown: self.handleVoteDown,
   }))()
 
   editHandler = ((self=this) => ({
@@ -103,7 +106,7 @@ export default class Post extends PureComponent {
   }))()
 
   removeHandler = ((self=this) => ({
-    onSubmit: () => self.props.onRemove(self.props.postData),
+    onSubmit: self.handleRemoveSubmit,
   }))()
 
   render() {

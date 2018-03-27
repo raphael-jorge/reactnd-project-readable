@@ -2,14 +2,9 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import escapeRegExp from 'escape-string-regexp';
+import sortBy from 'sort-by';
 import AddIcon from 'react-icons/lib/fa/plus';
-import {
-  setSortOption,
-  fetchVoteOnPost,
-  fetchRemovePost,
-  fetchUpdatePost,
-  fetchAddPost,
-} from '../actions/posts';
+import * as postsActions from '../actions/posts';
 import { getPosts } from '../selectors/posts';
 import { getCategories } from '../selectors/categories';
 import Loading from './Loading';
@@ -25,30 +20,35 @@ export class ShowPosts extends PureComponent {
   static propTypes = {
     posts: PropTypes.array.isRequired,
     categories: PropTypes.array.isRequired,
-    onSortOptionChange: PropTypes.func.isRequired,
     onPostVote: PropTypes.func.isRequired,
     onPostRemove: PropTypes.func.isRequired,
     onPostUpdate: PropTypes.func.isRequired,
+    onPostAdd: PropTypes.func.isRequired,
     isLoading: PropTypes.bool,
     hasErrored: PropTypes.bool,
-    postsSortOption: PropTypes.object,
     activeCategoryPath: PropTypes.string,
-  }
-
-  postsSearchOptions = [
-    { value: 'title', label: 'Title' },
-    { value: 'author', label: 'Author' },
-  ]
-
-  state = {
-    isModalAddPostOpen: false,
-    postsSearchQuery: '',
-    postsSearchOption: this.postsSearchOptions[0],
   }
 
   MESSAGE_LOAD_ERROR = 'There was an error while loading posts from the server'
   MESSAGE_NO_POSTS = 'No Posts Available'
   LOADING_ICON_COMPONENT = <Loading type="icon-squares" />
+  POSTS_SEARCH_OPTIONS = [
+    { value: 'title', label: 'Title' },
+    { value: 'author', label: 'Author' },
+  ]
+  POSTS_SORT_OPTIONS = [
+    { value: '-voteScore', label: 'Votes: High to Low' },
+    { value: 'voteScore', label: 'Votes: Low to High' },
+    { value: '-timestamp', label: 'Newest' },
+    { value: 'timestamp', label: 'Oldest' },
+  ]
+
+  state = {
+    isModalAddPostOpen: false,
+    searchQuery: '',
+    selectedSearchOption: this.POSTS_SEARCH_OPTIONS[0],
+    selectedSortOption: null,
+  }
 
   componentWillReceiveProps(nextProps) {
     const { activeCategoryPath: currentActiveCategoryPath } = this.props;
@@ -57,6 +57,30 @@ export class ShowPosts extends PureComponent {
     if (nextActiveCategoryPath !== currentActiveCategoryPath) {
       this.clearSearchQuery();
     }
+  }
+
+  handleSortOptionChange = (selectedOption) => {
+    this.setState({ selectedSortOption: selectedOption });
+  }
+
+  handleSearchOptionChange = (selectedOption) => {
+    this.setState({ selectedSearchOption: selectedOption });
+  }
+
+  handleSearchQueryChange = (event) => {
+    this.setState({ searchQuery: event.target.value });
+  }
+
+  clearSearchQuery = () => {
+    this.setState({ searchQuery: '' });
+  }
+
+  openModalAddPost = () => {
+    this.setState({ isModalAddPostOpen: true });
+  }
+
+  closeModalAddPost = () => {
+    this.setState({ isModalAddPostOpen: false });
   }
 
   wasCategoryFound = () => {
@@ -79,37 +103,13 @@ export class ShowPosts extends PureComponent {
     return categoryFound;
   }
 
-  handleSortOptionChange = (selectedOption) => {
-    this.props.onSortOptionChange(selectedOption);
-  }
-
-  handleSearchOptionChange = (selectedOption) => {
-    this.setState({ postsSearchOption: selectedOption });
-  }
-
-  handleSearchQueryChange = (event) => {
-    this.setState({ postsSearchQuery: event.target.value });
-  }
-
-  clearSearchQuery = () => {
-    this.setState({ postsSearchQuery: '' });
-  }
-
-  openModalAddPost = () => {
-    this.setState({ isModalAddPostOpen: true });
-  }
-
-  closeModalAddPost = () => {
-    this.setState({ isModalAddPostOpen: false });
-  }
-
   filterPostsByQuery = () => {
     const { posts } = this.props;
-    const { postsSearchQuery, postsSearchOption } = this.state;
+    const { searchQuery, selectedSearchOption } = this.state;
     let postsToShow;
-    if (postsSearchQuery) {
-      const match = new RegExp(escapeRegExp(postsSearchQuery.trim()), 'i');
-      postsToShow = posts.filter((post) => match.test(post[postsSearchOption.value]));
+    if (searchQuery) {
+      const match = new RegExp(escapeRegExp(searchQuery.trim()), 'i');
+      postsToShow = posts.filter((post) => match.test(post[selectedSearchOption.value]));
     } else {
       postsToShow = posts;
     }
@@ -127,13 +127,15 @@ export class ShowPosts extends PureComponent {
       onPostAdd,
       isLoading,
       hasErrored,
-      postsSortOption,
       activeCategoryPath,
     } = this.props;
 
     const pageFound = this.wasCategoryFound();
 
     const postsToShow = this.filterPostsByQuery();
+    if (this.state.selectedSortOption) {
+      postsToShow.sort(sortBy(this.state.selectedSortOption.value));
+    }
 
     return (
       <div>
@@ -168,16 +170,17 @@ export class ShowPosts extends PureComponent {
                   ) : (
                     <div>
                       <Menu
-                        selectedSortOption={postsSortOption}
+                        sortOptions={this.POSTS_SORT_OPTIONS}
+                        selectedSortOption={this.state.selectedSortOption}
                         onSortOptionChange={this.handleSortOptionChange}
-                        searchOptions={this.postsSearchOptions}
-                        selectedSearchOption={this.state.postsSearchOption}
+                        searchOptions={this.POSTS_SEARCH_OPTIONS}
+                        selectedSearchOption={this.state.selectedSearchOption}
                         onSearchOptionChange={this.handleSearchOptionChange}
-                        searchQueryValue={this.state.postsSearchQuery}
+                        searchQueryValue={this.state.searchQuery}
                         onSearchQueryChange={this.handleSearchQueryChange}
                       />
 
-                      {this.state.postsSearchQuery.trim() &&
+                      {this.state.searchQuery.trim() &&
                         <div className="status-group">
                           <Message
                             msg={`Found ${postsToShow.length} matching posts of ${posts.length}.`}
@@ -224,26 +227,20 @@ export class ShowPosts extends PureComponent {
 
 export const mapStateToProps = (state, ownProps) => {
   const { posts, categories } = state;
-  const { activeCategoryPath } = ownProps;
 
   return {
     posts: getPosts(state, ownProps),
     categories: getCategories(state),
     isLoading: posts.loading.isLoading || categories.loading.isLoading,
     hasErrored: posts.loading.hasErrored || categories.loading.hasErrored,
-    postsSortOption: posts.sortOption,
-    activeCategoryPath,
   };
 };
 
-export const mapDispatchToProps = (dispatch, props) => {
-  return {
-    onPostVote: (post, vote) => dispatch(fetchVoteOnPost(post, vote)),
-    onPostRemove: (post) => dispatch(fetchRemovePost(post)),
-    onPostUpdate: (post, updatedData) => dispatch(fetchUpdatePost(post, updatedData)),
-    onPostAdd: (postData) => dispatch(fetchAddPost(postData)),
-    onSortOptionChange: (sortOption) => dispatch(setSortOption(sortOption)),
-  };
-};
+export const mapDispatchToProps = (dispatch, ownProps) => ({
+  onPostVote: (post, vote) => dispatch(postsActions.fetchVoteOnPost(post, vote)),
+  onPostRemove: (post) => dispatch(postsActions.fetchRemovePost(post)),
+  onPostUpdate: (post, updatedData) => dispatch(postsActions.fetchUpdatePost(post, updatedData)),
+  onPostAdd: (postData) => dispatch(postsActions.fetchAddPost(postData)),
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ShowPosts);

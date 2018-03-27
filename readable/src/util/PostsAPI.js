@@ -1,12 +1,12 @@
 /** @module PostsAPI */
 import uuid from 'uuid/v4';
-import { createId } from './utils';
+import createSimpleId from './createSimpleId';
 
 const api = 'http://localhost:3001';
 
 let token = localStorage.token;
 if (!token) {
-  token = createId();
+  token = createSimpleId();
   localStorage.token = token;
 }
 
@@ -75,9 +75,9 @@ export const get = {
 
 /**
  * @description Métodos para criar dados no servidor.
- * @namespace create
+ * @namespace add
  */
-export const create = {
+export const add = {
   /**
    * @description Cria um novo post no servidor.
    * @param {object} newPostBody Um objeto com as informações do novo post.
@@ -188,9 +188,9 @@ export const update = {
 
 /**
  * @description Métodos para apagar dados do servidor.
- * @namespace del
+ * @namespace remove
  */
-export const del = {
+export const remove = {
   /**
    * @description Apaga um post específico do servidor.
    * @param {string} postId O id do post.

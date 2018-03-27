@@ -2,6 +2,7 @@ import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import * as PostsAPI from '../../util/PostsAPI';
 import * as commentsActions from '../../actions/comments';
+import createSimpleId from '../../util/createSimpleId';
 
 // Mock PostsAPI
 jest.mock('../../util/PostsAPI', () => {
@@ -9,7 +10,7 @@ jest.mock('../../util/PostsAPI', () => {
 
   return {
     get: { postComments: jest.fn(() => Promise.resolve(comments)) },
-    create: {
+    add: {
       comment: jest.fn(
         (postId, commentData) => Promise.resolve({
           ...commentData,
@@ -19,14 +20,13 @@ jest.mock('../../util/PostsAPI', () => {
       voteOnComment: jest.fn(() => Promise.resolve()),
     },
     update: { comment: jest.fn(() => Promise.resolve()) },
-    del: { comment: jest.fn(() => Promise.resolve()) },
+    remove: { comment: jest.fn(() => Promise.resolve()) },
   };
 });
 
 // Mock createId
-jest.mock('../../util/utils', () => {
-  return { createId: () => 'testOperationId' };
-});
+jest.mock('../../util/createSimpleId');
+createSimpleId.mockImplementation(() => 'testOperationId');
 
 // Mock redux store
 const middlewares = [thunk];
@@ -231,7 +231,7 @@ describe('actions', () => {
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
-      expect(PostsAPI.create.comment)
+      expect(PostsAPI.add.comment)
         .toHaveBeenCalledWith(parentPostId, commentToAdd);
     });
 
@@ -248,11 +248,11 @@ describe('actions', () => {
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
-      expect(PostsAPI.del.comment).toHaveBeenCalledWith(commentToRemove.id);
+      expect(PostsAPI.remove.comment).toHaveBeenCalledWith(commentToRemove.id);
     });
 
     it('should remove a comment from the api and dispatch actions on failure', async () => {
-      PostsAPI.del.comment.mockImplementationOnce(() => Promise.reject());
+      PostsAPI.remove.comment.mockImplementationOnce(() => Promise.reject());
       const commentToRemove = global.testUtils.getDefaultCommentData();
 
       const expectedActions = [
@@ -265,7 +265,7 @@ describe('actions', () => {
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
-      expect(PostsAPI.del.comment).toHaveBeenCalledWith(commentToRemove.id);
+      expect(PostsAPI.remove.comment).toHaveBeenCalledWith(commentToRemove.id);
     });
 
     it('should update a comment on the api and dispatch actions on success', async () => {
@@ -325,11 +325,11 @@ describe('actions', () => {
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
-      expect(PostsAPI.create.voteOnComment).toHaveBeenCalledWith(commentToVote.id, vote);
+      expect(PostsAPI.add.voteOnComment).toHaveBeenCalledWith(commentToVote.id, vote);
     });
 
     it('should vote on a comment on the api and dispatch actions on failure', async () => {
-      PostsAPI.create.voteOnComment.mockImplementationOnce(() => Promise.reject());
+      PostsAPI.add.voteOnComment.mockImplementationOnce(() => Promise.reject());
       const commentToVote = global.testUtils.getDefaultCommentData();
       const vote = 1;
 
@@ -343,7 +343,7 @@ describe('actions', () => {
       const dispatchedActions = store.getActions();
 
       expect(dispatchedActions).toEqual(expectedActions);
-      expect(PostsAPI.create.voteOnComment).toHaveBeenCalledWith(commentToVote.id, vote);
+      expect(PostsAPI.add.voteOnComment).toHaveBeenCalledWith(commentToVote.id, vote);
     });
   });
 });

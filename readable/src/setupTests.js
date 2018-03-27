@@ -36,10 +36,6 @@ global.testUtils = {
     return categoriesArray;
   },
 
-  getDefaultCategoryData: function() {
-    return this.getDefaultCategoriesArray(1)[0];
-  },
-
   getDefaultPostsArray: function(numberOfPosts=2) {
     const postsArray = [];
     for (let i = 0; i < numberOfPosts; i++) {
@@ -96,7 +92,6 @@ global.testUtils = {
           hasErrored: false,
         },
         posts: {},
-        sortOption: null,
       },
       comments: {
         loading: {

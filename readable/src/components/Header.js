@@ -2,7 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link, NavLink } from 'react-router-dom';
 import routes from '../routes';
-import { capitalize } from '../util/utils';
+import capitalize from '../util/capitalize';
+
+Header.propTypes = {
+  categories: PropTypes.array.isRequired,
+  activeCategoryPath: PropTypes.string,
+};
 
 export default function Header(props) {
   const {
@@ -49,8 +54,3 @@ export default function Header(props) {
     </header>
   );
 }
-
-Header.propTypes = {
-  categories: PropTypes.array.isRequired,
-  activePath: PropTypes.string,
-};
