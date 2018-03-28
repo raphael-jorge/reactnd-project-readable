@@ -5,7 +5,7 @@
  */
 export default function formatDate(dateValue) {
   const date = new Date(dateValue);
-  const dateStr = date.toLocaleDateString();
+  const dateStr = date.toLocaleDateString('en-US');
 
   // Hora e minutos com leading 0
   const hours = `0${ date.getHours().toString() }`.slice(-2);
