@@ -11,7 +11,7 @@ const setup = (propOverrides) => {
     onModalClose: () => {},
     onPostAdd: () => {},
     categories: [],
-    activeCategoryPath: undefined,
+    initialCategory: undefined,
   }, propOverrides);
 
   const modal = shallow(<ModalAddPost {...props} />);
@@ -193,41 +193,41 @@ describe('<ModalAddPost />', () => {
       expect(modal.state('categoryErrorClass')).toBe('input-error');
     });
 
-    it('sets the category state when the activeCategoryPath prop is set', () => {
-      const activeCategoryPath = 'activeCategory';
-      const { modal } = setup({ activeCategoryPath });
+    it('sets the category state when the initialCategory prop is set', () => {
+      const initialCategory = 'activeCategory';
+      const { modal } = setup({ initialCategory });
 
-      expect(modal.state('category')).toBe(activeCategoryPath);
+      expect(modal.state('category')).toBe(initialCategory);
     });
 
-    it('updates the category state when a new activeCategoryPath is set', () => {
+    it('updates the category state when a new initialCategory is set', () => {
       const { modal } = setup();
 
-      const activeCategoryPath = 'activeCategory';
-      modal.setProps({ activeCategoryPath });
+      const initialCategory = 'activeCategory';
+      modal.setProps({ initialCategory });
 
-      expect(modal.state('category')).toBe(activeCategoryPath);
+      expect(modal.state('category')).toBe(initialCategory);
     });
 
-    it('keeps the category state when activeCategoryPath has the same value', () => {
+    it('keeps the category state when initialCategory has the same value', () => {
       const { modal } = setup();
 
-      const activeCategoryPath = 'activeCategory';
-      modal.setProps({ activeCategoryPath });
+      const initialCategory = 'activeCategory';
+      modal.setProps({ initialCategory });
 
-      expect(modal.state('category')).toBe(activeCategoryPath);
+      expect(modal.state('category')).toBe(initialCategory);
 
       modal.setProps({ onModalClose: () => {} });
 
-      expect(modal.state('category')).toBe(activeCategoryPath);
+      expect(modal.state('category')).toBe(initialCategory);
     });
 
-    it('resets the category state value when activeCategoryPath changes to undefined', () => {
-      const activeCategoryPath = 'activeCategory';
-      const { modal } = setup({ activeCategoryPath });
+    it('resets the category state value when initialCategory changes to undefined', () => {
+      const initialCategory = 'activeCategory';
+      const { modal } = setup({ initialCategory });
 
       const newActiveCategoryPath = undefined;
-      modal.setProps({ activeCategoryPath: newActiveCategoryPath });
+      modal.setProps({ initialCategory: newActiveCategoryPath });
 
       expect(modal.state('category')).toBe('');
     });

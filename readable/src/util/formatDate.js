@@ -1,7 +1,7 @@
 /**
  * Formata um valor de data obtido com o objeto Date.
- * @param  {number} dateValue O valor da data.
- * @return {string} A data formatada: <Data Local> HH:MM.
+ * @param {Number} dateValue O valor da data.
+ * @return {String} A data formatada: M/D/YYYY HH:MM.
  */
 export default function formatDate(dateValue) {
   const date = new Date(dateValue);

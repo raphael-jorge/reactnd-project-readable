@@ -12,15 +12,18 @@ import OperationConfirm from './OperationConfirm';
  */
 export default class Operations extends PureComponent {
   static propTypes = {
+    // Objeto que agrupa as operações de voto
     voteHandler: PropTypes.shape({
       voteUp: PropTypes.func.isRequired,
       voteDown: PropTypes.func.isRequired,
     }).isRequired,
+    // Objeto que agrupa as operações de edição
     editHandler: PropTypes.shape({
       onRequest: PropTypes.func,
       onAbort: PropTypes.func,
       onSubmit: PropTypes.func.isRequired,
     }).isRequired,
+    // Objeto que agrupa as operações de remoção
     removeHandler: PropTypes.shape({
       onRequest: PropTypes.func,
       onAbort: PropTypes.func,
@@ -28,21 +31,23 @@ export default class Operations extends PureComponent {
     }).isRequired,
   };
 
+  /**
+   * Os estados do componente.
+   * @property {Object} operationHandler Armazena o objeto com as operações ativas
+   * em um determinado momento. Pode armazenar os objetos com as operações de edição
+   * ou remoção.
+   */
   state = {
     operationHandler: null,
   }
 
-  /**
-   * Realiza a operação de voto positivo.
-   */
+  /* Realiza a operação de voto positivo */
   handleVoteUp = (event) => {
     event.preventDefault();
     this.props.voteHandler.voteUp();
   }
 
-  /**
-   * Realiza a operação de voto negativo.
-   */
+  /* Realiza a operação de voto negativo */
   handleVoteDown = (event) => {
     event.preventDefault();
     this.props.voteHandler.voteDown();
@@ -50,7 +55,7 @@ export default class Operations extends PureComponent {
 
   /**
    * Inicializa a operação de edição. Para isso, chama o método
-   * onRequest da prop editHandler quando disponível e configura
+   * onRequest da prop editHandler, quando disponível, e configura
    * o estado operationHandler para a prop editHandler.
    */
   handleEditRequest = (event) => {
@@ -66,7 +71,7 @@ export default class Operations extends PureComponent {
 
   /**
    * Inicializa a operação de remoção. Para isso, chama o método
-   * onRequest da prop removeHandler quando disponível e configura
+   * onRequest da prop removeHandler, quando disponível, e configura
    * o estado operationHandler para a prop removeHandler.
    */
   handleRemoveRequest = (event) => {
@@ -82,8 +87,8 @@ export default class Operations extends PureComponent {
 
   /**
    * Executa o método onSubmit presente no estado operationHandler.
-   * Se essa operação retornar true, indicando que a operação foi bem
-   * sucedida, o estado operationHandler é configurado para null. Caso
+   * Se essa operação retornar true, indicando que a operação pode ser
+   * finalizada, o estado operationHandler é configurado para null. Caso
    * contrário, o estado permanece inalterado. (O estado operationHandler
    * deve ser previamente configurado).
    */
@@ -131,7 +136,6 @@ export default class Operations extends PureComponent {
 
         {/* Interface de controle das operações de edição e remoção */}
         {this.state.operationHandler === null ? (
-          // Renderiza um button para cada operação
           <div className="operations">
             <button
               title="Edit"

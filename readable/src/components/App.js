@@ -5,6 +5,7 @@ import NotFound from './NotFound';
 import ShowPosts from './ShowPosts';
 import ShowPostComments from './ShowPostComments';
 
+/* A aplicação Readable */
 export default class App extends Component {
   render() {
 

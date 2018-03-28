@@ -1,9 +1,9 @@
 /**
  * Verifica se uma determinada entrada de texto, armazenda em um objeto,
  * está definida, ou seja, difere de uma string vazia.
- * @param  {String}  entry  O nome da entrada, à ser verificada, no objeto.
- * @param  {Object}  object O objeto que contém a entrada.
- * @return {Boolean}        Indica se a entrada está definida.
+ * @param {String} entry  O nome da entrada, à ser verificada, no objeto.
+ * @param {Object} object O objeto que contém a entrada.
+ * @return {Boolean} Indica se a entrada está definida.
  */
 export function isEntryProvided(entry, object) {
   let valid = true;
@@ -19,7 +19,8 @@ export function isEntryProvided(entry, object) {
  * estao definidas, ou seja, se todas diferem de uma string vazia.
  * @param {Array} entries Os nomes das entradas a serem verificadas.
  * @param {Object} object O objeto que contém as entradas.
- * @return {Boolean} Indica se todas as entradas especificadas estão devidamente definidas.
+ * @return {Boolean} Indica se todas as entradas especificadas estão
+ * devidamente definidas.
  */
 export function areAllEntriesProvided(entries, object) {
   let allValid = true;

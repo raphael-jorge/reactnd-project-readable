@@ -7,19 +7,32 @@ import OperationConfirm from './OperationConfirm';
 import Placeholder from './Placeholder';
 import Post from './Post';
 
-/**
- * Um componente modal para criação de novos comentários
- */
+/* Um componente modal para adição de novos comentários */
 export default class ModalAddComment extends PureComponent {
   static propTypes = {
+    // Indica se o modal está aberto ou não
     isOpen: PropTypes.bool.isRequired,
+    // Os dados do post ao qual o comentário será adicionado
     postData: PropTypes.object.isRequired,
+    // Função a ser chamada quando o modal for fechado
     onModalClose: PropTypes.func.isRequired,
+    // Função a ser chamada quando o a operação de adição for confirmada
     onCommentAdd: PropTypes.func.isRequired,
   }
 
+  /* Componente exibido enquanto a operação de adição do comentário é processada */
   LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
 
+  /**
+   * Os estados do componente.
+   * @property {Boolean} isProcessing Indica se a operação de adição está sendo processada.
+   * @property {String} author O autor do novo comentário.
+   * @property {String} body A mensagem do novo comentário.
+   * @property {String} authorErrorClass Classe CSS a ser adicionada ao formulário de
+   * inserção do autor em caso de invalidação do conteúdo do formulário.
+   * @property {String} bodyErrorClass Classe CSS a ser adicionada ao formulário de
+   * inserção da mensagem em caso de invalidação do conteúdo do formulário.
+   */
   state = {
     isProcessing: false,
     author: '',
@@ -28,6 +41,13 @@ export default class ModalAddComment extends PureComponent {
     bodyErrorClass: '',
   }
 
+  /**
+   * Atualiza os estados author e authorErrorClass com base em um evento
+   * de mudança, especificamente aquele disparado no formulário de inserção do
+   * autor do comentário. O estado author armazenará o novo valor do formulário.
+   * Se este valor for vazio, authorErrorClass será configurado para 'input-error'.
+   * @param {Object} event O evento de mudança.
+   */
   handleAuthorChange = (event) => {
     const newAuthor = event.target.value;
     const errorClass = newAuthor ? '' : 'input-error';
@@ -38,6 +58,13 @@ export default class ModalAddComment extends PureComponent {
     });
   }
 
+  /**
+   * Atualiza os estados body e bodyErrorClass com base em um evento
+   * de mudança, especificamente aquele disparado no formulário de inserção da
+   * mensagem do comentário. O estado body armazenará o novo valor do formulário.
+   * Se este valor for vazio, bodyErrorClass será configurado para 'input-error'.
+   * @param {Object} event O evento de mudança.
+   */
   handleBodyChange = (event) => {
     const newBody = event.target.value;
     const errorClass = newBody ? '' : 'input-error';
@@ -136,7 +163,7 @@ export default class ModalAddComment extends PureComponent {
               />
             </label>
 
-            {/* Entrada da mensagem do comentário */}
+            {/* Entrada da mensagem */}
             <label htmlFor="input-body">
               Message:
               <textarea

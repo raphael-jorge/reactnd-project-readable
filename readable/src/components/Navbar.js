@@ -5,11 +5,13 @@ import routes from '../routes';
 import capitalize from '../util/capitalize';
 
 Navbar.propTypes = {
+  // As categorias utilizadas para gerar os links de navegação
   categories: PropTypes.array.isRequired,
+  // O path da categoria ativa
   activeCategoryPath: PropTypes.string,
 };
 
-/*  */
+/* Uma navbar para a aplicação Readable */
 export default function Navbar(props) {
   const {
     categories,

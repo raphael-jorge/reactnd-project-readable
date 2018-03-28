@@ -2,6 +2,7 @@ import React from 'react';
 import FindIcon from 'react-icons/lib/md/find-in-page';
 import Post from './Post';
 
+/* Um componente para indicar que alguma página não foi encontrada */
 export default function NotFound(props) {
   const notFoundData = {
     timestamp: Date.now(),

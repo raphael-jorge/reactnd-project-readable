@@ -1,4 +1,3 @@
-/** @module PostsAPI */
 import uuid from 'uuid/v4';
 import createSimpleId from './createSimpleId';
 
@@ -17,23 +16,16 @@ const headers = {
 };
 
 
-/**
- * @description Métodos para buscar dados no servidor.
- * @namespace get
- */
+/* Métodos para buscar dados no servidor. */
 export const get = {
-  /**
-   * @description Busca categorias no servidor.
-   * @return {Promise} Retorna uma array com as categorias obtidas quando resolvida.
-   */
+  /* Busca categorias no servidor. */
   categories: () =>
     fetch(`${api}/categories`, { headers })
       .then((res) => res.json()),
 
   /**
-   * @description Busca posts no servidor.
+   * Busca posts no servidor.
    * @param {string} [category] Uma categoria específica de posts.
-   * @return {Promise} Retorna uma array com os posts obtidos quando resolvida.
    */
   posts: (category) => {
     let path = '/posts';
@@ -45,27 +37,24 @@ export const get = {
   },
 
   /**
-   * @description Busca um post específico no servidor.
+   * Busca um post específico no servidor.
    * @param  {string} postId O id do post.
-   * @return {Promise} Retorna o objeto post obtido quando resolvida.
    */
   post: (postId) =>
     fetch(`${api}/posts/${postId}`, { headers })
       .then((res) => res.json()),
 
   /**
-   * @description Busca comentários de um post específico no servidor.
+   * Busca comentários de um post específico no servidor.
    * @param  {string} postId O id do post.
-   * @return {Promise} Retorna uma array com os comentários obtidos.
    */
   postComments: (postId) =>
     fetch(`${api}/posts/${postId}/comments`, { headers })
       .then((res) => res.json()),
 
   /**
-   * @description Busca um comentário específico no servidor.
+   * Busca um comentário específico no servidor.
    * @param  {string} commentId O id do comentário.
-   * @return {Promise} Retorna o objeto comentário obtido quando resolvida.
    */
   comment: (commentId) =>
     fetch(`${api}/comments/${commentId}`, { headers })
@@ -73,19 +62,15 @@ export const get = {
 };
 
 
-/**
- * @description Métodos para criar dados no servidor.
- * @namespace add
- */
+/* Métodos para adicionar dados ao servidor. */
 export const add = {
   /**
-   * @description Cria um novo post no servidor.
+   * Adiciona um novo post no servidor.
    * @param {object} newPostBody Um objeto com as informações do novo post.
    * @param {string} newPostBody.title O título do post.
    * @param {string} newPostBody.body A mensagem do post.
    * @param {string} newPostBody.author O autor do post.
    * @param {string} newPostBody.category A categoria do post.
-   * @return {Promise} Retorna o objeto post criado no servidor quando resolvida.
    */
   post: (newPostBody) => {
     newPostBody.id = uuid();
@@ -98,10 +83,9 @@ export const add = {
   },
 
   /**
-   * @description Cria um novo voto em um post específico.
+   * Adiciona um novo voto em um post específico.
    * @param {string} postId O id do post.
    * @param {number} vote Se vote>0 adiciona um voto se não diminui um voto.
-   * @return {Promise} Retorna o objeto post atualizado quando resolvida.
    */
   voteOnPost: (postId, vote) => {
     const voteStr = vote > 0 ? 'upVote' : 'downVote';
@@ -113,12 +97,11 @@ export const add = {
   },
 
   /**
-   * @description Cria um novo comentário vinculado a um post no servidor.
+   * Cria um novo comentário, vinculado a um post, no servidor.
    * @param {string} postId O id do post a receber o comentário.
    * @param {object} newComment Um objeto com as informações do novo comentário.
    * @param {string} newComment.body A mensagem do comentário.
    * @param {string} newComment.author O autor do comentário.
-   * @return {Promise} Retorna o objeto comentário criado no servidor quando resolvida.
    */
   comment: (postId, newComment) => {
     newComment.id = uuid();
@@ -132,10 +115,9 @@ export const add = {
   },
 
   /**
-   * @description Cria um novo voto em um comentário específico.
+   * Cria um novo voto em um comentário específico.
    * @param {string} commentId O id do comentário.
    * @param {number} vote Se vote>0 adiciona um voto se não diminui um voto.
-   * @return {Promise} Retorna o objeto comentário atualizado quando resolvida.
    */
   voteOnComment: (commentId, vote) => {
     const voteStr = vote > 0 ? 'upVote' : 'downVote';
@@ -148,18 +130,14 @@ export const add = {
 };
 
 
-/**
- * @description Métodos para atualizar dados no servidor.
- * @namespace update
- */
+/* Métodos para atualizar dados no servidor. */
 export const update = {
   /**
-   * @description Atualiza um post no servidor.
+   * Atualiza um post no servidor.
    * @param {string} postId O id do post a ser atualizado.
    * @param {object} updatedData Um objeto com as informações do post atualizadas.
    * @param {string} updatedData.title O título atualizado do post.
    * @param {string} updatedData.body A mensagem atualizada do post.
-   * @return {Promise} Retorna o objeto post atualizado quando resolvida.
    */
   post: (postId, updatedData) =>
     fetch(`${api}/posts/${postId}`, {
@@ -169,11 +147,10 @@ export const update = {
     }).then((res) => res.json()),
 
   /**
-   * @description Atualiza um comentário no servidor.
+   * Atualiza um comentário no servidor.
    * @param {string} commentId O id do comentário a ser atualizado.
    * @param {object} updatedData Um objeto com as informações do comentário atualizadas.
    * @param {string} updatedData.body A mensagem atualizada do comentário.
-   * @return {Promise} Retorna o objeto comentário atualizado quando resolvida.
    */
   comment: (commentId, updatedData) => {
     updatedData.timestamp = Date.now();
@@ -186,15 +163,11 @@ export const update = {
 };
 
 
-/**
- * @description Métodos para apagar dados do servidor.
- * @namespace remove
- */
+/* Métodos para remover dados do servidor. */
 export const remove = {
   /**
-   * @description Apaga um post específico do servidor.
+   * Remove um post específico do servidor.
    * @param {string} postId O id do post.
-   * @return {Promise} Retorna o objeto post atualizado quando resolvida.
    */
   post: (postId) =>
     fetch(`${api}/posts/${postId}`, {
@@ -203,9 +176,8 @@ export const remove = {
     }).then((res) => res.json()),
 
   /**
-   * @description Apaga um comentário específico do servidor.
+   * Remove um comentário específico do servidor.
    * @param {string} commentId O id do comentário.
-   * @return {Promise} Retorna o objeto comentário atualizado quando resolvida.
    */
   comment: (commentId) =>
     fetch(`${api}/comments/${commentId}`, {

@@ -6,22 +6,43 @@ import Operations from './Operations';
 import Loading from './Loading';
 import Placeholder from './Placeholder';
 
+/* Representa um comentário */
 export default class Comment extends PureComponent {
   static propTypes = {
+    // Os dados do comentário
     commentData: PropTypes.object.isRequired,
+    // Função chamado quando uma operação de voto é acionada
     onVote: PropTypes.func.isRequired,
+    // Função chamado quando a operação de remoção do comentário é acionada
     onRemove: PropTypes.func.isRequired,
+    // Função chamado quando a operação de edição do comentário é confirmada
     onUpdate: PropTypes.func.isRequired,
   }
 
+  /* Componente exibido enquanto alguma operação é realizada */
   LOADING_COVER_COMPONENT = <Loading type="cover-squares" />
 
+  /**
+   * Os estados do componente.
+   * @property {Boolean} editMode Indica se o componente está em modo de edição.
+   * @property {String} bodyInput A mensagem do comentário no modo de edição.
+   * @property {String} bodyInputErrorClass Classe CSS a ser adicionada ao formulário de
+   * inserção da mensagem em caso de invalidação do conteúdo do formulário.
+   */
   state = {
     editMode: false,
     bodyInput: '',
     bodyInputErrorClass: '',
   }
 
+  /**
+   * Atualiza os estados bodyInput e bodyInputErrorClass com base em um evento
+   * de mudança, especificamente aquele disparado no formulário de edição da
+   * mensagem do comentário. bodyInput armazenará o novo valor do formulário.
+   * Se este valor for vazio, bodyInputErrorClass será configurado para
+   * 'input-error'.
+   * @param {Object} event O evento de mudança.
+   */
   handleBodyInputChange = (event) => {
     const newBody = event.target.value;
     const errorClass = newBody ? '' : 'input-error';
@@ -32,23 +53,45 @@ export default class Comment extends PureComponent {
     });
   }
 
+  /* Realiza a operação de voto positivo no cometário */
   handleVoteUp = () => this.props.onVote(this.props.commentData, 1)
 
+  /* Realiza a operação de voto negativo no cometário */
   handleVoteDown = () => this.props.onVote(this.props.commentData, -1)
 
+  /* Realiza a operação de remoção do comentário */
   handleRemoveSubmit = () => this.props.onRemove(this.props.commentData)
 
+  /**
+   * Inicializa o modo de edição do comentário. Para isso configura o estado
+   * editMode para true e o estado bodyInput para o valor atual da mensagem
+   * do comentário.
+   */
   handleEditModeEnter = () => this.setState({
     editMode: true,
     bodyInput: this.props.commentData.body,
   });
 
+  /**
+   * Finaliza o modo de edição do comentário. Para isso configura o estado
+   * editMode para false e os estados bodyInput e bodyInputErrorClass para ''.
+   */
   handleEditModeLeave = () => this.setState({
     editMode: false,
     bodyInput: '',
     bodyInputErrorClass: '',
   });
 
+  /**
+   * Realiza a operação de edição do comentário chamando a função onUpdate
+   * fornecida via props. Se a nova mensagem fornecida for idêntica à mensagem
+   * original essa função não será chamada, porém o método handleEditModeLeave
+   * será chamado, indicando o fim da operação de edição. Por outro lado, se a
+   * nova mensagem for vazia nada será feito, indicando que a operação de edição
+   * não foi finalizada.
+   * @return {Promise} Uma promise que resolve para true se a operação de edição
+   * for finalizada e false caso contrário.
+   */
   handleEditSubmit = async () => {
     let done = true;
 
