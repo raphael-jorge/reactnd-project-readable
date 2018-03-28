@@ -52,10 +52,10 @@ const getDefaultOption = () => ({
 
 // Tests
 describe('<ShowPosts />', () => {
-  it('renders a Header component', () => {
+  it('renders a Navbar component', () => {
     const { showPosts } = setup();
 
-    expect(showPosts.find('Header').length).toBe(1);
+    expect(showPosts.find('Navbar').length).toBe(1);
   });
 
 

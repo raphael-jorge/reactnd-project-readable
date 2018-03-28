@@ -163,8 +163,8 @@ a {
 }
 
 
-/* Header */
-.header {
+/* Navbar */
+.navbar {
   margin: 0 0 30px;
   padding: 0;
   background: #fff;
@@ -172,10 +172,11 @@ a {
   height: 60px;
   transition: box-shadow 0.3s;
 }
-.header h1 {
+.navbar-header {
   margin: 0 20px;
   padding: 0;
   float: left;
+  font-family: 'Pacifico', cursive;
   font-size: 1.8rem;
   font-weight: normal;
   line-height: 60px;
@@ -183,20 +184,20 @@ a {
   text-shadow: 1px 1px 1px #222f5a;
   transition: color 0.3s;
 }
-.header-nav {
+.navbar-nav {
   float: right;
 }
-.header-nav ul {
+.navbar-nav ul {
   margin: 0 20px;
   padding: 15px 0;
   list-style-type: none;
 }
-.header-nav li {
+.navbar-nav li {
   display: inline-block;
   margin: 0 5px;
   padding: 0;
 }
-.header-nav a {
+.navbar-nav a {
   display: inline-block;
   margin: 0;
   padding: 0 3px;
@@ -205,73 +206,73 @@ a {
   text-shadow: 1px 1px 1px #bbb;
   transition: color 0.3s;
 }
-.header-nav li a.active,
-.header-nav a:hover {
+.navbar-nav li a.active,
+.navbar-nav a:hover {
   color: #222f5a;
   text-shadow: 1px 1px 1px #777;
 }
 /* React custom style */
-.header.react h1 {
+.navbar.react .navbar-header {
   color: #2ba2c6;
 }
-.header.react {
+.navbar.react {
   box-shadow: 0 2px 5px #2ba2c6;
 }
-.header.react .header-nav li a.active,
-.header-nav a.react:hover {
+.navbar.react .navbar-nav li a.active,
+.navbar-nav a.react:hover {
   color: #2ba2c6;
 }
 /* Redux custom style */
-.header.redux h1 {
+.navbar.redux .navbar-header {
   color: #744cbc;
 }
-.header.redux {
+.navbar.redux {
   box-shadow: 0 2px 5px #744cbc;
 }
-.header.redux .header-nav li a.active,
-.header-nav a.redux:hover {
+.navbar.redux .navbar-nav li a.active,
+.navbar-nav a.redux:hover {
   color: #744cbc;
 }
 /* Udacity custom style */
-.header.udacity h1 {
+.navbar.udacity .navbar-header {
   color: #e0711d;
 }
-.header.udacity {
+.navbar.udacity {
   box-shadow: 0 2px 5px #e0711d;
 }
-.header.udacity .header-nav li a.active,
-.header-nav a.udacity:hover {
+.navbar.udacity .navbar-nav li a.active,
+.navbar-nav a.udacity:hover {
   color: #e0711d;
 }
 @media screen and (max-width: 530px) {
-  .header {
+  .navbar {
     height: auto;
   }
-  .header h1, .header-nav {
+  .navbar .navbar-header, .navbar-nav {
     float: none;
   }
-  .header h1 {
+  .navbar .navbar-header {
     height: 40px;
     line-height: 40px;
     text-align: center;
     font-size: 1.5rem;
   }
-  .header-nav ul {
+  .navbar-nav ul {
     text-align: center;
     padding: 10px 0 20px;
   }
 }
 @media screen and (max-width: 350px) {
-  .header-nav ul {
+  .navbar-nav ul {
     margin: 0 auto;
     padding: 0 0 10px;
     width: 75%;
   }
-  .header-nav li {
+  .navbar-nav li {
     display: block;
     margin: 10px 0;
   }
-  .header-nav a {
+  .navbar-nav a {
     width: 100%;
   }
 }

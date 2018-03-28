@@ -4,26 +4,27 @@ import { Link, NavLink } from 'react-router-dom';
 import routes from '../routes';
 import capitalize from '../util/capitalize';
 
-Header.propTypes = {
+Navbar.propTypes = {
   categories: PropTypes.array.isRequired,
   activeCategoryPath: PropTypes.string,
 };
 
-export default function Header(props) {
+/*  */
+export default function Navbar(props) {
   const {
     categories,
     activeCategoryPath,
   } = props;
 
   return (
-    <header className={`header ${activeCategoryPath}`}>
+    <div className={`navbar ${activeCategoryPath}`}>
       <div className="container">
 
         <Link to={routes.root}>
-          <h1 className="font-cursive">Readable</h1>
+          <h1 className="navbar-header">Readable</h1>
         </Link>
 
-        <nav className="header-nav">
+        <nav className="navbar-nav">
           <ul>
 
             {/* Link para a homepage */}
@@ -51,6 +52,6 @@ export default function Header(props) {
         </nav>
 
       </div>
-    </header>
+    </div>
   );
 }

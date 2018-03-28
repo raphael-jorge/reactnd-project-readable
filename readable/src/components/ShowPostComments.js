@@ -10,7 +10,7 @@ import { getCategories } from '../selectors/categories';
 import { getComments } from '../selectors/comments';
 import { getPostData } from '../selectors/posts';
 import Comment from './Comment';
-import Header from './Header';
+import Navbar from './Navbar';
 import Loading from './Loading';
 import Message from './Message';
 import ModalAddComment from './ModalAddComment';
@@ -87,7 +87,7 @@ export class ShowPostComments extends PureComponent {
       ) : (
         <div>
 
-          <Header categories={categories} />
+          <Navbar categories={categories} />
 
           <main className="container-md">
             {/* Verifica se os dados do post estão sendo carregados */}

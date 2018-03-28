@@ -8,7 +8,7 @@ import * as postsActions from '../actions/posts';
 import { getPosts } from '../selectors/posts';
 import { getCategories } from '../selectors/categories';
 import Loading from './Loading';
-import Header from './Header';
+import Navbar from './Navbar';
 import Menu from './Menu';
 import Message from './Message';
 import ModalAddPost from './ModalAddPost';
@@ -140,7 +140,7 @@ export class ShowPosts extends PureComponent {
     return (
       <div>
 
-        <Header categories={categories} activeCategoryPath={activeCategoryPath}/>
+        <Navbar categories={categories} activeCategoryPath={activeCategoryPath}/>
 
         <main className="container-md">
           {/* Verifica se os posts estão sendo carregados */}

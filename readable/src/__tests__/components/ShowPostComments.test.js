@@ -61,10 +61,10 @@ const getDefaultOwnProps = () => ({
 
 // Tests
 describe('<ShowPostComments />', () => {
-  it('renders a Header component', () => {
+  it('renders a Navbar component', () => {
     const { showPostComments } = setup();
 
-    expect(showPostComments.find('Header').length).toBe(1);
+    expect(showPostComments.find('Navbar').length).toBe(1);
   });
 
 

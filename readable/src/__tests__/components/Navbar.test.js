@@ -2,7 +2,7 @@ import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { shallow } from 'enzyme';
 import routes from '../../routes';
-import Header from '../../components/Header';
+import Navbar from '../../components/Navbar';
 
 // Utils
 const setup = (propOverrides) => {
@@ -13,9 +13,9 @@ const setup = (propOverrides) => {
 
   const header = shallow(
     <MemoryRouter>
-      <Header {...props} />
+      <Navbar {...props} />
     </MemoryRouter>
-  ).find(Header).dive();
+  ).find(Navbar).dive();
 
   return {
     props,
@@ -25,7 +25,7 @@ const setup = (propOverrides) => {
 
 
 // Tests
-describe('<Header />', () => {
+describe('<Navbar />', () => {
   it('renders a link to the root page', () => {
     const { header } = setup();
     const links = header.find('Link');
@@ -62,13 +62,5 @@ describe('<Header />', () => {
       expect(childrenLink.prop('to')).toBe(`/${testCategory.path}`);
       expect(childrenLink.prop('activeClassName')).toBe('active');
     });
-  });
-
-
-  it('adds to the header class the activeCategoryPath if one is provided', () => {
-    const activeCategoryPath = 'testCategoryPath';
-    const { header } = setup({ activeCategoryPath });
-
-    expect(header.find(`.header.${activeCategoryPath}`).length).toBe(1);
   });
 });
