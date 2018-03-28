@@ -8,7 +8,7 @@ export default function NotFound(props) {
     timestamp: Date.now(),
     author: 'Readable',
     title: '404: Not Found',
-    body: 'We regret to post that we could not find the page you requested. =(',
+    body: 'We are sorry to post that we could not find the page you requested. =(',
   };
 
   return (
