@@ -209,14 +209,27 @@ describe('<ModalAddPost />', () => {
       expect(modal.state('category')).toBe(activeCategoryPath);
     });
 
-    it('does not update the category state when a falsy activeCategoryPath is set', () => {
+    it('keeps the category state when activeCategoryPath has the same value', () => {
+      const { modal } = setup();
+
+      const activeCategoryPath = 'activeCategory';
+      modal.setProps({ activeCategoryPath });
+
+      expect(modal.state('category')).toBe(activeCategoryPath);
+
+      modal.setProps({ onModalClose: () => {} });
+
+      expect(modal.state('category')).toBe(activeCategoryPath);
+    });
+
+    it('resets the category state value when activeCategoryPath changes to undefined', () => {
       const activeCategoryPath = 'activeCategory';
       const { modal } = setup({ activeCategoryPath });
 
-      const newActiveCategoryPath = null;
+      const newActiveCategoryPath = undefined;
       modal.setProps({ activeCategoryPath: newActiveCategoryPath });
 
-      expect(modal.state('category')).toBe(activeCategoryPath);
+      expect(modal.state('category')).toBe('');
     });
   });
 

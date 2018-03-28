@@ -34,10 +34,15 @@ export default class ModalAddPost extends PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    // Atualiza o estado category com base na categoria atual
-    if (nextProps.activeCategoryPath
-        && this.state.category !== nextProps.activeCategoryPath) {
-      this.setState({ category: nextProps.activeCategoryPath });
+    const { activeCategoryPath: currentActiveCategoryPath } = this.props;
+    const { activeCategoryPath: nextActiveCategoryPath } = nextProps;
+
+    if (nextActiveCategoryPath !== currentActiveCategoryPath) {
+      if (nextActiveCategoryPath !== undefined) {
+        this.setState({ category: nextProps.activeCategoryPath });
+      } else {
+        this.setState({ category: '' });
+      }
     }
   }
 
